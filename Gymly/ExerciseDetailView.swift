@@ -38,7 +38,7 @@ struct ExerciseDetailView: View {
                         Section("Set \(i + 1)") {
                             HStack {
                                 Picker("", selection: $exercise.setWeights[i]) {
-                                    ForEach(1...999, id: \.self) { number in
+                                    ForEach(1...9, id: \.self) { number in
                                         Text("\(number)")
                                     }
                                 }
@@ -49,7 +49,7 @@ struct ExerciseDetailView: View {
                                     .offset(x: -5)
                                 Spacer()
                                 Picker("", selection: $exercise.setRepsDone[i]) {
-                                    ForEach(1...100, id: \.self) { number in
+                                    ForEach(1...9, id: \.self) { number in
                                         Text("\(number)")
                                     }
                                 }

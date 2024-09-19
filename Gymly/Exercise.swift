@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class Exercise: Identifiable{
+class Exercise: Identifiable {
     var name:String
     var sets:Int
     var reps:Int

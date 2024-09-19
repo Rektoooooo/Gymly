@@ -18,3 +18,16 @@ class MuscleGroup {
         self.exercises = exercises
     }
 }
+
+extension MuscleGroup: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+    }
+}
+
+extension MuscleGroup: Equatable {
+    static func == (lhs: MuscleGroup, rhs: MuscleGroup) -> Bool {
+        return lhs.name == rhs.name
+    }
+}
+

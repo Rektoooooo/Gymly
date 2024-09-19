@@ -26,11 +26,10 @@ struct TodayWorkoutView: View {
     var body: some View {
         NavigationView{
             List {
-                ForEach(muscleGroupNames, id: \.self) { muscle in
-                    let exercisesForMuscle = day.exercises.filter { $0.muscleGroup == muscle }
-                    if !exercisesForMuscle.isEmpty {
-                        Section(header: Text(muscle)) {
-                            ForEach(exercisesForMuscle, id: \.self) { exercise in
+                ForEach(muscleGroups, id: \.self) { muscleGroup in
+                    if !muscleGroup.exercises.isEmpty {
+                        Section(header: Text(muscleGroup.name)) {
+                            ForEach(muscleGroup.exercises, id: \.self) { exercise in
                                 NavigationLink("\(exercise.name)") {
                                     ExerciseDetailView(exercise: exercise)
                                 }
@@ -79,6 +78,7 @@ struct TodayWorkoutView: View {
                 if let firstDay = days.first {
                     day = firstDay
                 }
+                muscleGroups = []
                 for name: String in muscleGroupNames {
                     var exercises = day.exercises.filter { exercise in
                         return exercise.muscleGroup.contains(name)
