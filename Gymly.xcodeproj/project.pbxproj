@@ -1,0 +1,665 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		EC057B642C92C664004846DE /* CopyWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC057B632C92C664004846DE /* CopyWorkoutView.swift */; };
+		EC27AA782C74A5350091F027 /* TodayWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC27AA772C74A5350091F027 /* TodayWorkoutView.swift */; };
+		EC3BEC3D2C76624600C9DF0B /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3BEC3C2C76624600C9DF0B /* Config.swift */; };
+		EC4FD1532C4ED88300D1A4A6 /* Day.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1522C4ED88300D1A4A6 /* Day.swift */; };
+		EC4FD1572C4EE0A600D1A4A6 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1552C4EE0A600D1A4A6 /* Color.swift */; };
+		EC4FD1582C4EE0A600D1A4A6 /* onFirstAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1542C4EE0A600D1A4A6 /* onFirstAppear.swift */; };
+		EC8C15112C80A94D008E4152 /* DayStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC8C15102C80A94D008E4152 /* DayStorage.swift */; };
+		ECA5D1442BF20CF100DCC9F8 /* GymlyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D1432BF20CF100DCC9F8 /* GymlyApp.swift */; };
+		ECA5D1462BF20CF100DCC9F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D1452BF20CF100DCC9F8 /* ContentView.swift */; };
+		ECA5D1482BF20CF500DCC9F8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ECA5D1472BF20CF500DCC9F8 /* Assets.xcassets */; };
+		ECA5D14B2BF20CF500DCC9F8 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ECA5D14A2BF20CF500DCC9F8 /* Preview Assets.xcassets */; };
+		ECA5D1552BF20CF500DCC9F8 /* GymlyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D1542BF20CF500DCC9F8 /* GymlyTests.swift */; };
+		ECA5D15F2BF20CF500DCC9F8 /* GymlyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D15E2BF20CF500DCC9F8 /* GymlyUITests.swift */; };
+		ECA5D1612BF20CF500DCC9F8 /* GymlyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D1602BF20CF500DCC9F8 /* GymlyUITestsLaunchTests.swift */; };
+		ECA5D16E2BF20D0F00DCC9F8 /* ToolBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D16D2BF20D0F00DCC9F8 /* ToolBar.swift */; };
+		ECA5D1702BF20EB400DCC9F8 /* SplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D16F2BF20EB400DCC9F8 /* SplitView.swift */; };
+		ECA5D1722BF20EDA00DCC9F8 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D1712BF20EDA00DCC9F8 /* SettingsView.swift */; };
+		ECA5D1742BF212D400DCC9F8 /* WorkoutDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D1732BF212D400DCC9F8 /* WorkoutDayView.swift */; };
+		ECA5D1762BF22C2000DCC9F8 /* Exercise.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D1752BF22C2000DCC9F8 /* Exercise.swift */; };
+		ECA5D1782BF22E3500DCC9F8 /* CreateExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D1772BF22E3500DCC9F8 /* CreateExerciseView.swift */; };
+		ECA5D17C2BF34A9C00DCC9F8 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D17B2BF34A9C00DCC9F8 /* ExerciseDetailView.swift */; };
+		ECA81B842C82058C002216AE /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA81B832C82058C002216AE /* CalendarView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		ECA5D1512BF20CF500DCC9F8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ECA5D1382BF20CF100DCC9F8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ECA5D13F2BF20CF100DCC9F8;
+			remoteInfo = Gymly;
+		};
+		ECA5D15B2BF20CF500DCC9F8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ECA5D1382BF20CF100DCC9F8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ECA5D13F2BF20CF100DCC9F8;
+			remoteInfo = Gymly;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		EC057B632C92C664004846DE /* CopyWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyWorkoutView.swift; sourceTree = "<group>"; };
+		EC27AA772C74A5350091F027 /* TodayWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWorkoutView.swift; sourceTree = "<group>"; };
+		EC3BEC3C2C76624600C9DF0B /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		EC4FD1522C4ED88300D1A4A6 /* Day.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Day.swift; sourceTree = "<group>"; };
+		EC4FD1542C4EE0A600D1A4A6 /* onFirstAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = onFirstAppear.swift; sourceTree = "<group>"; };
+		EC4FD1552C4EE0A600D1A4A6 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
+		EC8C15102C80A94D008E4152 /* DayStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStorage.swift; sourceTree = "<group>"; };
+		ECA5D1402BF20CF100DCC9F8 /* Gymly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gymly.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECA5D1432BF20CF100DCC9F8 /* GymlyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymlyApp.swift; sourceTree = "<group>"; };
+		ECA5D1452BF20CF100DCC9F8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		ECA5D1472BF20CF500DCC9F8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		ECA5D14A2BF20CF500DCC9F8 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		ECA5D1502BF20CF500DCC9F8 /* GymlyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GymlyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECA5D1542BF20CF500DCC9F8 /* GymlyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymlyTests.swift; sourceTree = "<group>"; };
+		ECA5D15A2BF20CF500DCC9F8 /* GymlyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GymlyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECA5D15E2BF20CF500DCC9F8 /* GymlyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymlyUITests.swift; sourceTree = "<group>"; };
+		ECA5D1602BF20CF500DCC9F8 /* GymlyUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymlyUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		ECA5D16D2BF20D0F00DCC9F8 /* ToolBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolBar.swift; sourceTree = "<group>"; };
+		ECA5D16F2BF20EB400DCC9F8 /* SplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitView.swift; sourceTree = "<group>"; };
+		ECA5D1712BF20EDA00DCC9F8 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		ECA5D1732BF212D400DCC9F8 /* WorkoutDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDayView.swift; sourceTree = "<group>"; };
+		ECA5D1752BF22C2000DCC9F8 /* Exercise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Exercise.swift; sourceTree = "<group>"; };
+		ECA5D1772BF22E3500DCC9F8 /* CreateExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateExerciseView.swift; sourceTree = "<group>"; };
+		ECA5D17B2BF34A9C00DCC9F8 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
+		ECA81B832C82058C002216AE /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		ECA5D13D2BF20CF100DCC9F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ECA5D14D2BF20CF500DCC9F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ECA5D1572BF20CF500DCC9F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		EC4FD1562C4EE0A600D1A4A6 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				EC4FD1542C4EE0A600D1A4A6 /* onFirstAppear.swift */,
+				EC4FD1552C4EE0A600D1A4A6 /* Color.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		ECA5D1372BF20CF100DCC9F8 = {
+			isa = PBXGroup;
+			children = (
+				ECA5D1422BF20CF100DCC9F8 /* Gymly */,
+				ECA5D1532BF20CF500DCC9F8 /* GymlyTests */,
+				ECA5D15D2BF20CF500DCC9F8 /* GymlyUITests */,
+				ECA5D1412BF20CF100DCC9F8 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		ECA5D1412BF20CF100DCC9F8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				ECA5D1402BF20CF100DCC9F8 /* Gymly.app */,
+				ECA5D1502BF20CF500DCC9F8 /* GymlyTests.xctest */,
+				ECA5D15A2BF20CF500DCC9F8 /* GymlyUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		ECA5D1422BF20CF100DCC9F8 /* Gymly */ = {
+			isa = PBXGroup;
+			children = (
+				ECA5D1432BF20CF100DCC9F8 /* GymlyApp.swift */,
+				ECA5D16D2BF20D0F00DCC9F8 /* ToolBar.swift */,
+				EC27AA772C74A5350091F027 /* TodayWorkoutView.swift */,
+				ECA5D1452BF20CF100DCC9F8 /* ContentView.swift */,
+				ECA5D16F2BF20EB400DCC9F8 /* SplitView.swift */,
+				ECA5D1732BF212D400DCC9F8 /* WorkoutDayView.swift */,
+				EC057B632C92C664004846DE /* CopyWorkoutView.swift */,
+				ECA5D17B2BF34A9C00DCC9F8 /* ExerciseDetailView.swift */,
+				ECA5D1772BF22E3500DCC9F8 /* CreateExerciseView.swift */,
+				ECA5D1712BF20EDA00DCC9F8 /* SettingsView.swift */,
+				ECA5D1752BF22C2000DCC9F8 /* Exercise.swift */,
+				EC4FD1522C4ED88300D1A4A6 /* Day.swift */,
+				EC8C15102C80A94D008E4152 /* DayStorage.swift */,
+				EC3BEC3C2C76624600C9DF0B /* Config.swift */,
+				ECA81B832C82058C002216AE /* CalendarView.swift */,
+				ECA5D1472BF20CF500DCC9F8 /* Assets.xcassets */,
+				EC4FD1562C4EE0A600D1A4A6 /* Extensions */,
+				ECA5D1492BF20CF500DCC9F8 /* Preview Content */,
+			);
+			path = Gymly;
+			sourceTree = "<group>";
+		};
+		ECA5D1492BF20CF500DCC9F8 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				ECA5D14A2BF20CF500DCC9F8 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		ECA5D1532BF20CF500DCC9F8 /* GymlyTests */ = {
+			isa = PBXGroup;
+			children = (
+				ECA5D1542BF20CF500DCC9F8 /* GymlyTests.swift */,
+			);
+			path = GymlyTests;
+			sourceTree = "<group>";
+		};
+		ECA5D15D2BF20CF500DCC9F8 /* GymlyUITests */ = {
+			isa = PBXGroup;
+			children = (
+				ECA5D15E2BF20CF500DCC9F8 /* GymlyUITests.swift */,
+				ECA5D1602BF20CF500DCC9F8 /* GymlyUITestsLaunchTests.swift */,
+			);
+			path = GymlyUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		ECA5D13F2BF20CF100DCC9F8 /* Gymly */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ECA5D1642BF20CF500DCC9F8 /* Build configuration list for PBXNativeTarget "Gymly" */;
+			buildPhases = (
+				ECA5D13C2BF20CF100DCC9F8 /* Sources */,
+				ECA5D13D2BF20CF100DCC9F8 /* Frameworks */,
+				ECA5D13E2BF20CF100DCC9F8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Gymly;
+			productName = Gymly;
+			productReference = ECA5D1402BF20CF100DCC9F8 /* Gymly.app */;
+			productType = "com.apple.product-type.application";
+		};
+		ECA5D14F2BF20CF500DCC9F8 /* GymlyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ECA5D1672BF20CF500DCC9F8 /* Build configuration list for PBXNativeTarget "GymlyTests" */;
+			buildPhases = (
+				ECA5D14C2BF20CF500DCC9F8 /* Sources */,
+				ECA5D14D2BF20CF500DCC9F8 /* Frameworks */,
+				ECA5D14E2BF20CF500DCC9F8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				ECA5D1522BF20CF500DCC9F8 /* PBXTargetDependency */,
+			);
+			name = GymlyTests;
+			productName = GymlyTests;
+			productReference = ECA5D1502BF20CF500DCC9F8 /* GymlyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		ECA5D1592BF20CF500DCC9F8 /* GymlyUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ECA5D16A2BF20CF500DCC9F8 /* Build configuration list for PBXNativeTarget "GymlyUITests" */;
+			buildPhases = (
+				ECA5D1562BF20CF500DCC9F8 /* Sources */,
+				ECA5D1572BF20CF500DCC9F8 /* Frameworks */,
+				ECA5D1582BF20CF500DCC9F8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				ECA5D15C2BF20CF500DCC9F8 /* PBXTargetDependency */,
+			);
+			name = GymlyUITests;
+			productName = GymlyUITests;
+			productReference = ECA5D15A2BF20CF500DCC9F8 /* GymlyUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		ECA5D1382BF20CF100DCC9F8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1520;
+				LastUpgradeCheck = 1520;
+				TargetAttributes = {
+					ECA5D13F2BF20CF100DCC9F8 = {
+						CreatedOnToolsVersion = 15.2;
+					};
+					ECA5D14F2BF20CF500DCC9F8 = {
+						CreatedOnToolsVersion = 15.2;
+						TestTargetID = ECA5D13F2BF20CF100DCC9F8;
+					};
+					ECA5D1592BF20CF500DCC9F8 = {
+						CreatedOnToolsVersion = 15.2;
+						TestTargetID = ECA5D13F2BF20CF100DCC9F8;
+					};
+				};
+			};
+			buildConfigurationList = ECA5D13B2BF20CF100DCC9F8 /* Build configuration list for PBXProject "Gymly" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = ECA5D1372BF20CF100DCC9F8;
+			productRefGroup = ECA5D1412BF20CF100DCC9F8 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				ECA5D13F2BF20CF100DCC9F8 /* Gymly */,
+				ECA5D14F2BF20CF500DCC9F8 /* GymlyTests */,
+				ECA5D1592BF20CF500DCC9F8 /* GymlyUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		ECA5D13E2BF20CF100DCC9F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ECA5D14B2BF20CF500DCC9F8 /* Preview Assets.xcassets in Resources */,
+				ECA5D1482BF20CF500DCC9F8 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ECA5D14E2BF20CF500DCC9F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ECA5D1582BF20CF500DCC9F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		ECA5D13C2BF20CF100DCC9F8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ECA5D16E2BF20D0F00DCC9F8 /* ToolBar.swift in Sources */,
+				ECA5D17C2BF34A9C00DCC9F8 /* ExerciseDetailView.swift in Sources */,
+				EC3BEC3D2C76624600C9DF0B /* Config.swift in Sources */,
+				ECA81B842C82058C002216AE /* CalendarView.swift in Sources */,
+				ECA5D1742BF212D400DCC9F8 /* WorkoutDayView.swift in Sources */,
+				ECA5D1782BF22E3500DCC9F8 /* CreateExerciseView.swift in Sources */,
+				EC4FD1532C4ED88300D1A4A6 /* Day.swift in Sources */,
+				ECA5D1462BF20CF100DCC9F8 /* ContentView.swift in Sources */,
+				ECA5D1762BF22C2000DCC9F8 /* Exercise.swift in Sources */,
+				ECA5D1702BF20EB400DCC9F8 /* SplitView.swift in Sources */,
+				EC4FD1572C4EE0A600D1A4A6 /* Color.swift in Sources */,
+				EC4FD1582C4EE0A600D1A4A6 /* onFirstAppear.swift in Sources */,
+				ECA5D1442BF20CF100DCC9F8 /* GymlyApp.swift in Sources */,
+				EC27AA782C74A5350091F027 /* TodayWorkoutView.swift in Sources */,
+				EC8C15112C80A94D008E4152 /* DayStorage.swift in Sources */,
+				ECA5D1722BF20EDA00DCC9F8 /* SettingsView.swift in Sources */,
+				EC057B642C92C664004846DE /* CopyWorkoutView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ECA5D14C2BF20CF500DCC9F8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ECA5D1552BF20CF500DCC9F8 /* GymlyTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ECA5D1562BF20CF500DCC9F8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ECA5D15F2BF20CF500DCC9F8 /* GymlyUITests.swift in Sources */,
+				ECA5D1612BF20CF500DCC9F8 /* GymlyUITestsLaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		ECA5D1522BF20CF500DCC9F8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ECA5D13F2BF20CF100DCC9F8 /* Gymly */;
+			targetProxy = ECA5D1512BF20CF500DCC9F8 /* PBXContainerItemProxy */;
+		};
+		ECA5D15C2BF20CF500DCC9F8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ECA5D13F2BF20CF100DCC9F8 /* Gymly */;
+			targetProxy = ECA5D15B2BF20CF500DCC9F8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		ECA5D1622BF20CF500DCC9F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		ECA5D1632BF20CF500DCC9F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		ECA5D1652BF20CF500DCC9F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Gymly/Preview Content\"";
+				DEVELOPMENT_TEAM = PH3V9JYRDW;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "ic-servis.com.Gymly";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		ECA5D1662BF20CF500DCC9F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Gymly/Preview Content\"";
+				DEVELOPMENT_TEAM = PH3V9JYRDW;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "ic-servis.com.Gymly";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		ECA5D1682BF20CF500DCC9F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PH3V9JYRDW;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "ic-servis.com.GymlyTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Gymly.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Gymly";
+			};
+			name = Debug;
+		};
+		ECA5D1692BF20CF500DCC9F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PH3V9JYRDW;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "ic-servis.com.GymlyTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Gymly.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Gymly";
+			};
+			name = Release;
+		};
+		ECA5D16B2BF20CF500DCC9F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PH3V9JYRDW;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "ic-servis.com.GymlyUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Gymly;
+			};
+			name = Debug;
+		};
+		ECA5D16C2BF20CF500DCC9F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = PH3V9JYRDW;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "ic-servis.com.GymlyUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Gymly;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		ECA5D13B2BF20CF100DCC9F8 /* Build configuration list for PBXProject "Gymly" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ECA5D1622BF20CF500DCC9F8 /* Debug */,
+				ECA5D1632BF20CF500DCC9F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ECA5D1642BF20CF500DCC9F8 /* Build configuration list for PBXNativeTarget "Gymly" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ECA5D1652BF20CF500DCC9F8 /* Debug */,
+				ECA5D1662BF20CF500DCC9F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ECA5D1672BF20CF500DCC9F8 /* Build configuration list for PBXNativeTarget "GymlyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ECA5D1682BF20CF500DCC9F8 /* Debug */,
+				ECA5D1692BF20CF500DCC9F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ECA5D16A2BF20CF500DCC9F8 /* Build configuration list for PBXNativeTarget "GymlyUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ECA5D16B2BF20CF500DCC9F8 /* Debug */,
+				ECA5D16C2BF20CF500DCC9F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = ECA5D1382BF20CF100DCC9F8 /* Project object */;
+}
