@@ -54,16 +54,17 @@ struct CreateExerciseView: View {
     }
     
     func createExercise() {
-        var setWeightsAdd:[Int] = []
-        var setRepsDoneAdd:[Int] = []
-        var setFaileurAdd:[Bool] = []
-
+        var setList: [Exercise.Set] = []
         for _ in 1...Int(sets)! {
-            setWeightsAdd.append(1)
-            setRepsDoneAdd.append(1)
-            setFaileurAdd.append(false)
+            let set = Exercise.Set(weight: 1, reps: 1, failure: false)
+            setList.append(set)
         }
-        day.exercises.insert(Exercise(name: name, sets: Int(sets) ?? 0, reps: Int(reps) ?? 0,muscleGroup: muslceGroup,setWeights: setWeightsAdd,setRepsDone: setRepsDoneAdd,setFailuer: setFaileurAdd), at: day.exercises.endIndex)
+        day.exercises.insert(Exercise(
+            name: name,
+            sets: setList,
+            repGoal: Int(reps) ?? 0,
+            muscleGroup: muslceGroup),
+                             at : day.exercises.endIndex)
         do {
             try context.save()
         } catch {

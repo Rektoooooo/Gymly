@@ -47,12 +47,12 @@ struct TodayWorkoutView: View {
                     Label("", systemImage: "ellipsis.circle")
                 }
             }
-            .onAppear {
-                dateFormatter.dateFormat = "EEEE"
-                currentDay = dateFormatter.string(from: Date())
-                Task {
-                    await fetchData()
-                }
+        }
+        .onAppear {
+            dateFormatter.dateFormat = "EEEE"
+            currentDay = dateFormatter.string(from: Date())
+            Task {
+                await fetchData()
             }
         }
         .sheet(isPresented: $editPlan) {
@@ -68,10 +68,8 @@ struct TodayWorkoutView: View {
         do {
             let fetchedData = try context.fetch(descriptor)
             days = []
+            exercises = []
             days = fetchedData
-            for exercise in day.exercises {
-                exercises.append(exercise)
-            }
             if days.isEmpty {
                 debugPrint("No day found for name: \(currentDay)")
             } else {
@@ -80,10 +78,10 @@ struct TodayWorkoutView: View {
                 }
                 muscleGroups = []
                 for name: String in muscleGroupNames {
-                    var exercises = day.exercises.filter { exercise in
+                    let exercises = day.exercises.filter { exercise in
                         return exercise.muscleGroup.contains(name)
                     }
-                    var group = MuscleGroup(name: name, count: 0, exercises: exercises)
+                    let group = MuscleGroup(name: name, count: 0, exercises: exercises)
                     muscleGroups.append(group)
                 }
                 debugPrint("Fetched day: \(days[0].name)")

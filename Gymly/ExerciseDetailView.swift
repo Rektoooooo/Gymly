@@ -22,22 +22,22 @@ struct ExerciseDetailView: View {
         NavigationView {
             VStack {
                 HStack {
-                    Text("\(exercise.sets) Sets")
+                    Text("\(exercise.sets.count) Sets")
                         .padding()
                         .foregroundStyle(.accent)
                         .bold()
                     Spacer()
-                    Text("\(exercise.reps) Reps")
+                    Text("\(exercise.repGoal) Reps")
                         .padding()
                         .foregroundStyle(.accent)
                         .bold()
                 }
                 Spacer()
                 List {
-                    ForEach(0...(exercise.sets - 1), id: \.self) { i in
+                    ForEach(0...(exercise.sets.count - 1), id: \.self) { i in
                         Section("Set \(i + 1)") {
                             HStack {
-                                Picker("", selection: $exercise.setWeights[i]) {
+                                Picker("", selection: $exercise.sets[i].weight) {
                                     ForEach(1...9, id: \.self) { number in
                                         Text("\(number)")
                                     }
@@ -48,7 +48,7 @@ struct ExerciseDetailView: View {
                                 Text("\(config.weightUnit)")
                                     .offset(x: -5)
                                 Spacer()
-                                Picker("", selection: $exercise.setRepsDone[i]) {
+                                Picker("", selection: $exercise.sets[i].reps) {
                                     ForEach(1...9, id: \.self) { number in
                                         Text("\(number)")
                                     }
@@ -58,7 +58,7 @@ struct ExerciseDetailView: View {
                                 .frame(width: 40,height: 35)
                                 Text("Reps")
                                 Spacer()
-                                Toggle(isOn: $exercise.setFailuer[i]) {}
+                                Toggle(isOn: $exercise.sets[i].failure) {}
                                     .toggleStyle(CheckToggleStyle())
                                 Text("Failure")
                             }

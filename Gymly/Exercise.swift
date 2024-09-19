@@ -11,20 +11,30 @@ import SwiftData
 @Model
 class Exercise: Identifiable {
     var name:String
-    var sets:Int
-    var reps:Int
+    var sets: [Set]
+    var repGoal:Int
     var muscleGroup:String
-    var setWeights:[Int]
-    var setRepsDone:[Int]
-    var setFailuer:[Bool]
     
-    init(name:String, sets:Int, reps:Int,muscleGroup:String ,setWeights:[Int], setRepsDone:[Int], setFailuer:[Bool]){
+    
+    init(name:String, sets: [Set], repGoal:Int, muscleGroup:String) {
         self.name = name
         self.sets = sets
-        self.reps = reps
+        self.repGoal = repGoal
         self.muscleGroup = muscleGroup
-        self.setWeights = setWeights
-        self.setRepsDone = setRepsDone
-        self.setFailuer = setFailuer
+    }
+    
+    @Model
+    class Set: Identifiable {
+        var weight:Int
+        var reps:Int
+        var failure:Bool
+        
+        init(weight: Int, reps: Int, failure: Bool) {
+            self.weight = weight
+            self.reps = reps
+            self.failure = failure
+        }
     }
 }
+
+
