@@ -21,9 +21,17 @@ struct ExerciseDetailView: View {
     var body: some View {
         NavigationView {
             VStack {
-                Text("Muscle Group: \(exercise.muscleGroup)")
-                Text("\(exercise.sets) Sets for \(exercise.reps) Reps")
-                    .multilineTextAlignment(.leading)
+                HStack {
+                    Text("\(exercise.sets) Sets")
+                        .padding()
+                        .foregroundStyle(.accent)
+                        .bold()
+                    Spacer()
+                    Text("\(exercise.reps) Reps")
+                        .padding()
+                        .foregroundStyle(.accent)
+                        .bold()
+                }
                 Spacer()
                 List {
                     ForEach(0...(exercise.sets - 1), id: \.self) { i in
@@ -66,7 +74,15 @@ struct ExerciseDetailView: View {
         }
         .onAppear() {
         }
+        .toolbar {
+            Button {
+                // add new set
+            } label: {
+                Label("Add set", systemImage: "plus.circle")
+            }
+        }
         .navigationTitle("\(exercise.name)")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

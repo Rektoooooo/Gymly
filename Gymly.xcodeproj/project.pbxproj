@@ -13,6 +13,7 @@
 		EC4FD1532C4ED88300D1A4A6 /* Day.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1522C4ED88300D1A4A6 /* Day.swift */; };
 		EC4FD1572C4EE0A600D1A4A6 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1552C4EE0A600D1A4A6 /* Color.swift */; };
 		EC4FD1582C4EE0A600D1A4A6 /* onFirstAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1542C4EE0A600D1A4A6 /* onFirstAppear.swift */; };
+		EC629C662C9CAE2300009902 /* MuscleGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC629C652C9CAE2300009902 /* MuscleGroup.swift */; };
 		EC8C15112C80A94D008E4152 /* DayStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC8C15102C80A94D008E4152 /* DayStorage.swift */; };
 		ECA5D1442BF20CF100DCC9F8 /* GymlyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D1432BF20CF100DCC9F8 /* GymlyApp.swift */; };
 		ECA5D1462BF20CF100DCC9F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D1452BF20CF100DCC9F8 /* ContentView.swift */; };
@@ -55,6 +56,7 @@
 		EC4FD1522C4ED88300D1A4A6 /* Day.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Day.swift; sourceTree = "<group>"; };
 		EC4FD1542C4EE0A600D1A4A6 /* onFirstAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = onFirstAppear.swift; sourceTree = "<group>"; };
 		EC4FD1552C4EE0A600D1A4A6 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
+		EC629C652C9CAE2300009902 /* MuscleGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroup.swift; sourceTree = "<group>"; };
 		EC8C15102C80A94D008E4152 /* DayStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStorage.swift; sourceTree = "<group>"; };
 		ECA5D1402BF20CF100DCC9F8 /* Gymly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gymly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECA5D1432BF20CF100DCC9F8 /* GymlyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymlyApp.swift; sourceTree = "<group>"; };
@@ -136,6 +138,7 @@
 				ECA5D1432BF20CF100DCC9F8 /* GymlyApp.swift */,
 				ECA5D16D2BF20D0F00DCC9F8 /* ToolBar.swift */,
 				EC27AA772C74A5350091F027 /* TodayWorkoutView.swift */,
+				EC629C652C9CAE2300009902 /* MuscleGroup.swift */,
 				ECA5D1452BF20CF100DCC9F8 /* ContentView.swift */,
 				ECA5D16F2BF20EB400DCC9F8 /* SplitView.swift */,
 				ECA5D1732BF212D400DCC9F8 /* WorkoutDayView.swift */,
@@ -318,6 +321,7 @@
 				ECA5D1782BF22E3500DCC9F8 /* CreateExerciseView.swift in Sources */,
 				EC4FD1532C4ED88300D1A4A6 /* Day.swift in Sources */,
 				ECA5D1462BF20CF100DCC9F8 /* ContentView.swift in Sources */,
+				EC629C662C9CAE2300009902 /* MuscleGroup.swift in Sources */,
 				ECA5D1762BF22C2000DCC9F8 /* Exercise.swift in Sources */,
 				ECA5D1702BF20EB400DCC9F8 /* SplitView.swift in Sources */,
 				EC4FD1572C4EE0A600D1A4A6 /* Color.swift in Sources */,

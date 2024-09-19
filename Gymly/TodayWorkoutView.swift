@@ -18,14 +18,15 @@ struct TodayWorkoutView: View {
     @Environment(\.modelContext) private var context
     @State private var editPlan:Bool = false
     @State private var weekDays:[String] = ["Monday","Tuesday","Wednesday","Thursday","Friday","Sutarday","Sunday"]
-    @State var muscleGroups:[String] = ["Chest","Back","Biceps","Triceps","Shoulders","Legs","Abs"]
+    @State var muscleGroupNames:[String] = ["Chest","Back","Biceps","Triceps","Shoulders","Legs","Abs"]
     @State private var currentGroup:String = ""
     @State private var exercises:[Exercise] = []
-    
+    @State var muscleGroups:[MuscleGroup] = []
+
     var body: some View {
         NavigationView{
             List {
-                ForEach(muscleGroups, id: \.self) { muscle in
+                ForEach(muscleGroupNames, id: \.self) { muscle in
                     let exercisesForMuscle = day.exercises.filter { $0.muscleGroup == muscle }
                     if !exercisesForMuscle.isEmpty {
                         Section(header: Text(muscle)) {
@@ -50,8 +51,9 @@ struct TodayWorkoutView: View {
             .onAppear {
                 dateFormatter.dateFormat = "EEEE"
                 currentDay = dateFormatter.string(from: Date())
-                fetchData()
-                day = days[0]
+                Task {
+                    await fetchData()
+                }
             }
         }
         .sheet(isPresented: $editPlan) {
@@ -59,7 +61,7 @@ struct TodayWorkoutView: View {
         }
     }
     
-    private func fetchData() {
+    private func fetchData() async {
         let predicate = #Predicate<Day> {
             $0.dayOfWeek == currentDay
         }
@@ -74,6 +76,16 @@ struct TodayWorkoutView: View {
             if days.isEmpty {
                 debugPrint("No day found for name: \(currentDay)")
             } else {
+                if let firstDay = days.first {
+                    day = firstDay
+                }
+                for name: String in muscleGroupNames {
+                    var exercises = day.exercises.filter { exercise in
+                        return exercise.muscleGroup.contains(name)
+                    }
+                    var group = MuscleGroup(name: name, count: 0, exercises: exercises)
+                    muscleGroups.append(group)
+                }
                 debugPrint("Fetched day: \(days[0].name)")
             }
         } catch {
