@@ -17,50 +17,56 @@ struct ExerciseDetailView: View {
     @State var exercise:Exercise
     @State private var isOn = false
     let conversionFactor = 2.20462 // 1 kg = 2.20462 lbs
+    @State var showSheet = false
+    
+    @State var weight: Int = 0
+    @State var reps: Int = 0
+    @State var failure:Bool = false
     
     var body: some View {
         NavigationView {
             VStack {
                 HStack {
                     Text("\(exercise.sets.count) Sets")
-                        .padding()
                         .foregroundStyle(.accent)
+                        .padding()
                         .bold()
                     Spacer()
                     Text("\(exercise.repGoal) Reps")
-                        .padding()
                         .foregroundStyle(.accent)
+                        .padding()
                         .bold()
                 }
                 Spacer()
                 List {
                     ForEach(0...(exercise.sets.count - 1), id: \.self) { i in
                         Section("Set \(i + 1)") {
-                            HStack {
-                                Picker("", selection: $exercise.sets[i].weight) {
-                                    ForEach(1...9, id: \.self) { number in
-                                        Text("\(number)")
+                            Button {
+                                weight = exercise.sets[i].weight
+                                reps = exercise.sets[i].reps
+                                failure = exercise.sets[i].failure
+                                showSheet = true
+                            } label: {
+                                HStack {
+                                    HStack {
+                                        Text("\(exercise.sets[i].weight)")
+                                            .foregroundStyle(.accent)
+                                            .bold()
+                                        Text("\(config.weightUnit)")
+                                            .foregroundStyle(.accent)
+                                            .opacity(0.6)
+                                            .offset(x: -5)
+                                    }
+                                    HStack {
+                                        Text("\(exercise.sets[i].reps)")
+                                            .foregroundStyle(Color.green)
+                                            .bold()
+                                        Text("Reps")
+                                            .foregroundStyle(Color.green)
+                                            .opacity(0.6)
+                                            .offset(x: -5)
                                     }
                                 }
-                                .pickerStyle(.wheel)
-                                .padding(-8)
-                                .frame(width: 60,height: 35)
-                                Text("\(config.weightUnit)")
-                                    .offset(x: -5)
-                                Spacer()
-                                Picker("", selection: $exercise.sets[i].reps) {
-                                    ForEach(1...9, id: \.self) { number in
-                                        Text("\(number)")
-                                    }
-                                }
-                                .pickerStyle(.wheel)
-                                .padding(-8)
-                                .frame(width: 40,height: 35)
-                                Text("Reps")
-                                Spacer()
-                                Toggle(isOn: $exercise.sets[i].failure) {}
-                                    .toggleStyle(CheckToggleStyle())
-                                Text("Failure")
                             }
                         }
                     }
@@ -70,37 +76,42 @@ struct ExerciseDetailView: View {
                         }
                     }
                 }
+                .sheet(isPresented: $showSheet, onDismiss: {
+                    
+                } ,content: {
+                    SetEditorView(weight: $weight, reps: $reps, failure: $failure, unit: $config.weightUnit)
+                        .presentationDetents([.fraction(0.5)])
+                })
+                .toolbar {
+                    Button {
+                        // add new set
+                    } label: {
+                        Label("Add set", systemImage: "plus.circle")
+                    }
+                }
+                .navigationTitle("\(exercise.name)")
+                .navigationBarTitleDisplayMode(.inline)
             }
         }
-        .onAppear() {
-        }
-        .toolbar {
-            Button {
-                // add new set
-            } label: {
-                Label("Add set", systemImage: "plus.circle")
-            }
-        }
-        .navigationTitle("\(exercise.name)")
-        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
-
-struct CheckToggleStyle: ToggleStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        Button {
-            configuration.isOn.toggle()
-        } label: {
-            Label {
-                configuration.label
-            } icon: {
-                Image(systemName: configuration.isOn ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(configuration.isOn ? Color.accentColor : .secondary)
-                    .accessibility(label: Text(configuration.isOn ? "Checked" : "Unchecked"))
-                    .imageScale(.large)
+        
+        
+        struct CheckToggleStyle: ToggleStyle {
+            func makeBody(configuration: Configuration) -> some View {
+                Button {
+                    configuration.isOn.toggle()
+                } label: {
+                    Label {
+                        configuration.label
+                    } icon: {
+                        Image(systemName: configuration.isOn ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(configuration.isOn ? Color.accentColor : .secondary)
+                            .accessibility(label: Text(configuration.isOn ? "Checked" : "Unchecked"))
+                            .imageScale(.large)
+                    }
+                }
+                .buttonStyle(.plain)
             }
         }
-        .buttonStyle(.plain)
-    }
-}

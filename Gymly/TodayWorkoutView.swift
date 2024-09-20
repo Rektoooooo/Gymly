@@ -22,6 +22,9 @@ struct TodayWorkoutView: View {
     @State private var currentGroup:String = ""
     @State private var exercises:[Exercise] = []
     @State var muscleGroups:[MuscleGroup] = []
+    @State var addExercise:Bool = false
+    @State private var isSheetClosed = false
+
 
     var body: some View {
         NavigationView{
@@ -38,13 +41,24 @@ struct TodayWorkoutView: View {
                     }
                 }
             }
+            .id(UUID())
             .navigationTitle(day.name)
             .navigationBarTitleDisplayMode(.large)
+            .onChange(of: addExercise) {
+                Task {
+                    await fetchData()
+                }
+            }
             .toolbar {
                 Button {
                     editPlan = true
                 } label: {
                     Label("", systemImage: "ellipsis.circle")
+                }
+                Button {
+                    addExercise = true
+                } label: {
+                    Label("", systemImage: "plus.circle")
                 }
             }
         }
@@ -55,9 +69,22 @@ struct TodayWorkoutView: View {
                 await fetchData()
             }
         }
-        .sheet(isPresented: $editPlan) {
+        .sheet(isPresented: $editPlan, onDismiss: {
+            Task {
+                await fetchData()
+            }
+        }) {
             SplitView()
         }
+        .sheet(isPresented: $addExercise, onDismiss: {
+            Task {
+                await fetchData()
+            }
+        } ,content: {
+            CreateExerciseView(day: day)
+                .navigationTitle("Create Exercise")
+                .presentationDetents([.fraction(0.5)])
+        })
     }
     
     private func fetchData() async {

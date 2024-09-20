@@ -16,10 +16,9 @@ struct CreateExerciseView: View {
     @State var name:String = ""
     @State var sets:String = ""
     @State var reps:String = ""
-    
     @State var muslceGroup:String = "Chest"
     @State var muscleGroups:[String] = ["Chest","Back","Biceps","Triceps","Shoulders","Legs","Abs"]
-    
+
     @State var day:Day
     
 
@@ -27,11 +26,18 @@ struct CreateExerciseView: View {
         NavigationView {
             List {
                 Section("Exercise parameters") {
-                    TextField("Name", text: $name)
-                    TextField("Sets", text: $sets)
-                        .keyboardType(.numbersAndPunctuation)
+                    LazyVStack {
+                        TextField("Name", text: $name)
+                        
+                    }
+                    LazyVStack {
+                        TextField("Sets", text: $sets)
+                            .keyboardType(.numbersAndPunctuation)
+                    }
+                    LazyVStack {
                     TextField("Repeticions", text: $reps)
                         .keyboardType(.numbersAndPunctuation)
+                    }
                     Picker("Muscle Group", selection: $muslceGroup) {
                         ForEach(muscleGroups, id: \.self) { muscleGroup in
                             Text(muscleGroup)
@@ -49,7 +55,7 @@ struct CreateExerciseView: View {
 
             }
             .navigationTitle("Create exercise")
-
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
     

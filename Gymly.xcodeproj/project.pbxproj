@@ -10,6 +10,7 @@
 		EC057B642C92C664004846DE /* CopyWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC057B632C92C664004846DE /* CopyWorkoutView.swift */; };
 		EC27AA782C74A5350091F027 /* TodayWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC27AA772C74A5350091F027 /* TodayWorkoutView.swift */; };
 		EC3BEC3D2C76624600C9DF0B /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3BEC3C2C76624600C9DF0B /* Config.swift */; };
+		EC4514702C9D7D9F005540EE /* SetEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC45146F2C9D7D9F005540EE /* SetEditorView.swift */; };
 		EC4FD1532C4ED88300D1A4A6 /* Day.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1522C4ED88300D1A4A6 /* Day.swift */; };
 		EC4FD1572C4EE0A600D1A4A6 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1552C4EE0A600D1A4A6 /* Color.swift */; };
 		EC4FD1582C4EE0A600D1A4A6 /* onFirstAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1542C4EE0A600D1A4A6 /* onFirstAppear.swift */; };
@@ -53,6 +54,7 @@
 		EC057B632C92C664004846DE /* CopyWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyWorkoutView.swift; sourceTree = "<group>"; };
 		EC27AA772C74A5350091F027 /* TodayWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWorkoutView.swift; sourceTree = "<group>"; };
 		EC3BEC3C2C76624600C9DF0B /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		EC45146F2C9D7D9F005540EE /* SetEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetEditorView.swift; sourceTree = "<group>"; };
 		EC4FD1522C4ED88300D1A4A6 /* Day.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Day.swift; sourceTree = "<group>"; };
 		EC4FD1542C4EE0A600D1A4A6 /* onFirstAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = onFirstAppear.swift; sourceTree = "<group>"; };
 		EC4FD1552C4EE0A600D1A4A6 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
@@ -144,6 +146,7 @@
 				ECA5D1732BF212D400DCC9F8 /* WorkoutDayView.swift */,
 				EC057B632C92C664004846DE /* CopyWorkoutView.swift */,
 				ECA5D17B2BF34A9C00DCC9F8 /* ExerciseDetailView.swift */,
+				EC45146F2C9D7D9F005540EE /* SetEditorView.swift */,
 				ECA5D1772BF22E3500DCC9F8 /* CreateExerciseView.swift */,
 				ECA5D1712BF20EDA00DCC9F8 /* SettingsView.swift */,
 				ECA5D1752BF22C2000DCC9F8 /* Exercise.swift */,
@@ -314,6 +317,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ECA5D16E2BF20D0F00DCC9F8 /* ToolBar.swift in Sources */,
+				EC4514702C9D7D9F005540EE /* SetEditorView.swift in Sources */,
 				ECA5D17C2BF34A9C00DCC9F8 /* ExerciseDetailView.swift in Sources */,
 				EC3BEC3D2C76624600C9DF0B /* Config.swift in Sources */,
 				ECA81B842C82058C002216AE /* CalendarView.swift in Sources */,

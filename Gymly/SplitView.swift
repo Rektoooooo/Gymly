@@ -26,14 +26,17 @@ struct SplitView: View {
         NavigationView {
             VStack {
                 List {
-                    ForEach(sortedDays, id: \.self) { day in
-                        NavigationLink("\(day.dayOfWeek) - \(day.name)") {
-                            WorkoutDayView(name: day.name, day: day)
+                    Section("Workout list") {
+                        ForEach(sortedDays, id: \.self) { day in
+                            NavigationLink("\(day.dayOfWeek) - \(day.name)") {
+                                WorkoutDayView(name: day.name, day: day)
+                            }
                         }
                     }
                 }
             }
-            .navigationTitle("My Gym Split")
+            .navigationTitle("Edit Split")
+            .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
             fetchData()

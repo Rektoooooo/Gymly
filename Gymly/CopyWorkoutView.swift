@@ -34,7 +34,7 @@ struct CopyWorkoutView: View {
             List {
                 Picker("Chose workout", selection: $selected) {
                     ForEach(workoutNames, id: \.self) {
-                        Text($0 )
+                        Text($0)
                     }
                     .pickerStyle(.inline)
                 }
