@@ -22,6 +22,7 @@ struct ExerciseDetailView: View {
     @State var weight: Int = 0
     @State var reps: Int = 0
     @State var failure:Bool = false
+    @State var setNumber:Int = 0
     
     var body: some View {
         NavigationView {
@@ -37,7 +38,6 @@ struct ExerciseDetailView: View {
                         .padding()
                         .bold()
                 }
-                Spacer()
                 List {
                     ForEach(0...(exercise.sets.count - 1), id: \.self) { i in
                         Section("Set \(i + 1)") {
@@ -45,6 +45,7 @@ struct ExerciseDetailView: View {
                                 weight = exercise.sets[i].weight
                                 reps = exercise.sets[i].reps
                                 failure = exercise.sets[i].failure
+                                setNumber = i
                                 showSheet = true
                             } label: {
                                 HStack {
@@ -66,6 +67,11 @@ struct ExerciseDetailView: View {
                                             .opacity(0.6)
                                             .offset(x: -5)
                                     }
+                                    HStack {
+                                        Text("F")
+                                            .foregroundStyle(Color.red)
+                                            .opacity(exercise.sets[i].failure ? 1 : 0)
+                                    }
                                 }
                             }
                         }
@@ -79,8 +85,8 @@ struct ExerciseDetailView: View {
                 .sheet(isPresented: $showSheet, onDismiss: {
                     
                 } ,content: {
-                    SetEditorView(weight: $weight, reps: $reps, failure: $failure, unit: $config.weightUnit)
-                        .presentationDetents([.fraction(0.5)])
+                    SetEditorView(weight: $weight, reps: $reps, failure: $failure, unit: $config.weightUnit,setNumber: $setNumber, exercise: exercise)
+                        .presentationDetents([.fraction(0.55)])
                 })
                 .toolbar {
                     Button {
@@ -96,22 +102,4 @@ struct ExerciseDetailView: View {
     }
 }
 
-        
-        
-        struct CheckToggleStyle: ToggleStyle {
-            func makeBody(configuration: Configuration) -> some View {
-                Button {
-                    configuration.isOn.toggle()
-                } label: {
-                    Label {
-                        configuration.label
-                    } icon: {
-                        Image(systemName: configuration.isOn ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(configuration.isOn ? Color.accentColor : .secondary)
-                            .accessibility(label: Text(configuration.isOn ? "Checked" : "Unchecked"))
-                            .imageScale(.large)
-                    }
-                }
-                .buttonStyle(.plain)
-            }
-        }
+
