@@ -62,7 +62,7 @@ struct CreateExerciseView: View {
     func createExercise() {
         var setList: [Exercise.Set] = []
         for _ in 1...Int(sets)! {
-            let set = Exercise.Set(weight: 1, reps: 1, failure: false)
+            let set = Exercise.Set(weight: 0, reps: 0, failure: false, time: "")
             setList.append(set)
         }
         day.exercises.insert(Exercise(

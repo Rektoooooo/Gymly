@@ -69,6 +69,7 @@ struct WorkoutDayView: View {
         .sheet(isPresented: $copyWorkout, content: {
             CopyWorkoutView(day: day)
                 .navigationTitle("Create Exercise")
+                .presentationDetents([.fraction(0.25)])
         })
         .toolbar {
             Menu {

@@ -28,11 +28,13 @@ class Exercise: Identifiable {
         var weight:Int
         var reps:Int
         var failure:Bool
+        var time:String
         
-        init(weight: Int, reps: Int, failure: Bool) {
+        init(weight: Int, reps: Int, failure: Bool, time: String) {
             self.weight = weight
             self.reps = reps
             self.failure = failure
+            self.time = time
         }
     }
 }

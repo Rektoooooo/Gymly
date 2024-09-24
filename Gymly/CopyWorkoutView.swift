@@ -43,6 +43,7 @@ struct CopyWorkoutView: View {
                     dismiss()
                 }
             }
+            .offset(y: -30)
             .onAppear {
                 selected = day.name
                 fetchData()
@@ -50,6 +51,8 @@ struct CopyWorkoutView: View {
                     workoutNames.append(sortedDays[i].name)
                 }
             }
+            .navigationTitle("Copy workout")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
     

@@ -112,8 +112,8 @@ struct SetEditorView: View {
                         .buttonStyle(PlainButtonStyle())
                     }
                 }
-                Section("Failuer reached") {
-                    Toggle("Failuer", isOn: $failure)
+                Section("Failure reached") {
+                    Toggle("Failure", isOn: $failure)
                         .toggleStyle(CheckToggleStyle())
                 }
             }
@@ -125,6 +125,7 @@ struct SetEditorView: View {
             exercise.sets[setNumber].weight = weight
             exercise.sets[setNumber].reps = reps
             exercise.sets[setNumber].failure = failure
+            exercise.sets[setNumber].time = getCurrentTime()
             do {
                 try context.save()
             } catch {
@@ -133,6 +134,13 @@ struct SetEditorView: View {
             dismiss()
         }
         .padding(20)
+    }
+    
+    func getCurrentTime() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "h:mm a"
+        let currentTime = dateFormatter.string(from: Date())
+        return currentTime.lowercased()
     }
 }
 

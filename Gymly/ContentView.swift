@@ -10,12 +10,11 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         NavigationView {
-            VStack {
-                Image(systemName: "house.fill")
-                    .imageScale(.large)
-                    .foregroundStyle(.tint)
-                Text("Home")
+            ZStack {
+                ContentViewGraph()
+                RadarLabels()
             }
+            .frame(width: 300, height: 300)
             .navigationTitle("Home")
             .padding()
         }

@@ -25,80 +25,85 @@ struct ExerciseDetailView: View {
     @State var setNumber:Int = 0
     
     var body: some View {
-        NavigationView {
-            VStack {
-                HStack {
-                    Text("\(exercise.sets.count) Sets")
-                        .foregroundStyle(.accent)
-                        .padding()
-                        .bold()
-                    Spacer()
-                    Text("\(exercise.repGoal) Reps")
-                        .foregroundStyle(.accent)
-                        .padding()
-                        .bold()
-                }
-                List {
-                    ForEach(0...(exercise.sets.count - 1), id: \.self) { i in
-                        Section("Set \(i + 1)") {
-                            Button {
-                                weight = exercise.sets[i].weight
-                                reps = exercise.sets[i].reps
-                                failure = exercise.sets[i].failure
-                                setNumber = i
-                                showSheet = true
-                            } label: {
+        VStack {
+            HStack {
+                Text("\(exercise.sets.count) Sets")
+                    .foregroundStyle(.accent)
+                    .padding()
+                    .bold()
+                Spacer()
+                Text("\(exercise.repGoal) Reps")
+                    .foregroundStyle(.accent)
+                    .padding()
+                    .bold()
+            }
+            List {
+                ForEach(0...(exercise.sets.count - 1), id: \.self) { i in
+                    Section("Set \(i + 1)") {
+                        Button {
+                            weight = exercise.sets[i].weight
+                            reps = exercise.sets[i].reps
+                            failure = exercise.sets[i].failure
+                            setNumber = i
+                            showSheet = true
+                        } label: {
+                            HStack {
                                 HStack {
-                                    HStack {
-                                        Text("\(exercise.sets[i].weight)")
-                                            .foregroundStyle(.accent)
-                                            .bold()
-                                        Text("\(config.weightUnit)")
-                                            .foregroundStyle(.accent)
-                                            .opacity(0.6)
-                                            .offset(x: -5)
-                                    }
-                                    HStack {
-                                        Text("\(exercise.sets[i].reps)")
-                                            .foregroundStyle(Color.green)
-                                            .bold()
-                                        Text("Reps")
-                                            .foregroundStyle(Color.green)
-                                            .opacity(0.6)
-                                            .offset(x: -5)
-                                    }
-                                    HStack {
-                                        Text("F")
-                                            .foregroundStyle(Color.red)
-                                            .opacity(exercise.sets[i].failure ? 1 : 0)
-                                    }
+                                    Text("\(exercise.sets[i].weight)")
+                                        .foregroundStyle(.accent)
+                                        .bold()
+                                    Text("\(config.weightUnit)")
+                                        .foregroundStyle(.accent)
+                                        .opacity(0.6)
+                                        .offset(x: -5)
+                                }
+                                HStack {
+                                    Text("\(exercise.sets[i].reps)")
+                                        .foregroundStyle(Color.green)
+                                        .bold()
+                                    Text("Reps")
+                                        .foregroundStyle(Color.green)
+                                        .opacity(0.6)
+                                        .offset(x: -5)
+                                }
+                                HStack {
+                                    Text("F")
+                                        .foregroundStyle(Color.red)
+                                        .opacity(exercise.sets[i].failure ? 1 : 0)
+                                        .offset(x: -5)
+                                }
+                                Spacer()
+                                HStack {
+                                    Text("\(exercise.sets[i].time)")
+                                        .foregroundStyle(Color.white)
+                                        .opacity(exercise.sets[i].time.isEmpty ? 0 : 0.3)
                                 }
                             }
                         }
                     }
-                    Section("") {
-                        Button("Done") {
-                            dismiss()
-                        }
+                }
+                Section("") {
+                    Button("Done") {
+                        dismiss()
                     }
                 }
-                .sheet(isPresented: $showSheet, onDismiss: {
-                    
-                } ,content: {
-                    SetEditorView(weight: $weight, reps: $reps, failure: $failure, unit: $config.weightUnit,setNumber: $setNumber, exercise: exercise)
-                        .presentationDetents([.fraction(0.55)])
-                })
-                .toolbar {
-                    Button {
-                        // add new set
-                    } label: {
-                        Label("Add set", systemImage: "plus.circle")
-                    }
+            }
+            .sheet(isPresented: $showSheet, onDismiss: {
+                
+            } ,content: {
+                SetEditorView(weight: $weight, reps: $reps, failure: $failure, unit: $config.weightUnit,setNumber: $setNumber, exercise: exercise)
+                    .presentationDetents([.fraction(0.55)])
+            })
+            .toolbar {
+                Button {
+                    // add new set
+                } label: {
+                    Label("Add set", systemImage: "plus.circle")
                 }
-                .navigationTitle("\(exercise.name)")
-                .navigationBarTitleDisplayMode(.inline)
             }
         }
+        .navigationTitle("\(exercise.name)")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
