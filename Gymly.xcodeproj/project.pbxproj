@@ -33,6 +33,7 @@
 		ECA81B842C82058C002216AE /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA81B832C82058C002216AE /* CalendarView.swift */; };
 		ECBA80062CA2D00E00B277FD /* ContentViewGraph.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECBA80052CA2D00E00B277FD /* ContentViewGraph.swift */; };
 		ECBA80082CA2D02E00B277FD /* RadarLabels.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECBA80072CA2D02E00B277FD /* RadarLabels.swift */; };
+		ECBA800A2CAAA61400B277FD /* CalendarDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECBA80092CAAA61400B277FD /* CalendarDayView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -82,6 +83,7 @@
 		ECA81B832C82058C002216AE /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		ECBA80052CA2D00E00B277FD /* ContentViewGraph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentViewGraph.swift; sourceTree = "<group>"; };
 		ECBA80072CA2D02E00B277FD /* RadarLabels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarLabels.swift; sourceTree = "<group>"; };
+		ECBA80092CAAA61400B277FD /* CalendarDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarDayView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -160,6 +162,7 @@
 				EC8C15102C80A94D008E4152 /* DayStorage.swift */,
 				EC3BEC3C2C76624600C9DF0B /* Config.swift */,
 				ECA81B832C82058C002216AE /* CalendarView.swift */,
+				ECBA80092CAAA61400B277FD /* CalendarDayView.swift */,
 				ECA5D1472BF20CF500DCC9F8 /* Assets.xcassets */,
 				EC4FD1562C4EE0A600D1A4A6 /* Extensions */,
 				ECA5D1492BF20CF500DCC9F8 /* Preview Content */,
@@ -343,6 +346,7 @@
 				EC8C15112C80A94D008E4152 /* DayStorage.swift in Sources */,
 				ECA5D1722BF20EDA00DCC9F8 /* SettingsView.swift in Sources */,
 				EC057B642C92C664004846DE /* CopyWorkoutView.swift in Sources */,
+				ECBA800A2CAAA61400B277FD /* CalendarDayView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -61,7 +61,7 @@ struct ToolBar: View {
     }
     
     func addDay(name: String) {
-        context.insert(Day(name: name,dayOfWeek: name, exercises: []))
+        context.insert(Day(name: name,dayOfWeek: name, exercises: [],date: ""))
         debugPrint("Added day \(name)")
         config.splitStarted = true
     }

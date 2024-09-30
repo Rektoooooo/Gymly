@@ -11,12 +11,14 @@ import SwiftData
 @Model
 class Day {
     var name: String
-    @Attribute(.unique) var dayOfWeek: String
+    var dayOfWeek: String
     var exercises:[Exercise]
+    var date: String
     
-    init(name: String, dayOfWeek: String, exercises: [Exercise]) {
+    init(name: String, dayOfWeek: String, exercises: [Exercise], date: String) {
         self.name = name
         self.dayOfWeek = dayOfWeek
         self.exercises = exercises
+        self.date = date
     }
 }

@@ -14,7 +14,7 @@ struct TodayWorkoutView: View {
     let dateFormatter = DateFormatter()
     @State var currentDay:String = ""
     @State private var days: [Day] = []
-    @State var day:Day = Day(name: "", dayOfWeek: "", exercises: [])
+    @State var day:Day = Day(name: "", dayOfWeek: "", exercises: [],date: "")
     @Environment(\.modelContext) private var context
     @State private var editPlan:Bool = false
     @State private var weekDays:[String] = ["Monday","Tuesday","Wednesday","Thursday","Friday","Sutarday","Sunday"]
@@ -37,6 +37,17 @@ struct TodayWorkoutView: View {
                                     ExerciseDetailView(exercise: exercise)
                                 }
                             }
+                        }
+                    }
+                }
+                Section("") {
+                    Button("Workout done") {
+                        context.insert(DayStorage(id: UUID(), day: day, date: formattedDateString(from: Date())))
+                        do {
+                            try context.save()
+                            debugPrint("Day saved with date : \(formattedDateString(from: Date()))")
+                        } catch {
+                            debugPrint(error)
                         }
                     }
                 }
@@ -85,6 +96,12 @@ struct TodayWorkoutView: View {
                 .navigationTitle("Create Exercise")
                 .presentationDetents([.fraction(0.5)])
         })
+    }
+    
+    func formattedDateString(from date: Date) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "d MMMM yyyy"
+        return dateFormatter.string(from: date)
     }
     
     private func fetchData() async {

@@ -12,9 +12,9 @@ import SwiftData
 class DayStorage {
     var id: UUID
     var day: Day
-    var date: Date
+    @Attribute(.unique) var date: String
     
-    init(id: UUID, day: Day, date: Date) {
+    init(id: UUID, day: Day, date: String) {
         self.id = id
         self.day = day
         self.date = date
