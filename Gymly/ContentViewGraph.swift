@@ -18,10 +18,10 @@ struct ContentViewGraph: View {
                     .opacity(0.5)
                 
                 RadarChart(values: dataValues, maxValue: maxValue)
-                    .fill(Color.orange.opacity(0.4))
+                    .fill(Color.red.opacity(0.4))
                     .overlay(
                         RadarChart(values: dataValues, maxValue: maxValue)
-                            .stroke(Color.orange, lineWidth: 2)
+                            .stroke(Color.red, lineWidth: 2)
                     )
             }
             .frame(width: 300, height: 300)

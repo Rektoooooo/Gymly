@@ -15,6 +15,6 @@ struct GymlyApp: App {
             ToolBar()
                 .environmentObject(config)
         }
-        .modelContainer(for: [Exercise.self, Day.self])
+        .modelContainer(for: [Exercise.self, Day.self, DayStorage.self])
     }
 }
