@@ -16,6 +16,7 @@ struct TodayWorkoutView: View {
     @State private var days: [Day] = []
     @State var day:Day = Day(name: "", dayOfWeek: "", exercises: [],date: "")
     @Environment(\.modelContext) private var context
+    @EnvironmentObject var config: Config
     @State private var editPlan:Bool = false
     @State private var weekDays:[String] = ["Monday","Tuesday","Wednesday","Thursday","Friday","Sutarday","Sunday"]
     @State var muscleGroupNames:[String] = ["Chest","Back","Biceps","Triceps","Shoulders","Legs","Abs"]
@@ -43,6 +44,7 @@ struct TodayWorkoutView: View {
                 Section("") {
                     Button("Workout done") {
                         context.insert(DayStorage(id: UUID(), day: day, date: formattedDateString(from: Date())))
+                        config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
                         do {
                             try context.save()
                             debugPrint("Day saved with date : \(formattedDateString(from: Date()))")

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentViewGraph: View {
-    let dataValues = [1.0, 1.0, 6.0, 1.0, 5.5, 6.0, 5.0] // Abs,Legs,Triceps,Biceps,Back,Chest,Shoulders
+    let dataValues = [1.0, 1.0, 6.0, 4.0, 5.5, 6.0, 5.0] // Abs,Legs,Triceps,Biceps,Back,Chest,Shoulders
     let maxValue = 6.0 // Maximum value
         
         var body: some View {

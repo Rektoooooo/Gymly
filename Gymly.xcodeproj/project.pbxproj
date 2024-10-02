@@ -10,6 +10,7 @@
 		EC057B642C92C664004846DE /* CopyWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC057B632C92C664004846DE /* CopyWorkoutView.swift */; };
 		EC27AA782C74A5350091F027 /* TodayWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC27AA772C74A5350091F027 /* TodayWorkoutView.swift */; };
 		EC3BEC3D2C76624600C9DF0B /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3BEC3C2C76624600C9DF0B /* Config.swift */; };
+		EC3FC4BA2CAC324D002EDAD2 /* CalendarExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3FC4B92CAC324D002EDAD2 /* CalendarExerciseView.swift */; };
 		EC4514702C9D7D9F005540EE /* SetEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC45146F2C9D7D9F005540EE /* SetEditorView.swift */; };
 		EC4FD1532C4ED88300D1A4A6 /* Day.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1522C4ED88300D1A4A6 /* Day.swift */; };
 		EC4FD1572C4EE0A600D1A4A6 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1552C4EE0A600D1A4A6 /* Color.swift */; };
@@ -57,6 +58,7 @@
 		EC057B632C92C664004846DE /* CopyWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyWorkoutView.swift; sourceTree = "<group>"; };
 		EC27AA772C74A5350091F027 /* TodayWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWorkoutView.swift; sourceTree = "<group>"; };
 		EC3BEC3C2C76624600C9DF0B /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		EC3FC4B92CAC324D002EDAD2 /* CalendarExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarExerciseView.swift; sourceTree = "<group>"; };
 		EC45146F2C9D7D9F005540EE /* SetEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetEditorView.swift; sourceTree = "<group>"; };
 		EC4FD1522C4ED88300D1A4A6 /* Day.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Day.swift; sourceTree = "<group>"; };
 		EC4FD1542C4EE0A600D1A4A6 /* onFirstAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = onFirstAppear.swift; sourceTree = "<group>"; };
@@ -146,7 +148,6 @@
 				ECA5D1432BF20CF100DCC9F8 /* GymlyApp.swift */,
 				ECA5D16D2BF20D0F00DCC9F8 /* ToolBar.swift */,
 				EC27AA772C74A5350091F027 /* TodayWorkoutView.swift */,
-				EC629C652C9CAE2300009902 /* MuscleGroup.swift */,
 				ECA5D1452BF20CF100DCC9F8 /* ContentView.swift */,
 				ECBA80072CA2D02E00B277FD /* RadarLabels.swift */,
 				ECBA80052CA2D00E00B277FD /* ContentViewGraph.swift */,
@@ -161,8 +162,10 @@
 				EC4FD1522C4ED88300D1A4A6 /* Day.swift */,
 				EC8C15102C80A94D008E4152 /* DayStorage.swift */,
 				EC3BEC3C2C76624600C9DF0B /* Config.swift */,
+				EC629C652C9CAE2300009902 /* MuscleGroup.swift */,
 				ECA81B832C82058C002216AE /* CalendarView.swift */,
 				ECBA80092CAAA61400B277FD /* CalendarDayView.swift */,
+				EC3FC4B92CAC324D002EDAD2 /* CalendarExerciseView.swift */,
 				ECA5D1472BF20CF500DCC9F8 /* Assets.xcassets */,
 				EC4FD1562C4EE0A600D1A4A6 /* Extensions */,
 				ECA5D1492BF20CF500DCC9F8 /* Preview Content */,
@@ -342,6 +345,7 @@
 				EC4FD1572C4EE0A600D1A4A6 /* Color.swift in Sources */,
 				EC4FD1582C4EE0A600D1A4A6 /* onFirstAppear.swift in Sources */,
 				ECA5D1442BF20CF100DCC9F8 /* GymlyApp.swift in Sources */,
+				EC3FC4BA2CAC324D002EDAD2 /* CalendarExerciseView.swift in Sources */,
 				EC27AA782C74A5350091F027 /* TodayWorkoutView.swift in Sources */,
 				EC8C15112C80A94D008E4152 /* DayStorage.swift in Sources */,
 				ECA5D1722BF20EDA00DCC9F8 /* SettingsView.swift in Sources */,

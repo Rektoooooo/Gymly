@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CalendarView: View {
     @State private var currentMonth = Date()
+    @EnvironmentObject var config: Config
     let calendar = Calendar.current
     let daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -54,7 +55,8 @@ struct CalendarView: View {
                 
                 let daysInMonth = getDaysInMonth(for: currentMonth)
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7)) {
-                    ForEach(daysInMonth, id: \.self) { day in
+                    // Use enumerated index as unique ID to avoid duplicate identifiers in ForEach.
+                    ForEach(Array(daysInMonth.enumerated()), id: \.offset) { index, day in
                         if day.day != 0 {
                             if formattedDateString(from: day.date) == formattedDateString(from: Date()) {
                                 NavigationLink("\(day.day)") {
@@ -63,6 +65,8 @@ struct CalendarView: View {
                                 .frame(width: UIScreen.main.bounds.width * 0.085, height: UIScreen.main.bounds.height * 0.04)
                                 .font(.system(size: 22))
                                 .foregroundColor(Color.white)
+                                .padding(.horizontal, 3)
+                                .padding(.vertical, 2)
                                 .background(Color.red)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 5)
@@ -71,14 +75,22 @@ struct CalendarView: View {
                                 .fontWeight(.bold)
                                 .padding(3)
                             } else {
-                                NavigationLink("\(day.day)") {
-                                    CalendarDayView(day: formattedDateString(from: day.date))
+                                ZStack {
+                                    NavigationLink("\(day.day)") {
+                                        CalendarDayView(day: formattedDateString(from: day.date))
+                                    }
+                                    .frame(width: UIScreen.main.bounds.width * 0.085, height: UIScreen.main.bounds.height * 0.04)
+                                    .font(.system(size: 22))
+                                    .foregroundColor(Color.white)
+                                    .fontWeight(.bold)
+                                    .padding(3)
+                                    if config.daysRecorded.contains(formattedDateString(from: day.date)) {
+                                        Circle()
+                                            .frame(width: 10, height: 10)
+                                            .foregroundColor(.red)
+                                            .offset(x: 0, y: 20)
+                                    }
                                 }
-                                .frame(width: UIScreen.main.bounds.width * 0.085, height: UIScreen.main.bounds.height * 0.04)
-                                .font(.system(size: 22))
-                                .foregroundColor(Color.white)
-                                .fontWeight(.bold)
-                                .padding(3)
                             }
                         } else {
                             Text("")
@@ -143,21 +155,6 @@ struct CalendarView: View {
         })
 
         return days
-    }
-}
-
-struct EmptyView: View {
-    let day: Date
-
-    var body: some View {
-        Text("Selected day: \(dayFormatter.string(from: day))")
-            .font(.largeTitle)
-    }
-
-    private var dayFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM d, yyyy"
-        return formatter
     }
 }
 

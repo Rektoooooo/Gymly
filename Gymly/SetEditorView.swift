@@ -138,7 +138,7 @@ struct SetEditorView: View {
     
     func getCurrentTime() -> String {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "h:mm a"
+        dateFormatter.dateFormat = "H:mm"
         let currentTime = dateFormatter.string(from: Date())
         return currentTime.lowercased()
     }

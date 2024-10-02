@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct GymlyApp: App {
     var body: some Scene {
-        let config = Config(weightUnit: "Kg",splitStarted: false)
+        let config = Config(weightUnit: "Kg",splitStarted: false, daysRecorded: [])
         WindowGroup {
             ToolBar()
                 .environmentObject(config)

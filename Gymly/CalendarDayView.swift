@@ -16,29 +16,42 @@ struct CalendarDayView: View {
     @State var muscleGroups:[MuscleGroup] = []
     @Environment(\.modelContext) private var context
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(muscleGroups, id: \.self) { muscleGroup in
-                    if !muscleGroup.exercises.isEmpty {
-                        Section(header: Text(muscleGroup.name)) {
-                            ForEach(muscleGroup.exercises, id: \.self) { exercise in
-                                NavigationLink("\(exercise.name)") {
-                                    ExerciseDetailView(exercise: exercise)
+        VStack {
+            if !days.isEmpty {
+                HStack {
+                    Text("\(days.first?.day.name ?? "")")
+                        .font(.largeTitle)
+                        .bold()
+                        .padding()
+                    Spacer()
+                }
+                List {
+                    ForEach(muscleGroups, id: \.self) { muscleGroup in
+                        if !muscleGroup.exercises.isEmpty {
+                            Section(header: Text(muscleGroup.name)) {
+                                ForEach(muscleGroup.exercises, id: \.self) { exercise in
+                                    NavigationLink("\(exercise.name)") {
+                                        CalendarExerciseView(exercise: exercise)
+                                    }
                                 }
                             }
                         }
                     }
                 }
+            } else {
+                Text("No workout recorded")
             }
-            .navigationTitle(days.first?.day.name ?? "No exercises recorded")
         }
         .onAppear() {
-            fetchData()
+            Task {
+                await fetchData()
+            }
         }
+        .navigationTitle("\(day)")
+        .navigationBarTitleDisplayMode(.inline)
     }
     
-    
-    private func fetchData() {
+    private func fetchData() async {
         let predicate = #Predicate<DayStorage> {
             $0.date == day
         }
@@ -54,7 +67,6 @@ struct CalendarDayView: View {
                 muscleGroups = []
                 for exercise in days[0].day.exercises {
                     exercises.append(exercise)
-                    debugPrint("Appended exercise: \(exercise.name) \(exercise.muscleGroup) \(exercise.sets) \(exercise.repGoal)")
                 }
                 for name: String in muscleGroupNames {
                     let exercises = exercises.filter { exercise in
@@ -63,11 +75,12 @@ struct CalendarDayView: View {
                     let group = MuscleGroup(name: name, count: 0, exercises: exercises)
                     muscleGroups.append(group)
                 }
+                debugPrint("Fetched data for date : \(day)")
             }
         } catch {
             debugPrint("Error fetching data: \(error)")
         }
     }
-
+    
 }
 

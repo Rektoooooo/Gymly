@@ -1,14 +1,13 @@
 //
-//  ExerciseDetailView.swift
+//  CalendarExerciseView.swift
 //  Gymly
 //
-//  Created by Sebastián Kučera on 14.05.2024.
+//  Created by Sebastián Kučera on 01.10.2024.
 //
 
 import SwiftUI
-import SwiftData
 
-struct ExerciseDetailView: View {
+struct CalendarExerciseView: View {
     
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
@@ -20,6 +19,7 @@ struct ExerciseDetailView: View {
     @State var reps: Int = 0
     @State var failure:Bool = false
     @State var setNumber:Int = 0
+    
     
     var body: some View {
         VStack {
@@ -42,7 +42,6 @@ struct ExerciseDetailView: View {
                             reps = exercise.sets[i].reps
                             failure = exercise.sets[i].failure
                             setNumber = i
-                            showSheet = true
                         } label: {
                             HStack {
                                 HStack {
@@ -79,29 +78,10 @@ struct ExerciseDetailView: View {
                         }
                     }
                 }
-                Section("") {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-            .sheet(isPresented: $showSheet, onDismiss: {
-                
-            } ,content: {
-                SetEditorView(weight: $weight, reps: $reps, failure: $failure, unit: $config.weightUnit,setNumber: $setNumber, exercise: exercise)
-                    .presentationDetents([.fraction(0.55)])
-            })
-            .toolbar {
-                Button {
-                    // add new set
-                } label: {
-                    Label("Add set", systemImage: "plus.circle")
-                }
             }
         }
         .navigationTitle("\(exercise.name)")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
-
 
