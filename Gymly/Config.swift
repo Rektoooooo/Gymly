@@ -29,9 +29,16 @@ class Config:ObservableObject {
         }
     }
     
-    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String]) {
+    @Published var dayInSplit: Int {
+        didSet {
+            UserDefaults.standard.set(dayInSplit, forKey: "dayInSplit")
+        }
+    }
+    
+    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int) {
         self.weightUnit = UserDefaults.standard.object(forKey: "weightUnit") as? String ?? "Kg"
         self.splitStarted = UserDefaults.standard.object(forKey: "splitStarted") as? Bool ?? false
         self.daysRecorded = UserDefaults.standard.object(forKey: "daysRecorded") as? [String] ?? []
+        self.dayInSplit = UserDefaults.standard.object(forKey: "dayInSplit") as? Int ?? 1
     }
 }

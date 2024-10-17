@@ -14,7 +14,7 @@ struct TodayWorkoutView: View {
     let dateFormatter = DateFormatter()
     @State var currentDay:String = ""
     @State private var days: [Day] = []
-    @State var day:Day = Day(name: "", dayOfWeek: "", exercises: [],date: "")
+    @State var day:Day = Day(name: "", dayOfSplit: 0, exercises: [],date: "")
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
     @State private var editPlan:Bool = false
@@ -59,7 +59,7 @@ struct TodayWorkoutView: View {
             .navigationBarTitleDisplayMode(.large)
             .onChange(of: addExercise) {
                 Task {
-                    await fetchData()
+                    await fetchData(dayInSplit: config.dayInSplit)
                 }
             }
             .toolbar {
@@ -79,19 +79,19 @@ struct TodayWorkoutView: View {
             dateFormatter.dateFormat = "EEEE"
             currentDay = dateFormatter.string(from: Date())
             Task {
-                await fetchData()
+                await fetchData(dayInSplit: config.dayInSplit)
             }
         }
         .sheet(isPresented: $editPlan, onDismiss: {
             Task {
-                await fetchData()
+                await fetchData(dayInSplit: config.dayInSplit)
             }
         }) {
             SplitView()
         }
         .sheet(isPresented: $addExercise, onDismiss: {
             Task {
-                await fetchData()
+                await fetchData(dayInSplit: config.dayInSplit)
             }
         } ,content: {
             CreateExerciseView(day: day)
@@ -106,9 +106,9 @@ struct TodayWorkoutView: View {
         return dateFormatter.string(from: date)
     }
     
-    private func fetchData() async {
+    private func fetchData(dayInSplit: Int) async {
         let predicate = #Predicate<Day> {
-            $0.dayOfWeek == currentDay
+            $0.dayOfSplit == dayInSplit
         }
         let descriptor = FetchDescriptor<Day>(predicate: predicate)
         do {
@@ -131,6 +131,7 @@ struct TodayWorkoutView: View {
                     muscleGroups.append(group)
                 }
                 debugPrint("Fetched day: \(days[0].name)")
+                day = days[0]
             }
         } catch {
             debugPrint("Error fetching data: \(error)")

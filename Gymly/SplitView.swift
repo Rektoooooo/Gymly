@@ -9,26 +9,17 @@ import SwiftUI
 import SwiftData
 
 struct SplitView: View {
+    
     @Environment(\.modelContext) private var context
     @State private var days: [Day] = []
-    var sortedDays: [Day] {
-        let weekdaysOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-        return days.sorted {
-            guard let firstIndex = weekdaysOrder.firstIndex(of: $0.dayOfWeek),
-                  let secondIndex = weekdaysOrder.firstIndex(of: $1.dayOfWeek) else {
-                return false
-            }
-            return firstIndex < secondIndex
-        }
-    }
     
     var body: some View {
         NavigationView {
             VStack {
                 List {
                     Section("Workout list") {
-                        ForEach(sortedDays, id: \.self) { day in
-                            NavigationLink("\(day.dayOfWeek) - \(day.name)") {
+                        ForEach(days, id: \.self) { day in
+                            NavigationLink("Day \(day.dayOfSplit) - \(day.name)") {
                                 WorkoutDayView(name: day.name, day: day)
                             }
                         }
@@ -47,7 +38,7 @@ struct SplitView: View {
         let predicate = #Predicate<Day> {
             $0.name == $0.name
         }
-        let descriptor = FetchDescriptor<Day>(predicate: predicate)
+        let descriptor = FetchDescriptor<Day>(predicate: predicate, sortBy: [SortDescriptor(\.dayOfSplit)])
         do {
             let fetchedData = try context.fetch(descriptor)
             days = fetchedData

@@ -9,16 +9,22 @@ import Foundation
 import SwiftData
 
 @Model
-class Day {
+class Day: Copyable {
     var name: String
-    var dayOfWeek: String
+    var dayOfSplit: Int
     var exercises:[Exercise]
     var date: String
     
-    init(name: String, dayOfWeek: String, exercises: [Exercise], date: String) {
+    init(name: String, dayOfSplit: Int, exercises: [Exercise], date: String) {
         self.name = name
-        self.dayOfWeek = dayOfWeek
+        self.dayOfSplit = dayOfSplit
         self.exercises = exercises
         self.date = date
+    }
+    
+    convenience init(from day: Day) {
+        // Create deep copies of the exercises as well
+        let copiedExercises = day.exercises.map { $0.copy() }
+        self.init(name: day.name, dayOfSplit: day.dayOfSplit, exercises: copiedExercises, date: day.date)
     }
 }

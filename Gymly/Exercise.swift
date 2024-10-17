@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class Exercise: Identifiable {
+class Exercise: Identifiable, Copyable {
     var name:String
     var sets: [Set]
     var repGoal:Int
@@ -23,8 +23,12 @@ class Exercise: Identifiable {
         self.muscleGroup = muscleGroup
     }
     
+    func copy() -> Exercise {
+        return Exercise(name: self.name, sets: self.sets, repGoal: self.repGoal, muscleGroup: self.muscleGroup)
+    }
+    
     @Model
-    class Set: Identifiable {
+    class Set: Identifiable, Copyable {
         var weight:Int
         var reps:Int
         var failure:Bool
@@ -37,6 +41,7 @@ class Exercise: Identifiable {
             self.time = time
         }
     }
+
 }
 
 

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		EC057B642C92C664004846DE /* CopyWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC057B632C92C664004846DE /* CopyWorkoutView.swift */; };
 		EC27AA782C74A5350091F027 /* TodayWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC27AA772C74A5350091F027 /* TodayWorkoutView.swift */; };
+		EC2D06742CC16F06000F8D5F /* SetupSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC2D06732CC16F06000F8D5F /* SetupSplitView.swift */; };
 		EC3BEC3D2C76624600C9DF0B /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3BEC3C2C76624600C9DF0B /* Config.swift */; };
 		EC3FC4BA2CAC324D002EDAD2 /* CalendarExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3FC4B92CAC324D002EDAD2 /* CalendarExerciseView.swift */; };
 		EC4514702C9D7D9F005540EE /* SetEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC45146F2C9D7D9F005540EE /* SetEditorView.swift */; };
@@ -57,6 +58,7 @@
 /* Begin PBXFileReference section */
 		EC057B632C92C664004846DE /* CopyWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyWorkoutView.swift; sourceTree = "<group>"; };
 		EC27AA772C74A5350091F027 /* TodayWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayWorkoutView.swift; sourceTree = "<group>"; };
+		EC2D06732CC16F06000F8D5F /* SetupSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupSplitView.swift; sourceTree = "<group>"; };
 		EC3BEC3C2C76624600C9DF0B /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		EC3FC4B92CAC324D002EDAD2 /* CalendarExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarExerciseView.swift; sourceTree = "<group>"; };
 		EC45146F2C9D7D9F005540EE /* SetEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetEditorView.swift; sourceTree = "<group>"; };
@@ -154,6 +156,7 @@
 				ECA5D16F2BF20EB400DCC9F8 /* SplitView.swift */,
 				ECA5D1732BF212D400DCC9F8 /* WorkoutDayView.swift */,
 				EC057B632C92C664004846DE /* CopyWorkoutView.swift */,
+				EC2D06732CC16F06000F8D5F /* SetupSplitView.swift */,
 				ECA5D17B2BF34A9C00DCC9F8 /* ExerciseDetailView.swift */,
 				EC45146F2C9D7D9F005540EE /* SetEditorView.swift */,
 				ECA5D1772BF22E3500DCC9F8 /* CreateExerciseView.swift */,
@@ -335,6 +338,7 @@
 				EC3BEC3D2C76624600C9DF0B /* Config.swift in Sources */,
 				ECA81B842C82058C002216AE /* CalendarView.swift in Sources */,
 				ECBA80062CA2D00E00B277FD /* ContentViewGraph.swift in Sources */,
+				EC2D06742CC16F06000F8D5F /* SetupSplitView.swift in Sources */,
 				ECA5D1742BF212D400DCC9F8 /* WorkoutDayView.swift in Sources */,
 				ECA5D1782BF22E3500DCC9F8 /* CreateExerciseView.swift in Sources */,
 				EC4FD1532C4ED88300D1A4A6 /* Day.swift in Sources */,

@@ -17,17 +17,6 @@ struct CopyWorkoutView: View {
     @State var selected: String = ""
     @State private var selectedDays: [Day] = []
     @State var fetchedExercises: [Exercise] = []
-    var sortedDays: [Day] {
-        let weekdaysOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-        return days.sorted {
-            guard let firstIndex = weekdaysOrder.firstIndex(of: $0.dayOfWeek),
-                  let secondIndex = weekdaysOrder.firstIndex(of: $1.dayOfWeek) else {
-                return false
-            }
-            return firstIndex < secondIndex
-        }
-    }
-    
 
     var body: some View {
         NavigationView {
@@ -48,7 +37,7 @@ struct CopyWorkoutView: View {
                 selected = day.name
                 fetchData()
                 for i in 0...days.count - 1 {
-                    workoutNames.append(sortedDays[i].name)
+                    workoutNames.append(days[i].name)
                 }
             }
             .navigationTitle("Copy workout")
@@ -78,7 +67,7 @@ struct CopyWorkoutView: View {
         let predicate = #Predicate<Day> {
             $0.name == selected
         }
-        let descriptor = FetchDescriptor<Day>(predicate: predicate)
+        let descriptor = FetchDescriptor<Day>(predicate: predicate, sortBy: [SortDescriptor(\.dayOfSplit)])
         do {
             let fetchedData = try context.fetch(descriptor)
             selectedDays = fetchedData
@@ -99,7 +88,7 @@ struct CopyWorkoutView: View {
         let predicate = #Predicate<Day> {
             $0.name == $0.name
         }
-        let descriptor = FetchDescriptor<Day>(predicate: predicate)
+        let descriptor = FetchDescriptor<Day>(predicate: predicate, sortBy: [SortDescriptor(\.dayOfSplit)])
         do {
             let fetchedData = try context.fetch(descriptor)
             days = fetchedData

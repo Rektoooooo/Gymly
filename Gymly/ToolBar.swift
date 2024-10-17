@@ -10,7 +10,6 @@ import SwiftUI
 struct ToolBar: View {
     
     @EnvironmentObject var config: Config
-    @State private var weekDays:[String] = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
     @Environment(\.modelContext) private var context
 
     var body: some View {
@@ -22,11 +21,21 @@ struct ToolBar: View {
                   }
                   .tag(1)
 
-                TodayWorkoutView()
-                  .tabItem {
-                    Label("Routine", systemImage: "dumbbell")
-                  }
-                  .tag(2)
+                if config.splitStarted {
+                    TodayWorkoutView()
+                        .tabItem {
+                          Label("Routine", systemImage: "dumbbell")
+                        }
+                        .tag(2)
+                } else {
+                    SplitPopupView()
+                        .tabItem {
+                          Label("Routine", systemImage: "dumbbell")
+                        }
+                        .tag(2)
+                }
+
+
                 
                 CalendarView()
                   .tabItem {
@@ -41,32 +50,32 @@ struct ToolBar: View {
                   .tag(4)
                 
             }
-            .onAppear() {
-                if !config.splitStarted {
-                    for i in 0...6 {
-                        addDay(name: weekDays[i])
-                    }
-                    do {
-                        try context.save()
-                        debugPrint("Context saved")
-                    } catch {
-                        debugPrint(error)
-                    }
-                }
-            }
             .toolbar(.visible, for: .tabBar)
             .toolbarBackground(.black, for: .tabBar)
         }
         .environmentObject(config)
     }
     
-    func addDay(name: String) {
-        context.insert(Day(name: name,dayOfWeek: name, exercises: [],date: ""))
-        debugPrint("Added day \(name)")
-        config.splitStarted = true
+}
+
+struct SplitPopupView: View {
+    @State var showSplit: Bool = false
+    var body: some View {
+        VStack {
+            Text("U dident seted up your gym split yet.")
+            Button("Set up split!") {
+                showSplit.toggle()
+            }
+            .padding()
+            .background(Color.graytint)
+            .cornerRadius(20)
+            .padding()
+        }
+        .sheet(isPresented: $showSplit, onDismiss: {}) {
+            SetupSplitView()
+                .presentationDetents([.fraction(0.5)])
+        }
     }
-    
-    
 }
 
 
