@@ -38,76 +38,81 @@ struct CalendarView: View {
                 }
                 .padding()
                 
-                HStack {
-                    ForEach(daysOfWeek, id: \.self) { day in
-                        Text(day)
-                            .font(.headline)
-                            .padding(.horizontal, 6)
+                VStack {
+                    HStack {
+                        ForEach(daysOfWeek, id: \.self) { day in
+                            Spacer()
+                            Text(day)
+                                .frame(width: UIScreen.main.bounds.width * 0.085)
+                                .bold()
+                                .font(.subheadline)
+                            Spacer()
+                        }
                     }
-                }
-                .padding(5)
-                .background(Color.red)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 5)
-                        .stroke(.red, lineWidth: 4)
-                )
-                .padding(.bottom, 10)
-                
-                let daysInMonth = getDaysInMonth(for: currentMonth)
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7)) {
-                    // Use enumerated index as unique ID to avoid duplicate identifiers in ForEach.
-                    ForEach(Array(daysInMonth.enumerated()), id: \.offset) { index, day in
-                        if day.day != 0 {
-                            if formattedDateString(from: day.date) == formattedDateString(from: Date()) {
-                                NavigationLink("\(day.day)") {
-                                    CalendarDayView(day: formattedDateString(from: day.date))
-                                }
-                                .frame(width: UIScreen.main.bounds.width * 0.085, height: UIScreen.main.bounds.height * 0.04)
-                                .font(.system(size: 22))
-                                .foregroundColor(Color.white)
-                                .padding(.horizontal, 3)
-                                .padding(.vertical, 2)
-                                .background(Color.red)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 5)
-                                        .stroke(.red, lineWidth: 4)
-                                )
-                                .fontWeight(.bold)
-                                .padding(3)
-                            } else {
-                                ZStack {
+                    .padding(5)
+                    .background(Color.red)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 5)
+                            .stroke(.red, lineWidth: 4)
+                    )
+                    .padding(.bottom, 10)
+                    
+                    let daysInMonth = getDaysInMonth(for: currentMonth)
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7)) {
+                        // Use enumerated index as unique ID to avoid duplicate identifiers in ForEach.
+                        ForEach(Array(daysInMonth.enumerated()), id: \.offset) { index, day in
+                            if day.day != 0 {
+                                if formattedDateString(from: day.date) == formattedDateString(from: Date()) {
                                     NavigationLink("\(day.day)") {
                                         CalendarDayView(day: formattedDateString(from: day.date))
                                     }
                                     .frame(width: UIScreen.main.bounds.width * 0.085, height: UIScreen.main.bounds.height * 0.04)
                                     .font(.system(size: 22))
                                     .foregroundColor(Color.white)
+                                    .padding(.horizontal, 3)
+                                    .padding(.vertical, 2)
+                                    .background(Color.red)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 5)
+                                            .stroke(.red, lineWidth: 4)
+                                    )
                                     .fontWeight(.bold)
                                     .padding(3)
-                                    if config.daysRecorded.contains(formattedDateString(from: day.date)) {
-                                        Circle()
-                                            .frame(width: 10, height: 10)
-                                            .foregroundColor(.red)
-                                            .offset(x: 0, y: 20)
+                                } else {
+                                    ZStack {
+                                        NavigationLink("\(day.day)") {
+                                            CalendarDayView(day: formattedDateString(from: day.date))
+                                        }
+                                        .frame(width: UIScreen.main.bounds.width * 0.085, height: UIScreen.main.bounds.height * 0.04)
+                                        .font(.system(size: 22))
+                                        .foregroundColor(Color.white)
+                                        .fontWeight(.bold)
+                                        .padding(3)
+                                        if config.daysRecorded.contains(formattedDateString(from: day.date)) {
+                                            Circle()
+                                                .frame(width: 10, height: 10)
+                                                .foregroundColor(.red)
+                                                .offset(x: 0, y: 20)
+                                        }
                                     }
                                 }
+                            } else {
+                                Text("")
+                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, 6)
+                                
                             }
-                        } else {
-                            Text("")
-                                .padding(.vertical, 12)
-                                .padding(.horizontal, 6)
-                            
                         }
                     }
+                    .padding(2)
+                    .background(Color.graytint)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 5)
+                            .stroke(.graytint, lineWidth: 4)
+                    )
+                    Spacer()
                 }
-                .padding(2)
                 .frame(maxWidth: UIScreen.main.bounds.width * 0.92)
-                .background(Color.graytint)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 5)
-                        .stroke(.graytint, lineWidth: 4)
-                )
-                Spacer()
             }
             .navigationTitle("Calendar")
             .onAppear() {

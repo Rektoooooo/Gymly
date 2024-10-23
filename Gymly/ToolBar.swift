@@ -60,6 +60,8 @@ struct ToolBar: View {
 
 struct SplitPopupView: View {
     @State var showSplit: Bool = false
+    @State var showWholeSplit: Bool = false
+    @Environment(\.dismiss) private var dismiss
     var body: some View {
         VStack {
             Text("U dident seted up your gym split yet.")
@@ -71,9 +73,16 @@ struct SplitPopupView: View {
             .cornerRadius(20)
             .padding()
         }
-        .sheet(isPresented: $showSplit, onDismiss: {}) {
+        .sheet(isPresented: $showSplit, onDismiss: {
+            showWholeSplit.toggle()
+        }) {
             SetupSplitView()
-                .presentationDetents([.fraction(0.5)])
+                .presentationDetents([.fraction(0.4)])
+        }
+        .sheet(isPresented: $showWholeSplit, onDismiss: {
+            
+        }) {
+            SplitView()
         }
     }
 }

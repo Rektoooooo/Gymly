@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SetupSplitView: View {
-    @State private var editPlan: Bool = false
     @State private var splitLength: String = ""
     @State private var splitDay: String = ""
     @State private var weekDays:[String] = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
@@ -38,17 +37,14 @@ struct SetupSplitView: View {
             }
             config.splitStarted = true
             config.dayInSplit = Int(splitDay) ?? 1
+            config.lastUpdateDate = Date()
+            config.splitLenght = Int(splitLength) ?? 1
             dismiss()
-            editPlan.toggle()
         }
         .padding()
         .background(Color.graytint)
         .cornerRadius(20)
         .padding()
-        .sheet(isPresented: $editPlan, onDismiss: {
-        }) {
-            SplitView()
-        }
     }
     
     func addDay(name: String, index:Int) {

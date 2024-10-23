@@ -78,6 +78,8 @@ struct TodayWorkoutView: View {
         .onAppear {
             dateFormatter.dateFormat = "EEEE"
             currentDay = dateFormatter.string(from: Date())
+            config.dayInSplit = updateDayInSplit()
+            config.lastUpdateDate = Date()
             Task {
                 await fetchData(dayInSplit: config.dayInSplit)
             }
@@ -104,6 +106,26 @@ struct TodayWorkoutView: View {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "d MMMM yyyy"
         return dateFormatter.string(from: date)
+    }
+    
+    private func numberOfNightsBetween(startDate: Date) -> UInt {
+        let calendar = Calendar.current
+        var components = calendar.dateComponents([.year,.month,.day,.hour,.minute,.second], from: startDate)
+        components.hour = 0
+        components.minute = 0
+        components.second = 0
+        guard let midnight = calendar.date(from: components) else { return 0 }
+        return UInt(calendar.dateComponents([.day], from: midnight, to: Date.now).day ?? 0)
+    }
+    
+    private func updateDayInSplit() -> Int {
+        let calendar = Calendar.current
+        if !calendar.isDateInToday(config.lastUpdateDate) {
+            let daysToLastUpdate = Int(numberOfNightsBetween(startDate: config.lastUpdateDate))
+            return (daysToLastUpdate % config.splitLenght) + 1
+        } else {
+            return config.dayInSplit
+        }
     }
     
     private func fetchData(dayInSplit: Int) async {
