@@ -10,10 +10,10 @@ import SwiftUI
 struct SetupSplitView: View {
     @State private var splitLength: String = ""
     @State private var splitDay: String = ""
-    @State private var weekDays:[String] = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
+    
     var body: some View {
         Form {
             Section("How many days is your split ?") {

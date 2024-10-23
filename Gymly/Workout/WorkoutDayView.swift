@@ -16,13 +16,14 @@ struct WorkoutDayView: View {
     @State private var popup:Bool = false
     @State private var days: [Day] = []
     @State var day:Day
-    @State var muscleGroups:[String] = ["Chest","Back","Biceps","Triceps","Shoulders","Legs","Abs"]
     @Environment(\.modelContext) private var context
+    
+    @StateObject private var viewModelVariables = SetVariablesViewModel()
     
     var body: some View {
         VStack {
             List {
-                ForEach(muscleGroups, id: \.self) { muscle in
+                ForEach(viewModelVariables.muscleGroupNames, id: \.self) { muscle in
                     let exercisesForMuscle = day.exercises.filter { $0.muscleGroup == muscle }
                     if !exercisesForMuscle.isEmpty {
                         Section(header: Text(muscle)) {

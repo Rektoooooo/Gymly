@@ -17,10 +17,9 @@ struct CreateExerciseView: View {
     @State var sets:String = ""
     @State var reps:String = ""
     @State var muslceGroup:String = "Chest"
-    @State var muscleGroups:[String] = ["Chest","Back","Biceps","Triceps","Shoulders","Legs","Abs"]
-
     @State var day:Day
     
+    @StateObject private var viewModelVariables = SetVariablesViewModel()
 
     var body: some View {
         NavigationView {
@@ -39,7 +38,7 @@ struct CreateExerciseView: View {
                         .keyboardType(.numbersAndPunctuation)
                     }
                     Picker("Muscle Group", selection: $muslceGroup) {
-                        ForEach(muscleGroups, id: \.self) { muscleGroup in
+                        ForEach(viewModelVariables.muscleGroupNames, id: \.self) { muscleGroup in
                             Text(muscleGroup)
                         }
                     }
