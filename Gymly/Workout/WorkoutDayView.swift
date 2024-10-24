@@ -18,12 +18,12 @@ struct WorkoutDayView: View {
     @State var day:Day
     @Environment(\.modelContext) private var context
     
-    @StateObject private var viewModelVariables = SetVariablesViewModel()
-    
+    @StateObject private var viewModel = WorkoutViewModel()
+
     var body: some View {
         VStack {
             List {
-                ForEach(viewModelVariables.muscleGroupNames, id: \.self) { muscle in
+                ForEach(viewModel.muscleGroupNames, id: \.self) { muscle in
                     let exercisesForMuscle = day.exercises.filter { $0.muscleGroup == muscle }
                     if !exercisesForMuscle.isEmpty {
                         Section(header: Text(muscle)) {
