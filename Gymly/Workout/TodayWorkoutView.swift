@@ -58,7 +58,7 @@ struct TodayWorkoutView: View {
             }
         }
         .onAppear {
-            config.dayInSplit = viewModel.updateDayInSplit(lastUpdatedDate: config.lastUpdateDate, splitLength: config.splitLenght)
+            config.dayInSplit = viewModel.updateDayInSplit(lastUpdatedDate: config.lastUpdateDate, splitLength: config.splitLenght, dayInSplit: config.dayInSplit)
             config.lastUpdateDate = Date()
             Task {
                 await viewModel.fetchData(context: context, dayInSplit: config.dayInSplit)

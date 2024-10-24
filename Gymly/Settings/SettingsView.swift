@@ -33,6 +33,12 @@ struct SettingsView: View {
                                 config.weightUnit = selectedUnit
                             }
                         }
+                        HStack {
+                            Text("\(config.lastUpdateDate)")
+                        }
+                        HStack {
+                            Text("\(config.dayInSplit)")
+                        }
                     }
                 }
             }

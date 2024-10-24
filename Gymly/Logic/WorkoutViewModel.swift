@@ -80,13 +80,13 @@ final class WorkoutViewModel: ObservableObject {
         return UInt(calendar.dateComponents([.day], from: midnight, to: Date.now).day ?? 0)
     }
     
-    func updateDayInSplit(lastUpdatedDate: Date, splitLength: Int) -> Int {
+    func updateDayInSplit(lastUpdatedDate: Date, splitLength: Int, dayInSplit: Int) -> Int {
         let calendar = Calendar.current
         if !calendar.isDateInToday(lastUpdatedDate) {
             let daysToLastUpdate = Int(numberOfNightsBetween(startDate: lastUpdatedDate))
             return (daysToLastUpdate % splitLength) + 1
         } else {
-            return splitLength
+            return dayInSplit
         }
     }
 }
