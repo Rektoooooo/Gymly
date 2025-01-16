@@ -10,26 +10,31 @@ import SwiftData
 
 struct WorkoutDayView: View {
     
-    @State var name:String
+    @State var name: String = ""
     @State private var createExercise:Bool = false
     @State private var copyWorkout:Bool = false
     @State private var popup:Bool = false
     @State private var days: [Day] = []
-    @State var day:Day
+    @State var day: Day
     @Environment(\.modelContext) private var context
+    @EnvironmentObject var config: Config
+    @State var muscleGroups:[MuscleGroup] = []
+    @ObservedObject var viewModel: WorkoutViewModel
     
-    @StateObject private var viewModel = WorkoutViewModel()
-
+    init(viewModel: WorkoutViewModel, day: Day) {
+        self.viewModel = viewModel
+        self.day = day
+    }
+    
     var body: some View {
         VStack {
             List {
-                ForEach(viewModel.muscleGroupNames, id: \.self) { muscle in
-                    let exercisesForMuscle = day.exercises.filter { $0.muscleGroup == muscle }
-                    if !exercisesForMuscle.isEmpty {
-                        Section(header: Text(muscle)) {
-                            ForEach(exercisesForMuscle, id: \.self) { exercise in
-                                NavigationLink("\(exercise.name)") {
-                                    ExerciseDetailView(exercise: exercise)
+                ForEach(muscleGroups) { group in
+                    if !group.exercises.isEmpty {
+                        Section(header: Text(group.name)) {
+                            ForEach(group.exercises, id: \.id) { exercise in
+                                NavigationLink(destination: ExerciseDetailView(viewModel: WorkoutViewModel(config: config, context: context), exercise: exercise)) {
+                                    Text(exercise.name)
                                 }
                                 .swipeActions(edge: .leading) {
                                     Button {
@@ -54,8 +59,10 @@ struct WorkoutDayView: View {
         .navigationTitle(day.name)
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
-            fetchData()
-            day = days[0]
+            Task {
+                await day = viewModel.fetchDay(date: day.date, dayOfSplit: day.dayOfSplit)
+                await refreshMuscleGroups()
+            }
         }
         .alert("Enter workout name", isPresented: $popup) {
             TextField("Workout name", text: $name)
@@ -64,7 +71,7 @@ struct WorkoutDayView: View {
             Text("Enter the name of new section")
         }
         .sheet(isPresented: $createExercise, content: {
-            CreateExerciseView(day: day)
+            CreateExerciseView(viewModel: viewModel, day: viewModel.day)
                 .navigationTitle("Create Exercise")
         })
         .sheet(isPresented: $copyWorkout, content: {
@@ -93,7 +100,7 @@ struct WorkoutDayView: View {
                 Text("Edit")
             }
         }
-
+        
     }
     
     
@@ -116,24 +123,10 @@ struct WorkoutDayView: View {
         debugPrint("Deleted exercise: \(exercise.name)")
     }
     
-    private func fetchData() {
-        let predicate = #Predicate<Day> {
-            $0.name == name
-        }
-        let descriptor = FetchDescriptor<Day>(predicate: predicate)
-        do {
-            let fetchedData = try context.fetch(descriptor)
-            days = fetchedData
-            if days.isEmpty {
-                debugPrint("No day found for name: \(name)")
-            } else {
-                debugPrint("Fetched day: \(days[0].name)")
-            }
-        } catch {
-            debugPrint("Error fetching data: \(error)")
-        }
+    func refreshMuscleGroups() async {
+        muscleGroups.removeAll() // Clear array to trigger UI update
+        muscleGroups = await viewModel.sortData(dayOfSplit: day.dayOfSplit) // Reassign updated data
     }
-
-
+    
 }
 

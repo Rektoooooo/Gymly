@@ -5,82 +5,50 @@
 //  Created by Sebastián Kučera on 30.09.2024.
 //
 
+
 import SwiftUI
+import Foundation
 import SwiftData
 
 struct CalendarDayView: View {
-    var day: String
-    @State var days: [DayStorage] = []
-    @State private var exercises: [Exercise] = []
-    @State var muscleGroupNames:[String] = ["Chest","Back","Biceps","Triceps","Shoulders","Legs","Abs"]
+    
+    @ObservedObject var viewModel: WorkoutViewModel
+    @EnvironmentObject var config: Config
+    @Environment(\.modelContext) var context: ModelContext
+    
+    @State var date: String
+    
+    @State private var navigationTitle: String = ""
     @State var muscleGroups:[MuscleGroup] = []
-    @Environment(\.modelContext) private var context
+    
     var body: some View {
-        VStack {
-            if !days.isEmpty {
-                HStack {
-                    Text("\(days.first?.day.name ?? "")")
-                        .font(.largeTitle)
-                        .bold()
-                        .padding()
-                    Spacer()
-                }
-                List {
-                    ForEach(muscleGroups, id: \.self) { muscleGroup in
-                        if !muscleGroup.exercises.isEmpty {
-                            Section(header: Text(muscleGroup.name)) {
-                                ForEach(muscleGroup.exercises, id: \.self) { exercise in
-                                    NavigationLink("\(exercise.name)") {
-                                        CalendarExerciseView(exercise: exercise)
-                                    }
+        NavigationView{
+            List {
+                ForEach(muscleGroups) { group in
+                    if !group.exercises.isEmpty {
+                        Section(header: Text(group.name)) {
+                            ForEach(group.exercises, id: \.id) { exercise in
+                                NavigationLink(destination: CalendarExerciseView(viewModel: WorkoutViewModel(config: config, context: context), exercise: exercise)) {
+                                    Text(exercise.name)
                                 }
                             }
                         }
                     }
                 }
-            } else {
-                Text("No workout recorded")
             }
+            .id(UUID())
+            .navigationTitle(navigationTitle)
+            .navigationBarTitleDisplayMode(.large)
         }
-        .onAppear() {
-            Task {
-                await fetchData()
-            }
-        }
-        .navigationTitle("\(day)")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-    
-    private func fetchData() async {
-        let predicate = #Predicate<DayStorage> {
-            $0.date == day
-        }
-        let descriptor = FetchDescriptor<DayStorage>(predicate: predicate)
-        do {
-            let fetchedData = try context.fetch(descriptor)
-            days = []
-            exercises = []
-            days = fetchedData
-            if days.isEmpty {
-                debugPrint("No day found for date : \(day)")
-            } else {
-                muscleGroups = []
-                for exercise in days[0].day.exercises {
-                    exercises.append(exercise)
-                }
-                for name: String in muscleGroupNames {
-                    let exercises = exercises.filter { exercise in
-                        return exercise.muscleGroup.contains(name)
-                    }
-                    let group = MuscleGroup(name: name, count: 0, exercises: exercises)
-                    muscleGroups.append(group)
-                }
-                debugPrint("Fetched data for date : \(day)")
-            }
-        } catch {
-            debugPrint("Error fetching data: \(error)")
+        .task {
+                await refreshMuscleGroups()
+                navigationTitle = viewModel.day.name
+            debugPrint(date)
         }
     }
     
+    func refreshMuscleGroups() async {
+        muscleGroups.removeAll() // Clear array to trigger UI update
+        muscleGroups = await viewModel.sortDataForCalendar(date: date) // Reassign updated data
+    }
 }
-

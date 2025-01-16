@@ -13,13 +13,18 @@ struct ExerciseDetailView: View {
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
     @Environment(\.dismiss) var dismiss
-    @State var exercise:Exercise
+    @ObservedObject var viewModel: WorkoutViewModel
+    @State var exercise: Exercise
     @State private var isOn = false
     @State var showSheet = false
     @State var weight: Int = 0
     @State var reps: Int = 0
-    @State var failure:Bool = false
-    @State var setNumber:Int = 0
+    @State var failure: Bool = false
+    @State var warmUp: Bool = false
+    @State var restPause: Bool = false
+    @State var dropSet: Bool = false
+    @State var setNumber: Int = 0
+    @State var note: String = ""
     
     var body: some View {
         VStack {
@@ -35,18 +40,14 @@ struct ExerciseDetailView: View {
                     .bold()
             }
             List {
-                ForEach(0...(exercise.sets.count - 1), id: \.self) { i in
-                    Section("Set \(i + 1)") {
+                ForEach(exercise.sets, id: \.id) { set in
+                    Section("Set \(exercise.sets.firstIndex(where: { $0.id == set.id })! + 1)") {
                         Button {
-                            weight = exercise.sets[i].weight
-                            reps = exercise.sets[i].reps
-                            failure = exercise.sets[i].failure
-                            setNumber = i
-                            showSheet = true
+                            loadSetData(set: set)
                         } label: {
                             HStack {
                                 HStack {
-                                    Text("\(exercise.sets[i].weight)")
+                                    Text("\(set.weight)")
                                         .foregroundStyle(.accent)
                                         .bold()
                                     Text("\(config.weightUnit)")
@@ -55,7 +56,7 @@ struct ExerciseDetailView: View {
                                         .offset(x: -5)
                                 }
                                 HStack {
-                                    Text("\(exercise.sets[i].reps)")
+                                    Text("\(set.reps)")
                                         .foregroundStyle(Color.green)
                                         .bold()
                                     Text("Reps")
@@ -64,18 +65,48 @@ struct ExerciseDetailView: View {
                                         .offset(x: -5)
                                 }
                                 HStack {
-                                    Text("F")
-                                        .foregroundStyle(Color.red)
-                                        .opacity(exercise.sets[i].failure ? 1 : 0)
-                                        .offset(x: -5)
+                                    if set.failure {
+                                        Text("F")
+                                            .foregroundStyle(Color.red)
+                                            .offset(x: -5)
+                                    }
+                                    if set.warmUp {
+                                        Text("W")
+                                            .foregroundStyle(Color.orange)
+                                            .offset(x: -5)
+                                    }
+                                    if set.restPause {
+                                        Text("RP")
+                                            .foregroundStyle(Color.green)
+                                            .offset(x: -5)
+                                    }
+                                    if set.dropSet {
+                                        Text("DS")
+                                            .foregroundStyle(Color.blue)
+                                            .offset(x: -5)
+                                    }
                                 }
                                 Spacer()
                                 HStack {
-                                    Text("\(exercise.sets[i].time)")
+                                    Text("\(set.time)")
                                         .foregroundStyle(Color.white)
-                                        .opacity(exercise.sets[i].time.isEmpty ? 0 : 0.3)
+                                        .opacity(set.time.isEmpty ? 0 : 0.3)
                                 }
                             }
+                        }
+                        if !set.note.isEmpty {
+                            HStack {
+                                Text(set.note)
+                                    .foregroundStyle(Color.white)
+                                    .opacity(0.5)
+                            }
+                        }
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            deleteItem(set)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
                         }
                     }
                 }
@@ -85,15 +116,15 @@ struct ExerciseDetailView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showSheet, onDismiss: {
-                
-            } ,content: {
-                SetEditorView(weight: $weight, reps: $reps, failure: $failure, unit: $config.weightUnit,setNumber: $setNumber, exercise: exercise)
-                    .presentationDetents([.fraction(0.55)])
-            })
+            .sheet(isPresented: $showSheet) {
+                SetEditorView(weight: $weight, reps: $reps, unit: $config.weightUnit, setNumber: $setNumber, note: $note, exercise: exercise, failure: $failure, warmup: $warmUp, restPause: $restPause, dropSet: $dropSet)
+                    .presentationDetents([.fraction(0.85)])
+            }
             .toolbar {
                 Button {
-                    // add new set
+                    Task {
+                        await addSet()
+                    }
                 } label: {
                     Label("Add set", systemImage: "plus.circle")
                 }
@@ -102,6 +133,48 @@ struct ExerciseDetailView: View {
         .navigationTitle("\(exercise.name)")
         .navigationBarTitleDisplayMode(.inline)
     }
-}
+    
+    func loadSetData(set: Exercise.Set) {
+        weight = set.weight
+        reps = set.reps
+        failure = set.failure
+        warmUp = set.warmUp
+        restPause = set.restPause
+        dropSet = set.dropSet
+        note = set.note
+        setNumber = exercise.sets.firstIndex(where: { $0.id == set.id }) ?? 0
+        showSheet = true
+    }
+    
+    func deleteItem(_ set: Exercise.Set) {
+        if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
+            withAnimation {
+                exercise.sets.remove(at: index)
+            }
+        }
+        context.delete(set)
+        refreshExercise()
+    }
+    
+    func addSet() async {
+        let newSet = Exercise.Set.createDefault()
+        exercise.sets.append(newSet)
 
+        // Force UI refresh by updating the exercise reference
+        exercise = exercise
+
+        do {
+            try context.save()
+            refreshExercise()
+        } catch {
+            debugPrint(error)
+        }
+    }
+    
+    func refreshExercise() {
+        Task {
+            exercise = await viewModel.fetchExercise(id: exercise.id)
+        }
+    }
+}
 

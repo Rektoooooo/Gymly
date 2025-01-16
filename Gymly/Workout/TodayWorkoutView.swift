@@ -11,20 +11,22 @@ import SwiftData
 
 struct TodayWorkoutView: View {
     
-    @StateObject private var viewModel = WorkoutViewModel()
+    @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
-    @Environment(\.modelContext) private var context
+    @Environment(\.modelContext) var context: ModelContext
     
+    @State private var navigationTitle: String = ""
+    @State var muscleGroups:[MuscleGroup] = []
     
     var body: some View {
         NavigationView{
             List {
-                ForEach(viewModel.muscleGroups, id: \.self) { muscleGroup in
-                    if !muscleGroup.exercises.isEmpty {
-                        Section(header: Text(muscleGroup.name)) {
-                            ForEach(muscleGroup.exercises, id: \.self) { exercise in
-                                NavigationLink("\(exercise.name)") {
-                                    ExerciseDetailView(exercise: exercise)
+                ForEach(muscleGroups) { group in
+                    if !group.exercises.isEmpty {
+                        Section(header: Text(group.name)) {
+                            ForEach(group.exercises, id: \.id) { exercise in
+                                NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
+                                    Text(exercise.name)
                                 }
                             }
                         }
@@ -32,16 +34,16 @@ struct TodayWorkoutView: View {
                 }
                 Section("") {
                     Button("Workout done") {
-                        viewModel.insertWorkout(context: context)
+                        viewModel.insertWorkout()
                     }
                 }
             }
             .id(UUID())
-            .navigationTitle(viewModel.day.name)
+            .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.large)
             .onChange(of: viewModel.addExercise) {
                 Task {
-                    await viewModel.fetchData(context: context, dayInSplit: config.dayInSplit)
+                    await refreshMuscleGroups()
                 }
             }
             .toolbar {
@@ -57,29 +59,37 @@ struct TodayWorkoutView: View {
                 }
             }
         }
-        .onAppear {
-            config.dayInSplit = viewModel.updateDayInSplit(lastUpdatedDate: config.lastUpdateDate, splitLength: config.splitLenght, dayInSplit: config.dayInSplit)
+        .task {
+            // Call sortData asynchronously when the view appears
+            config.dayInSplit = viewModel.updateDayInSplit()
             config.lastUpdateDate = Date()
-            Task {
-                await viewModel.fetchData(context: context, dayInSplit: config.dayInSplit)
-            }
+            await refreshMuscleGroups()
+            navigationTitle = viewModel.day.name
+
         }
         .sheet(isPresented: $viewModel.editPlan, onDismiss: {
             Task {
-                await viewModel.fetchData(context: context, dayInSplit: config.dayInSplit)
+                await refreshMuscleGroups()
             }
         }) {
-            SplitView()
+            SplitView(viewModel: viewModel)
         }
         .sheet(isPresented: $viewModel.addExercise, onDismiss: {
             Task {
-                await viewModel.fetchData(context: context, dayInSplit: config.dayInSplit)
+                await refreshMuscleGroups()
             }
         } ,content: {
-            CreateExerciseView(day: viewModel.day)
-                .navigationTitle("Create Exercise")
-                .presentationDetents([.fraction(0.5)])
-        })
+                CreateExerciseView(viewModel: viewModel, day: viewModel.day)
+                    .navigationTitle("Create Exercise")
+                    .presentationDetents([.fraction(0.5)])
+                
+            })
+        }
+    
+    func refreshMuscleGroups() async {
+        muscleGroups.removeAll() // Clear array to trigger UI update
+        muscleGroups = await viewModel.sortData(dayOfSplit: config.dayInSplit) // Reassign updated data
     }
+    
 }
 

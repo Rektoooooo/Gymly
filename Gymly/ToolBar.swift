@@ -14,30 +14,25 @@ struct ToolBar: View {
 
     var body: some View {
         TabView {
-            Group {
                 ContentView()
                   .tabItem {
                     Label("Home", systemImage: "house")
                   }
                   .tag(1)
-
                 if config.splitStarted {
-                    TodayWorkoutView()
+                    TodayWorkoutView(viewModel: WorkoutViewModel(config: config, context: context))
                         .tabItem {
                           Label("Routine", systemImage: "dumbbell")
                         }
                         .tag(2)
                 } else {
-                    SplitPopupView()
+                    SplitPopupView(viewModel: WorkoutViewModel(config: config, context: context))
                         .tabItem {
-                          Label("Routine", systemImage: "dumbbell")
+                            Label("Routine", systemImage: "dumbbell")
                         }
                         .tag(2)
                 }
-
-
-                
-                CalendarView()
+                CalendarView(viewModel: WorkoutViewModel(config: config, context: context))
                   .tabItem {
                     Label("Calendar", systemImage: "calendar")
                   }
@@ -49,45 +44,10 @@ struct ToolBar: View {
                   }
                   .tag(4)
                 
-            }
             .toolbar(.visible, for: .tabBar)
             .toolbarBackground(.black, for: .tabBar)
         }
         .environmentObject(config)
     }
     
-}
-
-struct SplitPopupView: View {
-    @State var showSplit: Bool = false
-    @State var showWholeSplit: Bool = false
-    @Environment(\.dismiss) private var dismiss
-    var body: some View {
-        VStack {
-            Text("U dident seted up your gym split yet.")
-            Button("Set up split!") {
-                showSplit.toggle()
-            }
-            .padding()
-            .background(Color.graytint)
-            .cornerRadius(20)
-            .padding()
-        }
-        .sheet(isPresented: $showSplit, onDismiss: {
-            showWholeSplit.toggle()
-        }) {
-            SetupSplitView()
-                .presentationDetents([.fraction(0.4)])
-        }
-        .sheet(isPresented: $showWholeSplit, onDismiss: {
-            
-        }) {
-            SplitView()
-        }
-    }
-}
-
-
-#Preview {
-    ToolBar()
 }

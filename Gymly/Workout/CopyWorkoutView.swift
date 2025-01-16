@@ -49,7 +49,7 @@ struct CopyWorkoutView: View {
         fetchDayToCopy()
 
         let copiedExercises = fetchedExercises.map { originalExercise -> Exercise in
-            return Exercise(name:originalExercise.name, sets: originalExercise.sets, repGoal:originalExercise.repGoal, muscleGroup:originalExercise.muscleGroup)
+            return Exercise(id: originalExercise.id, name:originalExercise.name, sets: originalExercise.sets, repGoal:originalExercise.repGoal, muscleGroup:originalExercise.muscleGroup)
         }
 
         day.exercises = copiedExercises

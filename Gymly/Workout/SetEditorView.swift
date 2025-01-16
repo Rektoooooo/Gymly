@@ -11,10 +11,14 @@ struct SetEditorView: View {
     
     @Binding var weight: Int
     @Binding var reps: Int
-    @Binding var failure:Bool
     @Binding var unit: String
-    @Binding var setNumber: Int
+    @Binding var setNumber: Int	
+    @Binding var note: String
     @State var exercise:Exercise
+    @Binding var failure:Bool
+    @Binding var warmup:Bool
+    @Binding var restPause:Bool
+    @Binding var dropSet:Bool
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) var dismiss
@@ -22,6 +26,19 @@ struct SetEditorView: View {
     var body: some View {
         NavigationView {
             List {
+                Section("Set note") {
+                       TextField("Set note", text: $note)
+                }
+                Section("Set type") {
+                    Toggle("Warm Up", isOn: $warmup)
+                        .toggleStyle(CheckToggleStyle())
+                    Toggle("Failure", isOn: $failure)
+                        .toggleStyle(CheckToggleStyle())
+                    Toggle("Rest Pause", isOn: $restPause)
+                        .toggleStyle(CheckToggleStyle())
+                    Toggle("Drop Set", isOn: $dropSet)
+                        .toggleStyle(CheckToggleStyle())
+                }
                 Section("Weight (\(unit))") {
                     HStack {
                         Button {
@@ -112,10 +129,6 @@ struct SetEditorView: View {
                         .buttonStyle(PlainButtonStyle())
                     }
                 }
-                Section("Failure reached") {
-                    Toggle("Failure", isOn: $failure)
-                        .toggleStyle(CheckToggleStyle())
-                }
             }
             .offset(y : -20)
             .navigationTitle("Record set")
@@ -125,7 +138,11 @@ struct SetEditorView: View {
             exercise.sets[setNumber].weight = weight
             exercise.sets[setNumber].reps = reps
             exercise.sets[setNumber].failure = failure
+            exercise.sets[setNumber].warmUp = warmup
+            exercise.sets[setNumber].restPause = restPause
+            exercise.sets[setNumber].dropSet = dropSet
             exercise.sets[setNumber].time = getCurrentTime()
+            exercise.sets[setNumber].note = note
             do {
                 try context.save()
             } catch {

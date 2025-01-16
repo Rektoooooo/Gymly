@@ -7,10 +7,11 @@
 
 import Foundation
 
-class MuscleGroup {
+struct MuscleGroup: Identifiable {
+    let id = UUID() // Unique ID
     let name: String
-    var count: Int
-    var exercises: [Exercise]
+    let count: Int
+    let exercises: [Exercise]
     
     init(name: String, count: Int, exercises: [Exercise]) {
         self.name = name

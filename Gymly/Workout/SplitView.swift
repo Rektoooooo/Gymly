@@ -1,26 +1,27 @@
 //
-//  WorkoutView.swift
+//  SplitView.swift
 //  Gymly
 //
-//  Created by Sebastián Kučera on 13.05.2024.
+//  Created by Sebastián Kučera on 16.01.2025.
 //
 
 import SwiftUI
 import SwiftData
 
 struct SplitView: View {
-    
-    @Environment(\.modelContext) private var context
+    @ObservedObject var viewModel: WorkoutViewModel
+    @EnvironmentObject var config: Config
+    @Environment(\.modelContext) var context: ModelContext
+
     @State private var days: [Day] = []
-    
     var body: some View {
         NavigationView {
             VStack {
                 List {
                     Section("Workout list") {
-                        ForEach(days, id: \.self) { day in
+                        ForEach(days.sorted(by: { $0.dayOfSplit < $1.dayOfSplit }), id: \.self) { day in
                             NavigationLink("Day \(day.dayOfSplit) - \(day.name)") {
-                                WorkoutDayView(name: day.name, day: day)
+                                WorkoutDayView(viewModel: viewModel, day: day)
                             }
                         }
                     }
@@ -29,27 +30,8 @@ struct SplitView: View {
             .navigationTitle("Edit Split")
             .navigationBarTitleDisplayMode(.inline)
         }
-        .onAppear {
-            fetchData()
+        .task {
+            await days = viewModel.fetchAllDays()
         }
     }
-    
-    private func fetchData() {
-        let predicate = #Predicate<Day> {
-            $0.name == $0.name
-        }
-        let descriptor = FetchDescriptor<Day>(predicate: predicate, sortBy: [SortDescriptor(\.dayOfSplit)])
-        do {
-            let fetchedData = try context.fetch(descriptor)
-            days = fetchedData
-            if days.isEmpty {
-                debugPrint("No day found for name:")
-            } else {
-                debugPrint("Fetched \(days.count) days")
-            }
-        } catch {
-            debugPrint("Error fetching data: \(error)")
-        }
-    }
-    
 }

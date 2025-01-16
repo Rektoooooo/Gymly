@@ -12,69 +12,46 @@ struct CreateExerciseView: View {
     
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject var viewModel: WorkoutViewModel
 
-    @State var name:String = ""
-    @State var sets:String = ""
-    @State var reps:String = ""
-    @State var muslceGroup:String = "Chest"
     @State var day:Day
     
-    @StateObject private var viewModelVariables = SetVariablesViewModel()
-
     var body: some View {
         NavigationView {
             List {
                 Section("Exercise parameters") {
                     LazyVStack {
-                        TextField("Name", text: $name)
-                        
+                        TextField("Name", text: $viewModel.name)
                     }
                     LazyVStack {
-                        TextField("Sets", text: $sets)
+                        TextField("Sets", text: $viewModel.sets)
                             .keyboardType(.numbersAndPunctuation)
                     }
                     LazyVStack {
-                    TextField("Repeticions", text: $reps)
+                        TextField("Repeticions", text: $viewModel.reps)
                         .keyboardType(.numbersAndPunctuation)
                     }
-                    Picker("Muscle Group", selection: $muslceGroup) {
-                        ForEach(viewModelVariables.muscleGroupNames, id: \.self) { muscleGroup in
+                    Picker("Muscle Group", selection: $viewModel.muslceGroup) {
+                        ForEach(viewModel.muscleGroupNames, id: \.self) { muscleGroup in
                             Text(muscleGroup)
                         }
                     }
                 }
                 Section(" ") {
                     Button("Save", action: {
-                        if !name.isEmpty && !sets.isEmpty && !reps.isEmpty {
-                            createExercise()
-                            dismiss()
+                        debugPrint(day.name)
+                        Task {
+                            await viewModel.createExercise()
                         }
+                            dismiss()
                     })
                 }
 
             }
-            .navigationTitle("Create exercise")
+            .navigationTitle("Create exercise for \(day.name)")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
     
-    func createExercise() {
-        var setList: [Exercise.Set] = []
-        for _ in 1...Int(sets)! {
-            let set = Exercise.Set(weight: 0, reps: 0, failure: false, time: "")
-            setList.append(set)
-        }
-        day.exercises.insert(Exercise(
-            name: name,
-            sets: setList,
-            repGoal: Int(reps) ?? 0,
-            muscleGroup: muslceGroup),
-                             at : day.exercises.endIndex)
-        do {
-            try context.save()
-        } catch {
-            debugPrint(error)
-        }
 
-    }
 }

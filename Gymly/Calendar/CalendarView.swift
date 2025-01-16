@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CalendarView: View {
+    @ObservedObject var viewModel: WorkoutViewModel
     @State private var currentMonth = Date()
     @EnvironmentObject var config: Config
     let calendar = Calendar.current
@@ -59,12 +60,13 @@ struct CalendarView: View {
                     
                     let daysInMonth = getDaysInMonth(for: currentMonth)
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7)) {
-                        // Use enumerated index as unique ID to avoid duplicate identifiers in ForEach.
-                        ForEach(Array(daysInMonth.enumerated()), id: \.offset) { index, day in
+                        ForEach(daysInMonth.indices, id: \.self) { index in
+                            let day = daysInMonth[index]
+                            
                             if day.day != 0 {
                                 if formattedDateString(from: day.date) == formattedDateString(from: Date()) {
                                     NavigationLink("\(day.day)") {
-                                        CalendarDayView(day: formattedDateString(from: day.date))
+                                        CalendarDayView(viewModel: viewModel, date: formattedDateString(from: day.date))
                                     }
                                     .frame(width: UIScreen.main.bounds.width * 0.085, height: UIScreen.main.bounds.height * 0.04)
                                     .font(.system(size: 22))
@@ -81,13 +83,14 @@ struct CalendarView: View {
                                 } else {
                                     ZStack {
                                         NavigationLink("\(day.day)") {
-                                            CalendarDayView(day: formattedDateString(from: day.date))
+                                            CalendarDayView(viewModel: viewModel, date: formattedDateString(from: day.date))
                                         }
                                         .frame(width: UIScreen.main.bounds.width * 0.085, height: UIScreen.main.bounds.height * 0.04)
                                         .font(.system(size: 22))
                                         .foregroundColor(Color.white)
                                         .fontWeight(.bold)
                                         .padding(3)
+                                        
                                         if config.daysRecorded.contains(formattedDateString(from: day.date)) {
                                             Circle()
                                                 .frame(width: 10, height: 10)
@@ -100,7 +103,6 @@ struct CalendarView: View {
                                 Text("")
                                     .padding(.vertical, 12)
                                     .padding(.horizontal, 6)
-                                
                             }
                         }
                     }

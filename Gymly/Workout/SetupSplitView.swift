@@ -29,6 +29,7 @@ struct SetupSplitView: View {
             for i in 0...(Int(splitLength) ?? 1) - 1 {
                 addDay(name: "Day \(i + 1)", index: i + 1)
             }
+            debugPrint("Added days")
             do {
                 try context.save()
                 debugPrint("Context saved")
@@ -52,8 +53,4 @@ struct SetupSplitView: View {
         debugPrint("Added day \(name)")
     }
     
-}
-
-#Preview {
-    SetupSplitView()
 }
