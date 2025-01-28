@@ -21,6 +21,7 @@
 		ECA5D1612BF20CF500DCC9F8 /* GymlyUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D1602BF20CF500DCC9F8 /* GymlyUITestsLaunchTests.swift */; };
 		ECA5D16E2BF20D0F00DCC9F8 /* ToolBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D16D2BF20D0F00DCC9F8 /* ToolBar.swift */; };
 		ECA5D1762BF22C2000DCC9F8 /* Exercise.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D1752BF22C2000DCC9F8 /* Exercise.swift */; };
+		ECDE63112D48D27B00C2DA94 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECDE63102D48D27B00C2DA94 /* SignInView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +59,8 @@
 		ECA5D1602BF20CF500DCC9F8 /* GymlyUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymlyUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		ECA5D16D2BF20D0F00DCC9F8 /* ToolBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolBar.swift; sourceTree = "<group>"; };
 		ECA5D1752BF22C2000DCC9F8 /* Exercise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Exercise.swift; sourceTree = "<group>"; };
+		ECDE63102D48D27B00C2DA94 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		ECDE63122D48D85A00C2DA94 /* Gymly.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Gymly.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -125,12 +128,14 @@
 		ECA5D1422BF20CF100DCC9F8 /* Gymly */ = {
 			isa = PBXGroup;
 			children = (
+				ECDE63122D48D85A00C2DA94 /* Gymly.entitlements */,
 				ECA863152CC9760C00FFB675 /* Logic */,
 				ECA863112CC9754600FFB675 /* Home */,
 				ECA863122CC9757300FFB675 /* Workout */,
 				ECA863132CC9758E00FFB675 /* Calendar */,
 				ECA863142CC9759500FFB675 /* Settings */,
 				ECA5D1432BF20CF100DCC9F8 /* GymlyApp.swift */,
+				ECDE63102D48D27B00C2DA94 /* SignInView.swift */,
 				ECA5D16D2BF20D0F00DCC9F8 /* ToolBar.swift */,
 				ECA5D1752BF22C2000DCC9F8 /* Exercise.swift */,
 				EC4FD1522C4ED88300D1A4A6 /* Day.swift */,
@@ -315,6 +320,7 @@
 				EC4FD1582C4EE0A600D1A4A6 /* onFirstAppear.swift in Sources */,
 				ECA5D1442BF20CF100DCC9F8 /* GymlyApp.swift in Sources */,
 				EC8C15112C80A94D008E4152 /* DayStorage.swift in Sources */,
+				ECDE63112D48D27B00C2DA94 /* SignInView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -475,6 +481,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Gymly/Gymly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Gymly/Preview Content\"";
@@ -505,6 +512,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Gymly/Gymly.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Gymly/Preview Content\"";

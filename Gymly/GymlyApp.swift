@@ -10,10 +10,12 @@ import SwiftUI
 @main
 struct GymlyApp: App {
     var body: some Scene {
-        let config = Config(weightUnit: "Kg",splitStarted: false, daysRecorded: [],dayInSplit: 0, lastUpdateDate: Date(), splitLenght: 0)
+        let config = Config(weightUnit: "Kg",splitStarted: false, daysRecorded: [],dayInSplit: 0, lastUpdateDate: Date(), splitLenght: 0, isUserLoggedIn: false, userProfileImageURL: "defaultProfileImage")
         WindowGroup {
             ToolBar()
                 .environmentObject(config)
+            
+            
         }
         .modelContainer(for: [Exercise.self, Day.self, DayStorage.self])
     }

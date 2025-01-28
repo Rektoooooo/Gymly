@@ -40,14 +40,14 @@ struct ToolBar: View {
                   }
                   .tag(2)
                 
-                SettingsView()
-                  .tabItem {
-                    Label("Settings", systemImage: "gear")
-                  }
-                  .tag(3)
-                
             .toolbar(.visible, for: .tabBar)
             .toolbarBackground(.black, for: .tabBar)
+        }
+        .sheet(isPresented: Binding(
+            get: { !config.isUserLoggedIn },
+            set: { newValue in config.isUserLoggedIn = !newValue }
+        )) {
+            SignInView()
         }
         .environmentObject(config)
     }

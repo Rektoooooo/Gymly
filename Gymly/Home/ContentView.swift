@@ -14,8 +14,7 @@ struct ContentView: View {
                 ContentViewGraph()
                 RadarLabels()
             }
-            .frame(width: 300, height: 300)
-            .navigationTitle("Home")
+            .frame(maxWidth: 100, maxHeight: 100) // Allow full expansion
             .padding()
         }
     }

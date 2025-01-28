@@ -47,12 +47,26 @@ class Config:ObservableObject {
         }
     }
     
-    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int) {
+    @Published var isUserLoggedIn: Bool {
+        didSet {
+            UserDefaults.standard.set(isUserLoggedIn, forKey: "isUserLoggedIn")
+        }
+    }
+    
+    @Published var userProfileImageURL: String? {
+        didSet {
+            UserDefaults.standard.set(userProfileImageURL, forKey: "userProfileImageURL")
+        }
+    }
+    
+    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?) {
         self.weightUnit = UserDefaults.standard.object(forKey: "weightUnit") as? String ?? "Kg"
         self.splitStarted = UserDefaults.standard.object(forKey: "splitStarted") as? Bool ?? false
         self.daysRecorded = UserDefaults.standard.object(forKey: "daysRecorded") as? [String] ?? []
         self.dayInSplit = UserDefaults.standard.object(forKey: "dayInSplit") as? Int ?? 1
         self.splitLenght = UserDefaults.standard.object(forKey: "splitLenght") as? Int ?? 1
         self.lastUpdateDate = UserDefaults.standard.object(forKey: "lastUpdateDate")  as? Date ?? Date()
+        self.isUserLoggedIn = UserDefaults.standard.object(forKey: "isUserLoggedIn") as? Bool ?? false
+        self.userProfileImageURL = UserDefaults.standard.object(forKey: "userProfileImageURL") as? String ?? "defaultProfileImage"
     }
 }
