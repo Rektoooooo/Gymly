@@ -17,37 +17,37 @@ struct CalendarDayView: View {
     @Environment(\.modelContext) var context: ModelContext
     
     @State var date: String
+    @State var day: Day = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
     
     @State private var navigationTitle: String = ""
     @State var muscleGroups:[MuscleGroup] = []
     
     var body: some View {
-        NavigationView{
-            List {
-                ForEach(muscleGroups) { group in
-                    if !group.exercises.isEmpty {
-                        Section(header: Text(group.name)) {
-                            ForEach(group.exercises, id: \.id) { exercise in
-                                NavigationLink(destination: CalendarExerciseView(viewModel: WorkoutViewModel(config: config, context: context), exercise: exercise)) {
-                                    Text(exercise.name)
-                                }
+        List {
+            ForEach(muscleGroups) { group in
+                if !group.exercises.isEmpty {
+                    Section(header: Text(group.name)) {
+                        ForEach(group.exercises, id: \.id) { exercise in
+                            NavigationLink(destination: CalendarExerciseView(viewModel: WorkoutViewModel(config: config, context: context), exercise: exercise)) {
+                                Text(exercise.name)
                             }
                         }
                     }
                 }
             }
-            .id(UUID())
-            .navigationTitle(navigationTitle)
-            .navigationBarTitleDisplayMode(.large)
         }
+        .id(UUID())
+        .navigationTitle("\(date)")
+        .navigationBarTitleDisplayMode(.inline)
         .task {
-                await refreshMuscleGroups()
-                navigationTitle = viewModel.day.name
+            await refreshMuscleGroups()
             debugPrint(date)
         }
     }
     
     func refreshMuscleGroups() async {
+        day = await viewModel.fetchCalendarDay(date: date)
+        debugPrint(day.name)
         muscleGroups.removeAll() // Clear array to trigger UI update
         muscleGroups = await viewModel.sortDataForCalendar(date: date) // Reassign updated data
     }

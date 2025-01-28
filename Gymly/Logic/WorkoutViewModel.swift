@@ -38,10 +38,10 @@ final class WorkoutViewModel: ObservableObject {
     }
     
     @MainActor
-    func fetchDay(date: String, dayOfSplit: Int) async -> Day {
+    func fetchDay(date: String, dayOfSplit: Int?) async -> Day {
         let predicate = #Predicate<Day> {
             if date.isEmpty{
-                $0.dayOfSplit == dayOfSplit
+                $0.dayOfSplit == dayOfSplit!
             } else {
                 $0.date == date
             }
@@ -65,6 +65,29 @@ final class WorkoutViewModel: ObservableObject {
             }
             
             return fetchedData.first!
+        }
+    }
+    
+    @MainActor
+    func fetchCalendarDay(date: String) async -> Day {
+        let predicate = #Predicate<DayStorage> {
+                $0.date == date
+        }
+        let descriptor = FetchDescriptor<DayStorage>(predicate: predicate)
+        do {
+            let fetchedData: [DayStorage]
+            do {
+                fetchedData = try context.fetch(descriptor)
+                debugPrint("Fetched data: \(fetchedData)")
+            } catch {
+                debugPrint("Error fetching data: \(error.localizedDescription)")
+                return Day(name: "", dayOfSplit: 0, exercises: [],date: "")
+            }
+            guard !fetchedData.isEmpty else {
+                return Day(name: "", dayOfSplit: 0, exercises: [],date: "")
+            }
+            
+            return fetchedData.first!.day
         }
     }
     
@@ -117,11 +140,13 @@ final class WorkoutViewModel: ObservableObject {
     
     @MainActor
     func sortDataForCalendar(date: String) async -> [MuscleGroup] {
-        var newMuscleGroups: [MuscleGroup] = [] 
+        var newMuscleGroups: [MuscleGroup] = []
+        
+        let today = await fetchCalendarDay(date: date)
 
         for name in muscleGroupNames {
             // Filter exercises for the current muscle group
-            let filteredExercises = day.exercises.filter { exercise in
+            let filteredExercises = today.exercises.filter { exercise in
                 exercise.muscleGroup == name
             }
 
@@ -198,10 +223,11 @@ final class WorkoutViewModel: ObservableObject {
             return await fetchExercise(id : exercise.id)
     }
 
-    
-    func insertWorkout() {
+    @MainActor
+    func insertWorkout() async {
+        let today = await fetchDay(date: "", dayOfSplit: config.dayInSplit)
         debugPrint(day.name)
-        context.insert(DayStorage(id: UUID(), day: day, date: formattedDateString(from: Date())))
+        context.insert(DayStorage(id: UUID(), day: today, date: formattedDateString(from: Date())))
         config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
         do {
             try context.save()

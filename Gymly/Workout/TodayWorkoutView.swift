@@ -34,7 +34,9 @@ struct TodayWorkoutView: View {
                 }
                 Section("") {
                     Button("Workout done") {
-                        viewModel.insertWorkout()
+                        Task {
+                            await viewModel.insertWorkout()
+                        }
                     }
                 }
             }

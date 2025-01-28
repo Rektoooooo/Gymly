@@ -14,35 +14,37 @@ struct ToolBar: View {
 
     var body: some View {
         TabView {
+            /*
                 ContentView()
                   .tabItem {
                     Label("Home", systemImage: "house")
                   }
                   .tag(1)
+             */
                 if config.splitStarted {
                     TodayWorkoutView(viewModel: WorkoutViewModel(config: config, context: context))
                         .tabItem {
                           Label("Routine", systemImage: "dumbbell")
                         }
-                        .tag(2)
+                        .tag(1)
                 } else {
                     SplitPopupView(viewModel: WorkoutViewModel(config: config, context: context))
                         .tabItem {
                             Label("Routine", systemImage: "dumbbell")
                         }
-                        .tag(2)
+                        .tag(1)
                 }
                 CalendarView(viewModel: WorkoutViewModel(config: config, context: context))
                   .tabItem {
                     Label("Calendar", systemImage: "calendar")
                   }
-                  .tag(3)
+                  .tag(2)
                 
                 SettingsView()
                   .tabItem {
                     Label("Settings", systemImage: "gear")
                   }
-                  .tag(4)
+                  .tag(3)
                 
             .toolbar(.visible, for: .tabBar)
             .toolbarBackground(.black, for: .tabBar)
