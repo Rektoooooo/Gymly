@@ -61,6 +61,7 @@
 		ECA5D1752BF22C2000DCC9F8 /* Exercise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Exercise.swift; sourceTree = "<group>"; };
 		ECDE63102D48D27B00C2DA94 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		ECDE63122D48D85A00C2DA94 /* Gymly.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Gymly.entitlements; sourceTree = "<group>"; };
+		ECF621932D497912007B4C2E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -128,6 +129,7 @@
 		ECA5D1422BF20CF100DCC9F8 /* Gymly */ = {
 			isa = PBXGroup;
 			children = (
+				ECF621932D497912007B4C2E /* Info.plist */,
 				ECDE63122D48D85A00C2DA94 /* Gymly.entitlements */,
 				ECA863152CC9760C00FFB675 /* Logic */,
 				ECA863112CC9754600FFB675 /* Home */,
@@ -488,6 +490,9 @@
 				DEVELOPMENT_TEAM = PH3V9JYRDW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Gymly/Info.plist;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app needs access to your health data to display your steps, heart rate, and workouts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app needs permission to log your workouts and fitness activities to the Health app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -519,6 +524,9 @@
 				DEVELOPMENT_TEAM = PH3V9JYRDW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Gymly/Info.plist;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app needs access to your health data to display your steps, heart rate, and workouts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app needs permission to log your workouts and fitness activities to the Health app.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

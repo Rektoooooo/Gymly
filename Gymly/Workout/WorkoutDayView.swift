@@ -60,7 +60,7 @@ struct WorkoutDayView: View {
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
             Task {
-                await day = viewModel.fetchDay(date: day.date, dayOfSplit: day.dayOfSplit)
+                await day = viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
                 await refreshMuscleGroups()
             }
         }

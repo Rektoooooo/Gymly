@@ -24,7 +24,7 @@ struct ContentViewGraph: View {
                             .stroke(Color.red, lineWidth: 2)
                     )
             }
-            .frame(width: 300, height: 300)
+            .frame(width: 250, height: 250)
             .padding()
         }
 }

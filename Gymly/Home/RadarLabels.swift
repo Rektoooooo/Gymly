@@ -11,17 +11,17 @@ struct RadarLabels: View {
     var body: some View {
         ZStack {
             Text("Chest")
-                .position(x: 130, y: 5)
+                .position(x: 120, y: 5)
             Text("Back")
-                .position(x: 5, y: 90)
+                .position(x: 0, y: 80)
             Text("Biceps")
-                .position(x: 5, y: 240)
+                .position(x: -5, y: 200)
             Text("Triceps")
-                .position(x: 130, y: 330)
+                .position(x: 110, y: 280)
             Text("Legs")
-                .position(x: 260, y: 305)
+                .position(x: 240, y: 260)
             Text("Abs")
-                .position(x: 340, y: 160)
+                .position(x: 290, y: 150)
             Text("Shoulders")
                 .position(x: 270, y: 30)
         }

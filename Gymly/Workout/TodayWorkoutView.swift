@@ -61,27 +61,28 @@ struct TodayWorkoutView: View {
                                         .resizable()
                                         .frame(width: 40, height: 40)
                                         .clipShape(Circle())
-                                        .shadow(color: Color.white.opacity(0.6), radius: 15, x: 0, y: 0)
-                                } else if let uiImage = loadImageFromDocuments(filename: imagePath) {
-                                    Image(uiImage: uiImage) // Load user-selected image
-                                        .resizable()
-                                        .frame(width: 40, height: 40)
-                                        .clipShape(Circle())
-                                        .overlay(
-                                            Circle().stroke(Color.white, lineWidth: 2)
-                                        )
-                                        .shadow(color: Color.white.opacity(0.6), radius: 15, x: 0, y: 0)
+                                        .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
+                                } else {
+                                    let fileURL = URL(fileURLWithPath: imagePath.replacingOccurrences(of: "file://", with: "")) // Fix local file path
+                                    
+                                    if FileManager.default.fileExists(atPath: fileURL.path), // Ensure file exists
+                                       let imageData = try? Data(contentsOf: fileURL), // Load Image Data
+                                       let uiImage = UIImage(data: imageData) { // Convert to UIImage
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .frame(width: 40, height: 40)
+                                            .clipShape(Circle())
+                                            .overlay(
+                                                Circle().stroke(Color.white, lineWidth: 2)
+                                            )
+                                    } else {
+                                        Image("defaultProfileImage")  // Default system placeholder
+                                            .resizable()
+                                            .frame(width: 40, height: 40)
+                                            .clipShape(Circle())
+                                            .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
+                                    }
                                 }
-                            } else {
-                                Image(systemName: "person.circle.fill") // Default if no image
-                                    .resizable()
-                                    .foregroundColor(.gray)
-                                    .frame(width: 40, height: 40)
-                                    .clipShape(Circle())
-                                    .overlay(
-                                        Circle().stroke(Color.white, lineWidth: 2)
-                                    )
-                                    .shadow(color: Color.white.opacity(0.6), radius: 15, x: 0, y: 0)
                             }
                         }
                     }

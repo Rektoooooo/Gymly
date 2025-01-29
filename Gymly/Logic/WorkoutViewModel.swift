@@ -38,13 +38,9 @@ final class WorkoutViewModel: ObservableObject {
     }
     
     @MainActor
-    func fetchDay(date: String, dayOfSplit: Int?) async -> Day {
+    func fetchDay(dayOfSplit: Int?) async -> Day {
         let predicate = #Predicate<Day> {
-            if date.isEmpty{
                 $0.dayOfSplit == dayOfSplit!
-            } else {
-                $0.date == date
-            }
         }
         let descriptor = FetchDescriptor<Day>(predicate: predicate)
         do {
@@ -170,7 +166,7 @@ final class WorkoutViewModel: ObservableObject {
         var newMuscleGroups: [MuscleGroup] = []
         
         // Fetch current day
-        let currentDay = await fetchDay(date: "", dayOfSplit: dayOfSplit)
+        let currentDay = await fetchDay(dayOfSplit: dayOfSplit)
         day = currentDay
 
 
@@ -225,7 +221,7 @@ final class WorkoutViewModel: ObservableObject {
 
     @MainActor
     func insertWorkout() async {
-        let today = await fetchDay(date: "", dayOfSplit: config.dayInSplit)
+        let today = await fetchDay(dayOfSplit: config.dayInSplit)
         debugPrint(day.name)
         context.insert(DayStorage(id: UUID(), day: today, date: formattedDateString(from: Date())))
         config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
@@ -281,17 +277,14 @@ final class WorkoutViewModel: ObservableObject {
                 setList.append(set)
             }
             do {
+                
+                let today = await fetchDay(dayOfSplit: config.dayInSplit)
+
                 guard let validReps = Int(reps) else {
                     throw InsertionError.invalidReps("Invalid reps value: \(reps)")
                 }
 
-                guard day.exercises.indices.contains(day.exercises.endIndex) || day.exercises.isEmpty else {
-                    throw InsertionError.invalidIndex("Invalid index for insertion")
-                }
-                
-                let currentDay = await fetchDay(date: "", dayOfSplit: config.dayInSplit)
-
-                currentDay.exercises.insert(
+                today.exercises.insert(
                     Exercise(
                         id: exerciseId ?? UUID(),
                         name: name,
