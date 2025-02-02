@@ -23,203 +23,177 @@ struct SettingsView: View {
     
     var body: some View {
         NavigationView {
-            ZStack {
-                LinearGradient(
-                    gradient: Gradient(colors: [.black, .graytint]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-                ScrollView {
-                    VStack {
-                        ZStack {
-                            LinearGradient(
-                                gradient: Gradient(colors: [.red, .pink]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                            HStack {
-                                if let imagePath = config.userProfileImageURL {
-                                    if imagePath == "defaultProfileImage" {
-                                        Image("defaultProfileImage") // Load from Assets
+            List {
+                Section("") {
+                    ZStack {
+                        LinearGradient(
+                            gradient: Gradient(colors: [.red, .pink]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        .cornerRadius(20)
+                        HStack {
+                            if let imagePath = config.userProfileImageURL {
+                                if imagePath == "defaultProfileImage" {
+                                    Image("defaultProfileImage") // Load from Assets
+                                        .resizable()
+                                        .frame(width: 80, height: 80)
+                                        .clipShape(Circle())
+                                        .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
+                                        .padding()
+                                } else {
+                                    let fileURL = URL(fileURLWithPath: imagePath.replacingOccurrences(of: "file://", with: "")) // Fix local file path
+                                    
+                                    if FileManager.default.fileExists(atPath: fileURL.path), // Ensure file exists
+                                       let imageData = try? Data(contentsOf: fileURL), // Load Image Data
+                                       let uiImage = UIImage(data: imageData) { // Convert to UIImage
+                                        Image(uiImage: uiImage)
                                             .resizable()
-                                            .frame(width: 100, height: 100)
+                                            .frame(width: 80, height: 80)
+                                            .clipShape(Circle())
+                                            .overlay(
+                                                Circle().stroke(Color.white, lineWidth: 2)
+                                            )
+                                            .padding()
+                                    } else {
+                                        Image("defaultProfileImage")  // Default system placeholder
+                                            .resizable()
+                                            .frame(width: 80, height: 80)
                                             .clipShape(Circle())
                                             .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
                                             .padding()
-                                    } else {
-                                        let fileURL = URL(fileURLWithPath: imagePath.replacingOccurrences(of: "file://", with: "")) // Fix local file path
-                                        
-                                        if FileManager.default.fileExists(atPath: fileURL.path), // Ensure file exists
-                                           let imageData = try? Data(contentsOf: fileURL), // Load Image Data
-                                           let uiImage = UIImage(data: imageData) { // Convert to UIImage
-                                            Image(uiImage: uiImage)
-                                                .resizable()
-                                                .frame(width: 100, height: 100)
-                                                .clipShape(Circle())
-                                                .overlay(
-                                                    Circle().stroke(Color.white, lineWidth: 2)
-                                                )
-                                                .padding()
-                                        } else {
-                                            Image("defaultProfileImage")  // Default system placeholder
-                                                .resizable()
-                                                .frame(width: 100, height: 100)
-                                                .clipShape(Circle())
-                                                .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
-                                                .padding()
-                                        }
                                     }
                                 }
-                                VStack {
-                                    Text("\(config.username)")
-                                        .multilineTextAlignment(.leading)
-                                        .bold()
-                                        .padding()
-                                    HStack {
-                                        VStack() {
-                                            Text(weight != nil ? "\(String(format: "%.1f", weight!)) kg" : "nil")
-                                                .bold()
-                                            Text("weight")
-                                                .font(.caption)
-                                        }
-                                        Spacer()
-                                        VStack() {
-                                            Text("\(height != nil ? "\(height!) m" : "nil")")
-                                                .bold()
-                                            Text("height")
-                                                .font(.caption)
-                                        }
-                                        Spacer()
-                                        VStack() {
-                                            Text("\(age != nil ? "\(age!)" : "nil")")
-                                                .bold()
-                                            Text("age")
-                                                .font(.caption)
-                                        }
+                            }
+                            VStack {
+                                Text("\(config.username)")
+                                    .multilineTextAlignment(.leading)
+                                    .bold()
+                                    .padding()
+                                HStack {
+                                    Spacer()
+                                    VStack() {
+                                        Text(weight != nil ? "\(String(format: "%.1f", weight!)) kg" : "nil")
+                                            .bold()
+                                        Text("weight")
+                                            .font(.caption)
                                     }
+                                    Spacer()
+                                    VStack() {
+                                        Text("\(height != nil ? "\(height!) m" : "nil")")
+                                            .bold()
+                                        Text("height")
+                                            .font(.caption)
+                                    }
+                                    Spacer()
+                                    VStack() {
+                                        Text("\(age != nil ? "\(age!)" : "nil")")
+                                            .bold()
+                                        Text("age")
+                                            .font(.caption)
+                                    }
+                                    Spacer()
                                 }
-                                Spacer()
-                            }
-                        }
-                        .frame(width: 350)
-                        .background(Color.graytint)
-                        .cornerRadius(20)
-                        .padding()
-                        HStack {
-                            VStack {
-                                ZStack {
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [.red, .orange]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                    Image(systemName: "flame")
-                                }
-                                .frame(width: 70, height: 70, alignment: .leading)
-                                .cornerRadius(25)
-                                Text("5")
-                                    .bold()
-                                Text("Streak")
-                                    .font(.caption)
                             }
                             Spacer()
-                            VStack {
-                                ZStack {
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [.orange, .yellow]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                    Image(systemName: "clock")
-                                }
-                                .frame(width: 70, height: 70, alignment: .leading)
-                                .cornerRadius(25)
-                                Text("1453h")
-                                    .bold()
-                                Text("working out")
-                                    .font(.caption)
-                            }
-                            Spacer()
-                            VStack {
-                                ZStack {
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [.yellow, .red]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                    Image(systemName: "medal")
-                                }
-                                .frame(width: 70, height: 70, alignment: .leading)
-                                .cornerRadius(25)
-                                Text("12")
-                                    .bold()
-                                Text("Medals")
-                                    .font(.caption)
-                            }
                         }
-                        .frame(width: 320)
+                    }
+                    .listRowBackground(Color.clear)
+                    .frame(width: 340, height: 120)
+                    HStack {
                         VStack {
                             ZStack {
                                 LinearGradient(
-                                    gradient: Gradient(colors: [.yellow, .orange]),
+                                    gradient: Gradient(colors: [.red, .orange]),
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
-                                .cornerRadius(20)
-                                VStack {
-                                    Section("Preferences") {
-                                        HStack {
-                                            Text("Weight unit")
-                                            Picker("Weight unit", selection: $config.weightUnit) {
-                                                ForEach(units, id: \.self) { unit in
-                                                    Text("\(unit)")
-                                                }
-                                            }
-                                            .pickerStyle(.segmented)
-                                            .onChange(of: selectedUnit) {
-                                                debugPrint("Selected unit : \(selectedUnit)")
-                                                config.weightUnit = selectedUnit
-                                            }
-                                        }
-                                    }
-                                    .bold()
-                                }
-                                .padding()
+                                Image(systemName: "flame")
                             }
+                            .frame(width: 70, height: 70, alignment: .leading)
+                            .cornerRadius(25)
+                            Text("5")
+                                .bold()
+                            Text("Streak")
+                                .font(.caption)
                         }
-                        .frame(width: 350)
-                        .padding()
-                        VStack {
-                            Button("Request HealthKit Access") {
-                                healthKitManager.requestAuthorization()
-                            }
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                        }
+                        Spacer()
                         VStack {
                             ZStack {
-                                ContentViewGraph()
-                                RadarLabels()
+                                LinearGradient(
+                                    gradient: Gradient(colors: [.orange, .yellow]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                                Image(systemName: "clock")
                             }
-                            .padding()
+                            .frame(width: 70, height: 70, alignment: .leading)
+                            .cornerRadius(25)
+                            Text("1453h")
+                                .bold()
+                            Text("working out")
+                                .font(.caption)
                         }
-                        .frame(width: 300, height: 300)
-                        .padding(.vertical, 40)
+                        Spacer()
+                        VStack {
+                            ZStack {
+                                LinearGradient(
+                                    gradient: Gradient(colors: [.yellow, .red]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                                Image(systemName: "medal")
+                            }
+                            .frame(width: 70, height: 70, alignment: .leading)
+                            .cornerRadius(25)
+                            Text("12")
+                                .bold()
+                            Text("Medals")
+                                .font(.caption)
+                        }
                     }
+                    .frame(width: 320)
+                    .listRowBackground(Color.clear)
                 }
-                .scrollIndicators(.hidden)
-                .navigationTitle("My profile")
-                .navigationBarTitleDisplayMode(.inline)
-                .padding()
+                Section("Preferences") {
+                    HStack {
+                        Image(systemName: "scalemass")
+                        Text("Unit")
+                        Picker(selection: $config.weightUnit, label: Label("Unit", systemImage: "scalemass.fill")) {
+                            ForEach(units, id: \.self) { unit in
+                                Text(unit)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: selectedUnit) {
+                            debugPrint("Selected unit : \(selectedUnit)")
+                            config.weightUnit = selectedUnit
+                        }
+                    }
+                    .frame(width: 300)
+                    NavigationLink(destination: ConnectionsView()) {
+                        Image(systemName: "square.2.layers.3d.top.filled")
+                        Text("App connections")
+                    }
+                    .frame(width: 300)
+                }
+                Section("Graph") {
+                    VStack {
+                        ZStack {
+                            ContentViewGraph()
+                            RadarLabels()
+                        }
+                        .padding()
+                    }
+                    .frame(width: 300, height: 300)
+                    .padding(.vertical, 40)
+                }
+                
             }
-            .onAppear() {
-                healthKitManager.fetchHeight { height in self.height = height }
-                healthKitManager.fetchWeight { weight in self.weight = weight }
-                healthKitManager.fetchAge { age in self.age = age }
-            }
+            .scrollIndicators(.hidden)
+            .navigationTitle("My profile")
+            .navigationBarTitleDisplayMode(.inline)
+            .padding()
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
@@ -228,6 +202,12 @@ struct SettingsView: View {
                         Label("", systemImage: "square.and.pencil")
                     }
                 }
+                
+            }
+            .onAppear() {
+                healthKitManager.fetchHeight { height in self.height = height }
+                healthKitManager.fetchWeight { weight in self.weight = weight }
+                healthKitManager.fetchAge { age in self.age = age }
             }
             .sheet(isPresented: $editUser, onDismiss: {
                 
@@ -236,6 +216,7 @@ struct SettingsView: View {
             }
         }
     }
+    
     
     func loadImageFromDocuments(filename: String) -> UIImage? {
         let fileURL = getDocumentsDirectory().appendingPathComponent(filename)
@@ -257,6 +238,14 @@ struct SettingsView: View {
             .clipShape(Circle())
             .padding()
             .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
+    }
+    
+    func loadImageFromUserDefaults() -> UIImage? {
+        if let base64String = UserDefaults.standard.string(forKey: "userProfileImageBase64"),
+           let imageData = Data(base64Encoded: base64String) {
+            return UIImage(data: imageData)
+        }
+        return nil
     }
 }
 

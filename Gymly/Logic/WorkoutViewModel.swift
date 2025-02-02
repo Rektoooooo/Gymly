@@ -233,6 +233,7 @@ final class WorkoutViewModel: ObservableObject {
         }
     }
     
+    
     func formattedDateString(from date: Date) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "d MMMM yyyy"

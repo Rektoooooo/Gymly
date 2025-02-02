@@ -20,6 +20,10 @@ struct EditUserView: View {
             HStack {
                 Spacer()
                 TextField("Username", text: $config.username)
+                    .padding()
+                    .background(Color(.systemGray2))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
                 Spacer()
             }
             VStack {
@@ -44,38 +48,30 @@ struct EditUserView: View {
             }
         }
         Button("Save changes") {
-            if let uiImage = avatarImage!.asUIImage() { // Convert SwiftUI Image to UIImage
-                if let savedPath = saveImageToDocuments(image: uiImage) {
-                    config.userProfileImageURL = savedPath
-                    debugPrint("Saved image path \(savedPath)")
-                }
-            }
+            saveImageToUserDefaults(image: imageToUIImage(avatarImage!)!)
             dismiss()
         }
         .padding()
     }
     
-    
-    func saveImageToDocuments(image: UIImage, filename: String = "profile.jpg") -> String? {
-        let fileURL = FileManager.default
-            .urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent(filename)
 
-        print("💾 Saving image to: \(fileURL.path)")
-
-        if let imageData = image.jpegData(compressionQuality: 0.8) {
-            do {
-                try imageData.write(to: fileURL)
-                print("✅ Image saved successfully!")
-                return fileURL.absoluteString
-            } catch {
-                print("❌ Error saving image: \(error)")
-            }
-        } else {
-            print("❌ Failed to convert UIImage to Data")
+    func imageToUIImage(_ image: Image) -> UIImage? {
+        let controller = UIHostingController(rootView: image)
+        let view = controller.view
+        
+        let renderer = UIGraphicsImageRenderer(size: view?.intrinsicContentSize ?? CGSize(width: 100, height: 100))
+        return renderer.image { ctx in
+            view?.drawHierarchy(in: CGRect(origin: .zero, size: view?.intrinsicContentSize ?? CGSize(width: 100, height: 100)), afterScreenUpdates: true)
         }
-        return nil
     }
+    
+    func saveImageToUserDefaults(image: UIImage) {
+        if let imageData = image.jpegData(compressionQuality: 0.8) {
+            config.userProfileImageURL = imageData.base64EncodedString()
+        }
+    }
+    
+    
     
 }
 
