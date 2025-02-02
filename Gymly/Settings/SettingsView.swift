@@ -66,10 +66,16 @@ struct SettingsView: View {
                                 }
                             }
                             VStack {
-                                Text("\(config.username)")
-                                    .multilineTextAlignment(.leading)
-                                    .bold()
-                                    .padding()
+                                VStack {
+                                    Text("\(config.username)")
+                                        .multilineTextAlignment(.leading)
+                                        .bold()
+                                        .padding()
+//                                    Text("\(config.userEmail)")
+//                                        .multilineTextAlignment(.leading)
+//                                        .font(.caption)
+//                                        .padding()
+                                }
                                 HStack {
                                     Spacer()
                                     VStack() {

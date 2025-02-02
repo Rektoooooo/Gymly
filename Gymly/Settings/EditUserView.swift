@@ -48,7 +48,7 @@ struct EditUserView: View {
             }
         }
         Button("Save changes") {
-            saveImageToUserDefaults(image: imageToUIImage(avatarImage!)!)
+           // saveImageToUserDefaults(image: imageToUIImage(avatarImage!)!)
             dismiss()
         }
         .padding()

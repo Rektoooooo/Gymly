@@ -66,8 +66,14 @@ class Config:ObservableObject {
         }
     }
     
+    @Published var userEmail: String {
+        didSet {
+            UserDefaults.standard.set(username, forKey: "userEmail")
+        }
+    }
     
-    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String) {
+    
+    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String) {
         self.weightUnit = UserDefaults.standard.object(forKey: "weightUnit") as? String ?? "Kg"
         self.splitStarted = UserDefaults.standard.object(forKey: "splitStarted") as? Bool ?? false
         self.daysRecorded = UserDefaults.standard.object(forKey: "daysRecorded") as? [String] ?? []
@@ -77,5 +83,6 @@ class Config:ObservableObject {
         self.isUserLoggedIn = UserDefaults.standard.object(forKey: "isUserLoggedIn") as? Bool ?? false
         self.userProfileImageURL = UserDefaults.standard.object(forKey: "userProfileImageURL") as? String ?? "defaultProfileImage"
         self.username = UserDefaults.standard.object(forKey: "username") as? String ?? "User"
+        self.userEmail = UserDefaults.standard.object(forKey: "userEmail") as? String ?? "user@example.com"
     }
 }

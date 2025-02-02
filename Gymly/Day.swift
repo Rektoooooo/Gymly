@@ -8,23 +8,33 @@
 import Foundation
 import SwiftData
 
+// ✅ Rename to avoid conflicts
+protocol DeepCopyable {
+    func copy() -> Self
+}
+
 @Model
-class Day: Copyable {
+class Day: DeepCopyable {
     var name: String
     var dayOfSplit: Int
-    var exercises:[Exercise]
+    var exercises: [Exercise]
     var date: String
-    
-    init(name: String, dayOfSplit: Int, exercises: [Exercise], date: String) {
+
+    // ✅ Mark initializer as `required` to allow `Self.init(...)`
+    required init(name: String, dayOfSplit: Int, exercises: [Exercise], date: String) {
         self.name = name
         self.dayOfSplit = dayOfSplit
         self.exercises = exercises
         self.date = date
     }
-    
-    convenience init(from day: Day) {
-        // Create deep copies of the exercises as well
-        let copiedExercises = day.exercises.map { $0.copy() }
-        self.init(name: day.name, dayOfSplit: day.dayOfSplit, exercises: copiedExercises, date: day.date)
+
+    // ✅ Implement `copy()`
+    func copy() -> Self {
+        return Self.init(
+            name: self.name,
+            dayOfSplit: self.dayOfSplit,
+            exercises: self.exercises.map { $0.copy() }, // Deep copy exercises
+            date: self.date
+        )
     }
 }

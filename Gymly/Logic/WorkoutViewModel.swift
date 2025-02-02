@@ -222,12 +222,20 @@ final class WorkoutViewModel: ObservableObject {
     @MainActor
     func insertWorkout() async {
         let today = await fetchDay(dayOfSplit: config.dayInSplit)
-        debugPrint(day.name)
-        context.insert(DayStorage(id: UUID(), day: today, date: formattedDateString(from: Date())))
+        
+        // Create a new deep copy of the day and its exercises
+        let newDay = Day(
+            name: today.name,
+            dayOfSplit: today.dayOfSplit, exercises: today.exercises.map { $0.copy() },
+            date: formattedDateString(from: Date())
+        )
+
+        context.insert(DayStorage(id: UUID(), day: newDay, date: formattedDateString(from: Date())))
         config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
+        
         do {
             try context.save()
-            debugPrint("Day saved with date : \(formattedDateString(from: Date()))")
+            debugPrint("Day saved with date: \(formattedDateString(from: Date()))")
         } catch {
             debugPrint(error)
         }
