@@ -120,6 +120,9 @@ struct TodayWorkoutView: View {
             Task {
                 await refreshMuscleGroups()
             }
+            viewModel.name = ""
+            viewModel.sets = ""
+            viewModel.reps = ""
         } ,content: {
                 CreateExerciseView(viewModel: viewModel, day: viewModel.day)
                     .navigationTitle("Create Exercise")
