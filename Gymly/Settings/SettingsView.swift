@@ -17,7 +17,7 @@ struct SettingsView: View {
     @State private var weight: Double?
     @State private var age: Int?
     @State private var editUser: Bool = false
-    
+    @State private var profileImage: UIImage?
     @State var selectedUnit:String = ""
     let units: [String] = ["Kg","Lbs"]
     
@@ -33,75 +33,57 @@ struct SettingsView: View {
                         )
                         .cornerRadius(20)
                         HStack {
-                            if let imagePath = config.userProfileImageURL {
-                                if imagePath == "defaultProfileImage" {
-                                    Image("defaultProfileImage") // Load from Assets
+                            HStack {
+                                if let image = profileImage {
+                                    Image(uiImage: image)
                                         .resizable()
+                                        .scaledToFill()
                                         .frame(width: 80, height: 80)
                                         .clipShape(Circle())
                                         .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
                                         .padding()
                                 } else {
-                                    let fileURL = URL(fileURLWithPath: imagePath.replacingOccurrences(of: "file://", with: "")) // Fix local file path
-                                    
-                                    if FileManager.default.fileExists(atPath: fileURL.path), // Ensure file exists
-                                       let imageData = try? Data(contentsOf: fileURL), // Load Image Data
-                                       let uiImage = UIImage(data: imageData) { // Convert to UIImage
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .frame(width: 80, height: 80)
-                                            .clipShape(Circle())
-                                            .overlay(
-                                                Circle().stroke(Color.white, lineWidth: 2)
-                                            )
-                                            .padding()
-                                    } else {
-                                        Image("defaultProfileImage")  // Default system placeholder
-                                            .resizable()
-                                            .frame(width: 80, height: 80)
-                                            .clipShape(Circle())
-                                            .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
-                                            .padding()
-                                    }
-                                }
-                            }
-                            VStack {
-                                VStack {
-                                    Text("\(config.username)")
-                                        .multilineTextAlignment(.leading)
-                                        .bold()
+                                    Image("defaultProfileImage")
+                                        .resizable()
+                                        .frame(width: 80, height: 80)
+                                        .clipShape(Circle())
+                                        .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
                                         .padding()
-//                                    Text("\(config.userEmail)")
-//                                        .multilineTextAlignment(.leading)
-//                                        .font(.caption)
-//                                        .padding()
                                 }
-                                HStack {
-                                    Spacer()
-                                    VStack() {
-                                        Text(weight != nil ? "\(String(format: "%.1f", weight!)) kg" : "nil")
+                                VStack {
+                                    VStack {
+                                        Text("\(config.username)")
+                                            .multilineTextAlignment(.leading)
                                             .bold()
-                                        Text("weight")
-                                            .font(.caption)
+                                            .padding()
                                     }
-                                    Spacer()
-                                    VStack() {
-                                        Text("\(height != nil ? "\(height!) m" : "nil")")
-                                            .bold()
-                                        Text("height")
-                                            .font(.caption)
+                                    HStack {
+                                        Spacer()
+                                        VStack() {
+                                            Text(weight != nil ? "\(String(format: "%.1f", weight!)) kg" : "nil")
+                                                .bold()
+                                            Text("weight")
+                                                .font(.caption)
+                                        }
+                                        Spacer()
+                                        VStack() {
+                                            Text("\(height != nil ? "\(height!) m" : "nil")")
+                                                .bold()
+                                            Text("height")
+                                                .font(.caption)
+                                        }
+                                        Spacer()
+                                        VStack() {
+                                            Text("\(age != nil ? "\(age!)" : "nil")")
+                                                .bold()
+                                            Text("age")
+                                                .font(.caption)
+                                        }
+                                        Spacer()
                                     }
-                                    Spacer()
-                                    VStack() {
-                                        Text("\(age != nil ? "\(age!)" : "nil")")
-                                            .bold()
-                                        Text("age")
-                                            .font(.caption)
-                                    }
-                                    Spacer()
                                 }
+                                Spacer()
                             }
-                            Spacer()
                         }
                     }
                     .listRowBackground(Color.clear)
@@ -158,7 +140,7 @@ struct SettingsView: View {
                                 .font(.caption)
                         }
                     }
-                    .frame(width: 320)
+                    .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                 }
                 Section("Preferences") {
@@ -184,22 +166,18 @@ struct SettingsView: View {
                     .frame(width: 300)
                 }
                 Section("Graph") {
-                    VStack {
-                        ZStack {
-                            ContentViewGraph()
-                            RadarLabels()
-                        }
-                        .padding()
+                    ZStack {
+                        ContentViewGraph()
+                        RadarLabels()
                     }
                     .frame(width: 300, height: 300)
-                    .padding(.vertical, 40)
                 }
-                
+                .listRowBackground(Color.clear)
+                .padding(.horizontal)
             }
             .scrollIndicators(.hidden)
             .navigationTitle("My profile")
             .navigationBarTitleDisplayMode(.inline)
-            .padding()
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
@@ -211,33 +189,34 @@ struct SettingsView: View {
                 
             }
             .onAppear() {
+                if let imagePath = config.userProfileImageURL {
+                    profileImage = loadImage(from: imagePath)
+                }
                 healthKitManager.fetchHeight { height in self.height = height }
                 healthKitManager.fetchWeight { weight in self.weight = weight }
                 healthKitManager.fetchAge { age in self.age = age }
             }
             .sheet(isPresented: $editUser, onDismiss: {
-                
+                if let imagePath = config.userProfileImageURL {
+                    profileImage = loadImage(from: imagePath)
+                }
             }) {
                 EditUserView()
             }
         }
     }
-    
-    
-    func loadImageFromDocuments(filename: String) -> UIImage? {
-        let fileURL = getDocumentsDirectory().appendingPathComponent(filename)
-        if let imageData = try? Data(contentsOf: fileURL) {
-            return UIImage(data: imageData)
+    func loadImage(from path: String) -> UIImage? {
+        let fileURL = URL(fileURLWithPath: path)
+        guard FileManager.default.fileExists(atPath: fileURL.path),
+              let imageData = try? Data(contentsOf: fileURL),
+              let uiImage = UIImage(data: imageData) else {
+            return nil
         }
-        return nil
-    }
-    
-    func getDocumentsDirectory() -> URL {
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return uiImage
     }
     
     @ViewBuilder
-    private func DefaultProfileImage() -> some View {
+    func DefaultProfileImage() -> some View {
         Image("defaultProfileImage")
             .resizable()
             .frame(width: 100, height: 100)
@@ -245,18 +224,4 @@ struct SettingsView: View {
             .padding()
             .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
     }
-    
-    func loadImageFromUserDefaults() -> UIImage? {
-        if let base64String = UserDefaults.standard.string(forKey: "userProfileImageBase64"),
-           let imageData = Data(base64Encoded: base64String) {
-            return UIImage(data: imageData)
-        }
-        return nil
-    }
-}
-
-
-
-#Preview {
-    SettingsView()
 }

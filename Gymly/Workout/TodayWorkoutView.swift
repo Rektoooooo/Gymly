@@ -15,6 +15,7 @@ struct TodayWorkoutView: View {
     @EnvironmentObject var config: Config
     @Environment(\.modelContext) var context: ModelContext
     @State var showProfileView: Bool = false
+    @State private var profileImage: UIImage?
     
     @State private var navigationTitle: String = ""
     @State var muscleGroups:[MuscleGroup] = []
@@ -55,34 +56,18 @@ struct TodayWorkoutView: View {
                         Button(action: {
                             showProfileView = true
                         }) {
-                            if let imagePath = config.userProfileImageURL {
-                                if imagePath == "defaultProfileImage" {
-                                    Image("defaultProfileImage") // Load from Assets
-                                        .resizable()
-                                        .frame(width: 40, height: 40)
-                                        .clipShape(Circle())
-                                        .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
-                                } else {
-                                    let fileURL = URL(fileURLWithPath: imagePath.replacingOccurrences(of: "file://", with: "")) // Fix local file path
-                                    
-                                    if FileManager.default.fileExists(atPath: fileURL.path), // Ensure file exists
-                                       let imageData = try? Data(contentsOf: fileURL), // Load Image Data
-                                       let uiImage = UIImage(data: imageData) { // Convert to UIImage
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .frame(width: 40, height: 40)
-                                            .clipShape(Circle())
-                                            .overlay(
-                                                Circle().stroke(Color.white, lineWidth: 2)
-                                            )
-                                    } else {
-                                        Image("defaultProfileImage")  // Default system placeholder
-                                            .resizable()
-                                            .frame(width: 40, height: 40)
-                                            .clipShape(Circle())
-                                            .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
-                                    }
-                                }
+                            if let image = profileImage {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(Circle())
+                            } else {
+                                Image("defaultProfileImage")
+                                    .resizable()
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(Circle())
+                                    .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
                             }
                         }
                     }
@@ -109,6 +94,9 @@ struct TodayWorkoutView: View {
             config.lastUpdateDate = Date()
             await refreshMuscleGroups()
             navigationTitle = viewModel.day.name
+            if let imagePath = config.userProfileImageURL {
+                profileImage = loadImage(from: imagePath)
+            }
 
         }
         .sheet(isPresented: $viewModel.editPlan, onDismiss: {
@@ -119,6 +107,9 @@ struct TodayWorkoutView: View {
             SplitView(viewModel: viewModel)
         }
         .sheet(isPresented: $showProfileView, onDismiss: {
+            if let imagePath = config.userProfileImageURL {
+                profileImage = loadImage(from: imagePath)
+            }
             Task {
                 await refreshMuscleGroups()
             }
@@ -152,6 +143,16 @@ struct TodayWorkoutView: View {
     
     func getDocumentsDirectory() -> URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    }
+    
+    func loadImage(from path: String) -> UIImage? {
+        let fileURL = URL(fileURLWithPath: path)
+        guard FileManager.default.fileExists(atPath: fileURL.path),
+              let imageData = try? Data(contentsOf: fileURL),
+              let uiImage = UIImage(data: imageData) else {
+            return nil
+        }
+        return uiImage
     }
     
 }
