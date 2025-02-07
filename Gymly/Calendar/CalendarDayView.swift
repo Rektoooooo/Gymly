@@ -23,25 +23,45 @@ struct CalendarDayView: View {
     @State var muscleGroups:[MuscleGroup] = []
     
     var body: some View {
-        List {
-            ForEach(muscleGroups) { group in
-                if !group.exercises.isEmpty {
-                    Section(header: Text(group.name)) {
-                        ForEach(group.exercises, id: \.id) { exercise in
-                            NavigationLink(destination: CalendarExerciseView(viewModel: WorkoutViewModel(config: config, context: context), exercise: exercise)) {
-                                Text(exercise.name)
+        ZStack {
+            if muscleGroups.isEmpty {
+                VStack {
+                    Spacer()
+                    Text("Workout not recorded for the date")
+                        .foregroundStyle(.white.opacity(0.6))
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            VStack {
+                HStack {
+                    Text(day.name)
+                        .font(.largeTitle)
+                        .bold()
+                        .padding(.horizontal)
+                    Spacer()
+                }
+                List {
+                    ForEach(muscleGroups) { group in
+                        if !group.exercises.isEmpty {
+                            Section(header: Text(group.name)) {
+                                ForEach(group.exercises, id: \.id) { exercise in
+                                    NavigationLink(destination: CalendarExerciseView(viewModel: WorkoutViewModel(config: config, context: context), exercise: exercise)) {
+                                        Text(exercise.name)
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                .id(UUID())
+                .navigationTitle("\(date)")
+                .navigationBarTitleDisplayMode(.inline)
+                .task {
+                    await refreshMuscleGroups()
+                    debugPrint(date)
+                }
             }
-        }
-        .id(UUID())
-        .navigationTitle("\(date)")
-        .navigationBarTitleDisplayMode(.inline)
-        .task {
-            await refreshMuscleGroups()
-            debugPrint(date)
         }
     }
     

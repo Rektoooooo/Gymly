@@ -129,6 +129,11 @@ struct ExerciseDetailView: View {
                     Label("Add set", systemImage: "plus.circle")
                 }
             }
+            .onDisappear {
+                Task {
+                    await viewModel.insertWorkout()
+                }
+            }
         }
         .navigationTitle("\(exercise.name)")
         .navigationBarTitleDisplayMode(.inline)

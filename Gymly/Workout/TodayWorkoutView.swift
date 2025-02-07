@@ -41,6 +41,7 @@ struct TodayWorkoutView: View {
                                 await viewModel.insertWorkout()
                             }
                         }
+                        .foregroundStyle(Color.accentColor)
                     }
                 }
                 .id(UUID())
