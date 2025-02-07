@@ -40,7 +40,7 @@ struct ExerciseDetailView: View {
                     .bold()
             }
             List {
-                ForEach(exercise.sets, id: \.id) { set in
+                ForEach(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }), id: \.id) { set in
                     Section("Set \(exercise.sets.firstIndex(where: { $0.id == set.id })! + 1)") {
                         Button {
                             loadSetData(set: set)
