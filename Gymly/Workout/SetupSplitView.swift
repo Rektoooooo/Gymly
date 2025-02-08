@@ -13,6 +13,8 @@ struct SetupSplitView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
+    @ObservedObject var viewModel: WorkoutViewModel
+
     
     var body: some View {
         Form {
@@ -25,32 +27,31 @@ struct SetupSplitView: View {
                     .keyboardType(.numbersAndPunctuation)
             }
         }
-        Button("Set up individual day") {
-            for i in 0...(Int(splitLength) ?? 1) - 1 {
-                addDay(name: "Day \(i + 1)", index: i + 1)
+        Button("Start your split") {
+            if viewModel.days.isEmpty {
+                for i in 0...(Int(splitLength) ?? 1) - 1 {
+                    viewModel.addDay(name: "Day \(i + 1)", index: i + 1)
+                }
+                debugPrint("Added days")
+                do {
+                    try context.save()
+                    debugPrint("Context saved")
+                } catch {
+                    debugPrint(error)
+                }
+                config.splitStarted = true
+                config.dayInSplit = Int(splitDay) ?? 1
+                config.lastUpdateDate = Date()
+                config.splitLenght = Int(splitLength) ?? 1
+                dismiss()
+            } else {
+                debugPrint("Days already exist, skipping insertion.")
             }
-            debugPrint("Added days")
-            do {
-                try context.save()
-                debugPrint("Context saved")
-            } catch {
-                debugPrint(error)
-            }
-            config.splitStarted = true
-            config.dayInSplit = Int(splitDay) ?? 1
-            config.lastUpdateDate = Date()
-            config.splitLenght = Int(splitLength) ?? 1
-            dismiss()
         }
         .padding()
         .background(Color.graytint)
         .cornerRadius(20)
         .padding()
-    }
-    
-    func addDay(name: String, index:Int) {
-        context.insert(Day(name: name,dayOfSplit: index, exercises: [],date: ""))
-        debugPrint("Added day \(name)")
     }
     
 }

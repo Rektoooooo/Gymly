@@ -40,8 +40,8 @@ struct ExerciseDetailView: View {
                     .bold()
             }
             List {
-                ForEach(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }), id: \.id) { set in
-                    Section("Set \(exercise.sets.firstIndex(where: { $0.id == set.id })! + 1)") {
+                ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
+                    Section("Set \(index + 1)") { // Correct sequential numbering
                         Button {
                             loadSetData(set: set)
                         } label: {

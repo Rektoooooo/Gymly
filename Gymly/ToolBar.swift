@@ -14,13 +14,6 @@ struct ToolBar: View {
 
     var body: some View {
         TabView {
-            /*
-                ContentView()
-                  .tabItem {
-                    Label("Home", systemImage: "house")
-                  }
-                  .tag(1)
-             */
                 if config.splitStarted {
                     TodayWorkoutView(viewModel: WorkoutViewModel(config: config, context: context))
                         .tabItem {

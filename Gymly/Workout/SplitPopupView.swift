@@ -34,7 +34,7 @@ struct SplitPopupView: View {
         .sheet(isPresented: $showSplit, onDismiss: {
             showWholeSplit.toggle()
         }) {
-            SetupSplitView()
+            SetupSplitView(viewModel: viewModel)
                 .presentationDetents([.fraction(0.4)])
         }
         .sheet(isPresented: $showWholeSplit, onDismiss: {

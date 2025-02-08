@@ -22,7 +22,6 @@ class Exercise: Identifiable, Copyable {
     var repGoal: Int
     var muscleGroup: String
 
-    // ✅ Add `required` initializer
     required init(id: UUID, name: String, sets: [Set], repGoal: Int, muscleGroup: String) {
         self.id = id
         self.name = name
@@ -31,7 +30,6 @@ class Exercise: Identifiable, Copyable {
         self.muscleGroup = muscleGroup
     }
 
-    // ✅ Now this works because of `required` init
     func copy() -> Self {
         return Self.init(
             id: UUID(), // Ensure a unique ID
@@ -55,7 +53,6 @@ class Exercise: Identifiable, Copyable {
         var note: String
         var createdAt: Date
 
-        // ✅ Add `required` initializer
         required init(weight: Int, reps: Int, failure: Bool, time: String, note: String?, warmUp: Bool, restPause: Bool, dropSet: Bool, createdAt: Date) {
             self.weight = weight
             self.reps = reps
@@ -74,7 +71,6 @@ class Exercise: Identifiable, Copyable {
             )
         }
 
-        // ✅ Now this works because of `required` init
         func copy() -> Self {
             return Self.init(
                 weight: self.weight,

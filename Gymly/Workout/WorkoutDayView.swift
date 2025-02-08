@@ -33,15 +33,8 @@ struct WorkoutDayView: View {
                     if !group.exercises.isEmpty {
                         Section(header: Text(group.name)) {
                             ForEach(group.exercises, id: \.id) { exercise in
-                                NavigationLink(destination: ExerciseDetailView(viewModel: WorkoutViewModel(config: config, context: context), exercise: exercise)) {
+                                NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
                                     Text(exercise.name)
-                                }
-                                .swipeActions(edge: .leading) {
-                                    Button {
-                                        debugPrint(exercise.name)
-                                    } label: {
-                                        Label("Unread", systemImage: "printer.fill")
-                                    }
                                 }
                                 .swipeActions(edge: .trailing) {
                                     Button(role: .destructive) {

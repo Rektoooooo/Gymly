@@ -47,7 +47,7 @@ final class WorkoutViewModel: ObservableObject {
             let fetchedData: [Day]
             do {
                 fetchedData = try context.fetch(descriptor)
-                debugPrint("Fetched data: \(fetchedData)")
+                debugPrint("Fetched day count: \(fetchedData.count)")
             } catch {
                 debugPrint("Error fetching data: \(error.localizedDescription)")
                 return Day(name: "", dayOfSplit: 0, exercises: [],date: "")
@@ -74,7 +74,7 @@ final class WorkoutViewModel: ObservableObject {
             let fetchedData: [DayStorage]
             do {
                 fetchedData = try context.fetch(descriptor)
-                debugPrint("Fetched data: \(fetchedData)")
+                debugPrint("Fetched celendar day count: \(fetchedData.count)")
             } catch {
                 debugPrint("Error fetching data: \(error.localizedDescription)")
                 return Day(name: "", dayOfSplit: 0, exercises: [],date: "")
@@ -95,7 +95,7 @@ final class WorkoutViewModel: ObservableObject {
             let fetchedData: [Day]
             do {
                 fetchedData = try context.fetch(descriptor)
-                debugPrint("Fetched data: \(fetchedData)")
+                debugPrint("Fetched all days count: \(fetchedData.count)")
             } catch {
                 debugPrint("Error fetching data: \(error.localizedDescription)")
                 return []
@@ -121,7 +121,7 @@ final class WorkoutViewModel: ObservableObject {
             let fetchedData: [Exercise]
             do {
                 fetchedData = try context.fetch(descriptor)
-                debugPrint("Fetched data: \(fetchedData)")
+                debugPrint("Fetched exercises: \(fetchedData.count)")
             } catch {
                 debugPrint("Error fetching data: \(error.localizedDescription)")
                 return Exercise(id: UUID(), name: "", sets: [], repGoal: 0, muscleGroup: "")
@@ -218,6 +218,18 @@ final class WorkoutViewModel: ObservableObject {
         }
             return await fetchExercise(id : exercise.id)
     }
+    
+    func addDay(name: String, index: Int) {
+        debugPrint("Attempting to add: \(name) with index \(index)")
+        
+        if days.contains(where: { $0.dayOfSplit == index }) {
+            debugPrint("Skipping duplicate day: \(name)")
+            return
+        }
+        
+        context.insert(Day(name: name, dayOfSplit: index, exercises: [], date: ""))
+        debugPrint("Added day: \(name)")
+    }
 
     @MainActor
     func insertWorkout() async {
@@ -281,8 +293,9 @@ final class WorkoutViewModel: ObservableObject {
     func createExercise() async {
         if !name.isEmpty && !sets.isEmpty && !reps.isEmpty {
             var setList: [Exercise.Set] = []
-            for _ in 1...Int(sets)! {
-                let set = Exercise.Set(weight: 0, reps: 0, failure: false, time: "", note: "", warmUp: false, restPause: false, dropSet: false, createdAt: Date())
+            for i in 1...Int(sets)! {
+                let set = Exercise.Set(weight: 0, reps: 0, failure: false, time: "", note: "\(Date().addingTimeInterval(Double(i)))", warmUp: false, restPause: false, dropSet: false, createdAt: Date().addingTimeInterval(Double(i)))
+                debugPrint(Date().addingTimeInterval(Double(i)))
                 setList.append(set)
             }
             do {
