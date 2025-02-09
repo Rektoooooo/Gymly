@@ -21,7 +21,7 @@ struct ToolBar: View {
                         }
                         .tag(1)
                 } else {
-                    SplitPopupView(viewModel: WorkoutViewModel(config: config, context: context))
+                    SplitNotSetUpView(viewModel: WorkoutViewModel(config: config, context: context))
                         .tabItem {
                             Label("Routine", systemImage: "dumbbell")
                         }

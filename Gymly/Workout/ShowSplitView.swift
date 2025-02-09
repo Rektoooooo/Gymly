@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-struct SplitView: View {
+struct ShowSplitView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
     @Environment(\.modelContext) var context: ModelContext
@@ -21,7 +21,7 @@ struct SplitView: View {
                     Section("Workout list") {
                         ForEach(days.sorted(by: { $0.dayOfSplit < $1.dayOfSplit }), id: \.self) { day in
                             NavigationLink("Day \(day.dayOfSplit) - \(day.name)") {
-                                WorkoutDayView(viewModel: viewModel, day: day)
+                                ShowSplitDayView(viewModel: viewModel, day: day)
                             }
                         }
                     }

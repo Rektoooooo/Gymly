@@ -1,14 +1,14 @@
 //
-//  ExerciseDetailView.swift
+//  ShowSplitDayExerciseView.swift
 //  Gymly
 //
-//  Created by Sebastián Kučera on 14.05.2024.
+//  Created by Sebastián Kučera on 09.02.2025.
 //
 
 import SwiftUI
 import SwiftData
 
-struct ExerciseDetailView: View {
+struct ShowSplitDayExerciseView: View {
     
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
@@ -43,7 +43,7 @@ struct ExerciseDetailView: View {
                 ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
                     Section("Set \(index + 1)") { // Correct sequential numbering
                         Button {
-                           loadSetData(set: set)
+                            loadSetData(set: set)
                         } label: {
                             HStack {
                                 HStack {
@@ -102,10 +102,6 @@ struct ExerciseDetailView: View {
                             }
                         }
                     }
-                    .sheet(isPresented: $showSheet) {
-                        EditExerciseSetView(weight: $weight, reps: $reps, unit: $config.weightUnit, setNumber: $setNumber, note: $note, exercise: exercise, failure: $failure, warmup: $warmUp, restPause: $restPause, dropSet: $dropSet)
-                            .presentationDetents([.fraction(0.85)])
-                    }
                     .swipeActions(edge: .trailing) {
                         Button(role: .destructive) {
                             deleteItem(set)
@@ -119,6 +115,10 @@ struct ExerciseDetailView: View {
                         dismiss()
                     }
                 }
+            }
+            .sheet(isPresented: $showSheet) {
+                EditExerciseSetView(weight: $weight, reps: $reps, unit: $config.weightUnit, setNumber: $setNumber, note: $note, exercise: exercise, failure: $failure, warmup: $warmUp, restPause: $restPause, dropSet: $dropSet)
+                    .presentationDetents([.fraction(0.85)])
             }
             .toolbar {
                 Button {

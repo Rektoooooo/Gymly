@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SetEditorView: View {
+struct EditExerciseSetView: View {
     
     @Binding var weight: Int
     @Binding var reps: Int

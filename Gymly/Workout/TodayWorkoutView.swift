@@ -105,7 +105,7 @@ struct TodayWorkoutView: View {
                 await refreshMuscleGroups()
             }
         }) {
-            SplitView(viewModel: viewModel)
+            ShowSplitView(viewModel: viewModel)
         }
         .sheet(isPresented: $showProfileView, onDismiss: {
             if let imagePath = config.userProfileImageURL {

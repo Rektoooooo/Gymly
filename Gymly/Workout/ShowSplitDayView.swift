@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-struct WorkoutDayView: View {
+struct ShowSplitDayView: View {
     
     @State var name: String = ""
     @State private var createExercise:Bool = false
@@ -33,7 +33,7 @@ struct WorkoutDayView: View {
                     if !group.exercises.isEmpty {
                         Section(header: Text(group.name)) {
                             ForEach(group.exercises, id: \.id) { exercise in
-                                NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
+                                NavigationLink(destination: ShowSplitDayExerciseView(viewModel: viewModel, exercise: exercise)) {
                                     Text(exercise.name)
                                 }
                                 .swipeActions(edge: .trailing) {

@@ -8,7 +8,7 @@
 import SwiftUI
 import SwiftData
 
-struct SplitPopupView: View {
+struct SplitNotSetUpView: View {
     
     @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
@@ -40,7 +40,7 @@ struct SplitPopupView: View {
         .sheet(isPresented: $showWholeSplit, onDismiss: {
 
         } ,content: {
-            SplitView(viewModel: viewModel)
+            ShowSplitView(viewModel: viewModel)
             
             })
         
