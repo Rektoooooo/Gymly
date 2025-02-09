@@ -6,43 +6,78 @@
 //
 
 import SwiftUI
+import HealthKit
 
 struct ConnectionsView: View {
     @StateObject var healthKitManager = HealthKitManager()
-    @AppStorage("isHealthEnabled") private var isHealthEnabled = true
-    @AppStorage("syncWorkouts") private var syncWorkouts = false
-    @AppStorage("syncActiveEnergy") private var syncActiveEnergy = false
-    @AppStorage("divideByHours") private var divideByHours = false
-    @AppStorage("syncBodyMass") private var syncBodyMass = true
-    @AppStorage("syncNutritionalData") private var syncNutritionalData = true
-    @AppStorage("syncHydration") private var syncHydration = true
-    @AppStorage("syncGarmin") private var syncGarmin = false
+    @EnvironmentObject var config: Config
+    private let healthStore = HKHealthStore()
+    
     var body: some View {
         Form {
             Section(header: Text("Apple Health")) {
-                Toggle("Enable Apple Health", isOn: $isHealthEnabled)
-                if isHealthEnabled {
-                    Toggle("Sync workouts", isOn: $syncWorkouts)
-                    Toggle("Sync active energy", isOn: $syncActiveEnergy)
-                    if syncActiveEnergy {
-                        Toggle("Divide by hours", isOn: $divideByHours)
+                Toggle("Enable Apple Health", isOn: $config.isHealthEnabled)
+                    .onChange(of: config.isHealthEnabled) { newValue in
+                        if newValue {
+                            requestHealthKitAuthorization()
+                        } else {
+                            disableHealthKitAccess()
+                        }
                     }
-                    Toggle("Sync body mass", isOn: $syncBodyMass)
-                    Toggle("Sync nutritional data", isOn: $syncNutritionalData)
-                    Toggle("Sync hydration", isOn: $syncHydration)
+                
+                if config.isHealthEnabled {
+                    Toggle("Allow Date of Birth", isOn: $config.allowDateOfBirth)
+                    Toggle("Allow Height", isOn: $config.allowHeight)
+                    Toggle("Allow Weight", isOn: $config.allowWeight)
                 }
-            }
-            Button("Request HealthKit Access") {
-                healthKitManager.requestAuthorization()
             }
         }
         .navigationTitle("Connected Apps")
+        .onAppear {
+            if config.isHealthEnabled {
+                updateHealthPermissions() // ✅ Ensure toggles sync with user settings
+            }
+        }
+    }
+    
+    /// **Requests HealthKit authorization and updates UI instantly**
+    private func requestHealthKitAuthorization() {
+        let healthDataToRead: Set = [
+            HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!,
+            HKObjectType.quantityType(forIdentifier: .height)!,
+            HKObjectType.quantityType(forIdentifier: .bodyMass)!
+        ]
+        
+        healthStore.requestAuthorization(toShare: nil, read: healthDataToRead) { success, error in
+            DispatchQueue.main.async {
+                self.updateHealthPermissions() // ✅ Ensure UI updates right after auth
+            }
+        }
+    }
+    
+    /// **Syncs UI toggles with HealthKit permissions**
+    private func updateHealthPermissions() {
+        let dateOfBirthType = HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!
+        let heightType = HKObjectType.quantityType(forIdentifier: .height)!
+        let weightType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
+        
+        DispatchQueue.global(qos: .userInitiated).async {
+            let dateOfBirthStatus = self.healthStore.authorizationStatus(for: dateOfBirthType)
+            let heightStatus = self.healthStore.authorizationStatus(for: heightType)
+            let weightStatus = self.healthStore.authorizationStatus(for: weightType)
+            
+            DispatchQueue.main.async {
+                config.allowDateOfBirth = (dateOfBirthStatus == .sharingAuthorized)
+                config.allowHeight = (heightStatus == .sharingAuthorized)
+                config.allowWeight = (weightStatus == .sharingAuthorized)
+            }
+        }
+    }
+    
+    /// **Resets permissions when HealthKit is disabled**
+    private func disableHealthKitAccess() {
+        config.allowDateOfBirth = false
+        config.allowHeight = false
+        config.allowWeight = false
     }
 }
-
-#Preview {
-    ConnectionsView()
-}
-
-
-

@@ -68,12 +68,36 @@ class Config:ObservableObject {
     
     @Published var userEmail: String {
         didSet {
-            UserDefaults.standard.set(username, forKey: "userEmail")
+            UserDefaults.standard.set(userEmail, forKey: "userEmail")
+        }
+    }
+   
+    @Published var allowDateOfBirth: Bool {
+        didSet {
+            UserDefaults.standard.set(allowDateOfBirth, forKey: "allowDateOfBirth")
+        }
+    }
+    
+    @Published var allowHeight: Bool {
+        didSet {
+            UserDefaults.standard.set(allowHeight, forKey: "allowHeight")
+        }
+    }
+    
+    @Published var allowWeight: Bool {
+        didSet {
+            UserDefaults.standard.set(allowWeight, forKey: "allowWeight")
+        }
+    }
+    
+    @Published var isHealthEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(isHealthEnabled, forKey: "isHealthEnabled")
         }
     }
     
     
-    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String) {
+    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String, allowdateOfBirth: Bool, allowHeight: Bool, allowWeight: Bool, isHealthEnabled: Bool) {
         self.weightUnit = UserDefaults.standard.object(forKey: "weightUnit") as? String ?? "Kg"
         self.splitStarted = UserDefaults.standard.object(forKey: "splitStarted") as? Bool ?? false
         self.daysRecorded = UserDefaults.standard.object(forKey: "daysRecorded") as? [String] ?? []
@@ -84,5 +108,9 @@ class Config:ObservableObject {
         self.userProfileImageURL = UserDefaults.standard.object(forKey: "userProfileImageURL") as? String ?? "defaultProfileImage"
         self.username = UserDefaults.standard.object(forKey: "username") as? String ?? "User"
         self.userEmail = UserDefaults.standard.object(forKey: "userEmail") as? String ?? "user@example.com"
+        self.allowDateOfBirth = UserDefaults.standard.object(forKey: "allowDateOfBirth") as? Bool ?? false
+        self.allowHeight = UserDefaults.standard.object(forKey: "allowHeight") as? Bool ?? false
+        self.allowWeight = UserDefaults.standard.object(forKey: "allowWeight") as? Bool ?? false
+        self.isHealthEnabled = UserDefaults.standard.object(forKey: "isHealthEnabled") as? Bool ?? false
     }
 }
