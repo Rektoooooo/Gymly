@@ -242,8 +242,10 @@ final class WorkoutViewModel: ObservableObject {
             date: formattedDateString(from: Date())
         )
 
-        context.insert(DayStorage(id: UUID(), day: newDay, date: formattedDateString(from: Date())))
-        config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
+        if !config.daysRecorded.contains(formattedDateString(from: Date())) {
+            context.insert(DayStorage(id: UUID(), day: newDay, date: formattedDateString(from: Date())))
+            config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
+        }
         
         do {
             try context.save()
