@@ -1,10 +1,3 @@
-//
-//  ExerciseDetailView.swift
-//  Gymly
-//
-//  Created by Sebastián Kučera on 14.05.2024.
-//
-
 import SwiftUI
 import SwiftData
 
@@ -25,7 +18,7 @@ struct ExerciseDetailView: View {
     @State var dropSet: Bool = false
     @State var setNumber: Int = 0
     @State var note: String = ""
-    
+
     var body: some View {
         VStack {
             HStack {
@@ -41,9 +34,9 @@ struct ExerciseDetailView: View {
             }
             List {
                 ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
-                    Section("Set \(index + 1)") { // Correct sequential numbering
+                    Section("Set \(index + 1)") {
                         Button {
-                           loadSetData(set: set)
+                            loadSetData(set: set)
                         } label: {
                             HStack {
                                 HStack {
@@ -94,6 +87,7 @@ struct ExerciseDetailView: View {
                                 }
                             }
                         }
+
                         if !set.note.isEmpty {
                             HStack {
                                 Text(set.note)
@@ -101,10 +95,6 @@ struct ExerciseDetailView: View {
                                     .opacity(0.5)
                             }
                         }
-                    }
-                    .sheet(isPresented: $showSheet) {
-                        EditExerciseSetView(weight: $weight, reps: $reps, unit: $config.weightUnit, setNumber: $setNumber, note: $note, exercise: exercise, failure: $failure, warmup: $warmUp, restPause: $restPause, dropSet: $dropSet)
-                            .presentationDetents([.fraction(0.85)])
                     }
                     .swipeActions(edge: .trailing) {
                         Button(role: .destructive) {
@@ -132,8 +122,24 @@ struct ExerciseDetailView: View {
         }
         .navigationTitle("\(exercise.name)")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showSheet) {
+            EditExerciseSetView(
+                weight: $weight,
+                reps: $reps,
+                unit: $config.weightUnit,
+                setNumber: $setNumber,
+                note: $note,
+                exercise: exercise,
+                failure: $failure,
+                warmup: $warmUp,
+                restPause: $restPause,
+                dropSet: $dropSet
+            )
+            .presentationDetents([.fraction(0.85)])
+        }
     }
-    
+
+    /// **Loads set data and then triggers the sheet**
     func loadSetData(set: Exercise.Set) {
         weight = set.weight
         reps = set.reps
@@ -143,9 +149,11 @@ struct ExerciseDetailView: View {
         dropSet = set.dropSet
         note = set.note
         setNumber = exercise.sets.firstIndex(where: { $0.id == set.id }) ?? 0
-        showSheet = true
+        Task { @MainActor in
+            if !showSheet { showSheet = true }
+        }
     }
-    
+
     func deleteItem(_ set: Exercise.Set) {
         if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
             withAnimation {
@@ -155,7 +163,7 @@ struct ExerciseDetailView: View {
         context.delete(set)
         refreshExercise()
     }
-    
+
     func addSet() async {
         let newSet = Exercise.Set.createDefault()
         exercise.sets.append(newSet)
@@ -170,11 +178,10 @@ struct ExerciseDetailView: View {
             debugPrint(error)
         }
     }
-    
+
     func refreshExercise() {
         Task {
             exercise = await viewModel.fetchExercise(id: exercise.id)
         }
     }
 }
-
