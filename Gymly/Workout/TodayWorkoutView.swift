@@ -16,7 +16,6 @@ struct TodayWorkoutView: View {
     @Environment(\.modelContext) var context: ModelContext
     @State var showProfileView: Bool = false
     @State private var profileImage: UIImage?
-    
     @State private var navigationTitle: String = ""
     @State var muscleGroups:[MuscleGroup] = []
     
@@ -52,39 +51,39 @@ struct TodayWorkoutView: View {
                         await refreshMuscleGroups()
                     }
                 }
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button(action: {
-                            showProfileView = true
-                        }) {
-                            if let image = profileImage {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 40, height: 40)
-                                    .clipShape(Circle())
-                            } else {
-                                Image("defaultProfileImage")
-                                    .resizable()
-                                    .frame(width: 40, height: 40)
-                                    .clipShape(Circle())
-                                    .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
-                            }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: {
+                        showProfileView = true
+                    }) {
+                        if let image = profileImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 40, height: 40)
+                                .clipShape(Circle())
+                        } else {
+                            Image("defaultProfileImage")
+                                .resizable()
+                                .frame(width: 40, height: 40)
+                                .clipShape(Circle())
+                                .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
                         }
                     }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            viewModel.editPlan = true
-                        } label: {
-                            Label("", systemImage: "ellipsis.circle")
-                        }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.editPlan = true
+                    } label: {
+                        Label("", systemImage: "ellipsis.circle")
                     }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            viewModel.addExercise = true
-                        } label: {
-                            Label("", systemImage: "plus.circle")
-                        }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.addExercise = true
+                    } label: {
+                        Label("", systemImage: "plus.circle")
                     }
                 }
             }
