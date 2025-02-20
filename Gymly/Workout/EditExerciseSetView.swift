@@ -19,6 +19,7 @@ struct EditExerciseSetView: View {
     @Binding var warmup:Bool
     @Binding var restPause:Bool
     @Binding var dropSet:Bool
+    @Binding var bodyWeight:Bool
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) var dismiss
@@ -83,6 +84,8 @@ struct EditExerciseSetView: View {
                         .font(.title2)
                         .buttonStyle(PlainButtonStyle())
                     }
+                    Toggle("Body Weight", isOn: $bodyWeight)
+                        .toggleStyle(CheckToggleStyle())
                 }
                 Section("Repetisitions") {
                     HStack {
@@ -143,6 +146,7 @@ struct EditExerciseSetView: View {
             exercise.sets[setNumber].dropSet = dropSet
             exercise.sets[setNumber].time = getCurrentTime()
             exercise.sets[setNumber].note = note
+            exercise.sets[setNumber].bodyWeight = bodyWeight
             do {
                 try context.save()
             } catch {

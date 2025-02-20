@@ -296,7 +296,7 @@ final class WorkoutViewModel: ObservableObject {
         if !name.isEmpty && !sets.isEmpty && !reps.isEmpty {
             var setList: [Exercise.Set] = []
             for i in 1...Int(sets)! {
-                let set = Exercise.Set(weight: 0, reps: 0, failure: false, time: "", note: "", warmUp: false, restPause: false, dropSet: false, createdAt: Date().addingTimeInterval(Double(i)))
+                let set = Exercise.Set(weight: 0, reps: 0, failure: false, time: "", note: "", warmUp: false, restPause: false, dropSet: false, createdAt: Date().addingTimeInterval(Double(i)), bodyWeight: false)
                 debugPrint(Date().addingTimeInterval(Double(i)))
                 setList.append(set)
             }

@@ -17,6 +17,7 @@ struct ExerciseDetailView: View {
     @State var restPause: Bool = false
     @State var dropSet: Bool = false
     @State var setNumber: Int = 0
+    @State var bodyWeight: Bool = false
     @State var note: String = ""
 
     var body: some View {
@@ -32,7 +33,7 @@ struct ExerciseDetailView: View {
                     .padding()
                     .bold()
             }
-            List {
+            Form {
                 ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
                     Section("Set \(index + 1)") {
                         Button {
@@ -40,6 +41,11 @@ struct ExerciseDetailView: View {
                         } label: {
                             HStack {
                                 HStack {
+                                    if set.bodyWeight {
+                                        Text("BW  +")
+                                            .foregroundStyle(.accent)
+                                            .bold()
+                                    }
                                     Text("\(set.weight)")
                                         .foregroundStyle(.accent)
                                         .bold()
@@ -133,9 +139,10 @@ struct ExerciseDetailView: View {
                 failure: $failure,
                 warmup: $warmUp,
                 restPause: $restPause,
-                dropSet: $dropSet
+                dropSet: $dropSet,
+                bodyWeight: $bodyWeight
             )
-            .presentationDetents([.fraction(0.85)])
+            .presentationDetents([.fraction(0.9)])
         }
     }
 
@@ -147,6 +154,7 @@ struct ExerciseDetailView: View {
         warmUp = set.warmUp
         restPause = set.restPause
         dropSet = set.dropSet
+        bodyWeight = set.bodyWeight
         note = set.note
         setNumber = exercise.sets.firstIndex(where: { $0.id == set.id }) ?? 0
         Task { @MainActor in

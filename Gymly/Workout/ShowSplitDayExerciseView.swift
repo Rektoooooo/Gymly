@@ -23,6 +23,7 @@ struct ShowSplitDayExerciseView: View {
     @State var warmUp: Bool = false
     @State var restPause: Bool = false
     @State var dropSet: Bool = false
+    @State var bodyWeight: Bool = false
     @State var setNumber: Int = 0
     @State var note: String = ""
     
@@ -39,7 +40,7 @@ struct ShowSplitDayExerciseView: View {
                     .padding()
                     .bold()
             }
-            List {
+            Form {
                 ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
                     Section("Set \(index + 1)") { // Correct sequential numbering
                         Button {
@@ -117,8 +118,20 @@ struct ShowSplitDayExerciseView: View {
                 }
             }
             .sheet(isPresented: $showSheet) {
-                EditExerciseSetView(weight: $weight, reps: $reps, unit: $config.weightUnit, setNumber: $setNumber, note: $note, exercise: exercise, failure: $failure, warmup: $warmUp, restPause: $restPause, dropSet: $dropSet)
-                    .presentationDetents([.fraction(0.85)])
+                EditExerciseSetView(
+                    weight: $weight,
+                    reps: $reps,
+                    unit: $config.weightUnit,
+                    setNumber: $setNumber,
+                    note: $note,
+                    exercise: exercise,
+                    failure: $failure,
+                    warmup: $warmUp,
+                    restPause: $restPause,
+                    dropSet: $dropSet,
+                    bodyWeight: $bodyWeight
+                )
+                    .presentationDetents([.fraction(0.9)])
             }
             .toolbar {
                 Button {
@@ -142,6 +155,7 @@ struct ShowSplitDayExerciseView: View {
         restPause = set.restPause
         dropSet = set.dropSet
         note = set.note
+        bodyWeight = set.bodyWeight
         setNumber = exercise.sets.firstIndex(where: { $0.id == set.id }) ?? 0
         showSheet = true
     }

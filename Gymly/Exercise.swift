@@ -52,8 +52,9 @@ class Exercise: Identifiable, Copyable {
         var time: String
         var note: String
         var createdAt: Date
+        var bodyWeight: Bool
 
-        required init(weight: Int, reps: Int, failure: Bool, time: String, note: String?, warmUp: Bool, restPause: Bool, dropSet: Bool, createdAt: Date) {
+        required init(weight: Int, reps: Int, failure: Bool, time: String, note: String?, warmUp: Bool, restPause: Bool, dropSet: Bool, createdAt: Date, bodyWeight: Bool) {
             self.weight = weight
             self.reps = reps
             self.failure = failure
@@ -63,11 +64,12 @@ class Exercise: Identifiable, Copyable {
             self.restPause = restPause
             self.dropSet = dropSet
             self.createdAt = createdAt
+            self.bodyWeight = bodyWeight
         }
         
         static func createDefault() -> Set {
             return Set(
-                weight: 0, reps: 0, failure: false, time: "", note: "", warmUp: false, restPause: false, dropSet: false, createdAt: Date()
+                weight: 0, reps: 0, failure: false, time: "", note: "", warmUp: false, restPause: false, dropSet: false, createdAt: Date(), bodyWeight: false
             )
         }
 
@@ -81,7 +83,8 @@ class Exercise: Identifiable, Copyable {
                 warmUp: self.warmUp,
                 restPause: self.restPause,
                 dropSet: self.dropSet,
-                createdAt: self.createdAt
+                createdAt: self.createdAt,
+                bodyWeight: self.bodyWeight
             )
         }
     }
