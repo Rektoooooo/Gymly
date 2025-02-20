@@ -133,8 +133,21 @@ struct TodayWorkoutView: View {
         }
     
     func refreshMuscleGroups() async {
-        muscleGroups.removeAll() // Clear array to trigger UI update
-        muscleGroups = await viewModel.sortData(dayOfSplit: config.dayInSplit) // Reassign updated data
+        let newMuscleGroups = await viewModel.sortData(dayOfSplit: config.dayInSplit)
+
+        withAnimation {
+            for newGroup in newMuscleGroups {
+                if let index = muscleGroups.firstIndex(where: { $0.id == newGroup.id }) {
+                    muscleGroups[index] = newGroup
+                } else {
+                    muscleGroups.append(newGroup)
+                }
+            }
+            
+            muscleGroups.removeAll { oldGroup in
+                !newMuscleGroups.contains(where: { $0.id == oldGroup.id })
+            }
+        }
     }
     
     func loadImageFromDocuments(filename: String) -> UIImage? {
