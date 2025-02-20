@@ -27,9 +27,9 @@ struct EditExerciseSetView: View {
     
     var convertedWeight: Int {
         if config.weightUnit == "Kg" {
-            return weight // Keep it as is
+            return weight // ✅ Use weight instead of set.weight
         } else {
-            return weight * Int(2.20462) // Convert Kg to Lbs
+            return Int(round(Double(weight) * 2.20462)) // ✅ Convert kg → lbs (rounded properly)
         }
     }
 

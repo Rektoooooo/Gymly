@@ -22,9 +22,9 @@ struct ExerciseDetailView: View {
     
     var convertedWeight: Int {
         if config.weightUnit == "Kg" {
-            return weight // Keep it as is
+            return weight // Weight is already in kg
         } else {
-            return weight * Int(2.20462) // Convert Kg to Lbs
+            return Int(round(Double(weight) * 2.20462)) // Convert to lbs (rounded properly)
         }
     }
 
@@ -54,7 +54,7 @@ struct ExerciseDetailView: View {
                                             .foregroundStyle(.accent)
                                             .bold()
                                     }
-                                    Text("\(Double(set.weight) * (config.weightUnit == "Kg" ? 1.0 : 2.20462), specifier: "%.0f")")
+                                    Text("\(Int(round(Double(set.weight) * (config.weightUnit == "Kg" ? 1.0 : 2.20462))))")
                                         .foregroundStyle(.accent)
                                         .bold()
                                     Text("\(config.weightUnit)")
@@ -160,22 +160,20 @@ struct ExerciseDetailView: View {
     }
 
     func loadSetData(set: Exercise.Set, shouldOpenSheet: Bool = true) {
-        // Ensure all set weights are rounded when requested
         if config.roundSetWeights {
             for index in exercise.sets.indices {
                 exercise.sets[index].weight = Int(exercise.sets[index].weight) // Ensure whole number rounding
             }
-            config.roundSetWeights = false // Reset flag after rounding
+            config.roundSetWeights = false
         }
 
-        // Convert weight **only if necessary**
+        // Ensure conversion uses the same logic everywhere
         if config.weightUnit == "Kg" {
-            weight = set.weight // Store weight as Kg
+            weight = set.weight
         } else {
-            weight = Int(Double(set.weight) * 2.20462) // Convert Kg to Lbs, cast back to Int
+            weight = set.weight // Convert to lbs with proper rounding
         }
 
-        // Assign other properties
         reps = set.reps
         failure = set.failure
         warmUp = set.warmUp
@@ -185,7 +183,6 @@ struct ExerciseDetailView: View {
         note = set.note
         setNumber = exercise.sets.firstIndex(where: { $0.id == set.id }) ?? 0
 
-        // Open sheet only when explicitly requested (not onAppear)
         if shouldOpenSheet {
             Task { @MainActor in
                 showSheet = true
