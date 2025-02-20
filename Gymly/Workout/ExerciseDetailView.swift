@@ -193,7 +193,7 @@ struct ExerciseDetailView: View {
     func deleteItem(_ set: Exercise.Set) {
         if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
             withAnimation {
-                exercise.sets.remove(at: index)
+                _ = exercise.sets.remove(at: index)
             }
         }
         context.delete(set)

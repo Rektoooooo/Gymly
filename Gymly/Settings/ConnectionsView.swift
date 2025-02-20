@@ -17,8 +17,8 @@ struct ConnectionsView: View {
         Form {
             Section(header: Text("Apple Health")) {
                 Toggle("Enable Apple Health", isOn: $config.isHealthEnabled)
-                    .onChange(of: config.isHealthEnabled) { newValue in
-                        if newValue {
+                    .onChange(of: config.isHealthEnabled) {
+                        if config.isHealthEnabled {
                             requestHealthKitAuthorization()
                         } else {
                             disableHealthKitAccess()

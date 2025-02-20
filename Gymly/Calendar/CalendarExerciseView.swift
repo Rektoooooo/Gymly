@@ -49,8 +49,8 @@ struct CalendarExerciseView: View {
                     .bold()
             }
             List {
-                ForEach(exercise.sets, id: \.id) { set in
-                    Section("Set \(exercise.sets.firstIndex(where: { $0.id == set.id })! + 1)") {
+                ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
+                    Section("Set \(index + 1)") {
                             HStack {
                                 HStack {
                                     if set.bodyWeight {
@@ -58,7 +58,7 @@ struct CalendarExerciseView: View {
                                             .foregroundStyle(.accent)
                                             .bold()
                                     }
-                                    Text("\(String(format: "%.1f", convertedWeight))") // Display one decimal place
+                                    Text("\(Int(round(Double(set.weight) * (config.weightUnit == "Kg" ? 1.0 : 2.20462))))")
                                         .foregroundStyle(.accent)
                                         .bold()
                                     Text("\(config.weightUnit)")
@@ -122,12 +122,30 @@ struct CalendarExerciseView: View {
                 }
             }
         }
+        .onAppear {
+            for index in exercise.sets.indices {
+                loadSetData(set: exercise.sets[index])
+            }
+        }
         .navigationTitle("\(exercise.name)")
         .navigationBarTitleDisplayMode(.inline)
     }
     
     func loadSetData(set: Exercise.Set) {
-        weight = set.weight
+        if config.roundSetWeights {
+            for index in exercise.sets.indices {
+                exercise.sets[index].weight = Int(exercise.sets[index].weight) // Ensure whole number rounding
+            }
+            config.roundSetWeights = false
+        }
+
+        // Ensure conversion uses the same logic everywhere
+        if config.weightUnit == "Kg" {
+            weight = set.weight
+        } else {
+            weight = set.weight // Convert to lbs with proper rounding
+        }
+
         reps = set.reps
         failure = set.failure
         warmUp = set.warmUp
@@ -136,15 +154,13 @@ struct CalendarExerciseView: View {
         bodyWeight = set.bodyWeight
         note = set.note
         setNumber = exercise.sets.firstIndex(where: { $0.id == set.id }) ?? 0
-        Task { @MainActor in
-            if !showSheet { showSheet = true }
-        }
     }
+    
     
     func deleteItem(_ set: Exercise.Set) {
         if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
             withAnimation {
-                exercise.sets.remove(at: index)
+                _ = exercise.sets.remove(at: index)
             }
         }
         context.delete(set)

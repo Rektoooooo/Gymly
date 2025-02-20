@@ -153,8 +153,8 @@ struct SettingsView: View {
                             }
                         }
                         .pickerStyle(.segmented)
-                        .onChange(of: config.weightUnit) { newValue in
-                            debugPrint("Selected unit: \(newValue)")
+                        .onChange(of: config.weightUnit) {
+                            debugPrint("Selected unit: \(config.weightUnit)")
                             config.roundSetWeights = true
                         }
                     }
