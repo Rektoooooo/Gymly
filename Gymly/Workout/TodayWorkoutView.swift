@@ -103,6 +103,7 @@ struct TodayWorkoutView: View {
             Task {
                 await refreshMuscleGroups()
             }
+            navigationTitle = viewModel.day.name
         }) {
             ShowSplitView(viewModel: viewModel)
         }

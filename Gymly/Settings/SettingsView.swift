@@ -145,14 +145,20 @@ struct SettingsView: View {
                 }
                 Section("Preferences") {
                     HStack {
-                        Image(systemName: "scalemass")
-                        Text("Unit")
-                        Picker(selection: $config.weightUnit, label: Label("Unit", systemImage: "scalemass.fill")) {
+                        HStack {
+                            Image(systemName: "scalemass")
+                            Text("Unit")
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Picker(selection: $config.weightUnit, label: Text("")) {
                             ForEach(units, id: \.self) { unit in
                                 Text(unit)
                             }
                         }
                         .pickerStyle(.segmented)
+                        .frame(maxWidth: .infinity, alignment: .trailing) 
+                        .padding(.trailing, -30)
                         .onChange(of: config.weightUnit) {
                             debugPrint("Selected unit: \(config.weightUnit)")
                             config.roundSetWeights = true
