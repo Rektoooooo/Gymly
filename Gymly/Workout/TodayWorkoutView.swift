@@ -102,8 +102,8 @@ struct TodayWorkoutView: View {
         .sheet(isPresented: $viewModel.editPlan, onDismiss: {
             Task {
                 await refreshMuscleGroups()
+                navigationTitle = viewModel.day.name
             }
-            navigationTitle = viewModel.day.name
         }) {
             ShowSplitView(viewModel: viewModel)
         }

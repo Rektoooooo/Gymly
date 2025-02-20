@@ -61,7 +61,7 @@ struct ShowSplitDayExerciseView: View {
                                             .foregroundStyle(.accent)
                                             .bold()
                                     }
-                                    Text("\(String(format: "%.1f", convertedWeight))") // Display one decimal place
+                                    Text("\(Int(round(Double(set.weight) * (config.weightUnit == "Kg" ? 1.0 : 2.20462))))")
                                         .foregroundStyle(.accent)
                                         .bold()
                                     Text("\(config.weightUnit)")
@@ -160,8 +160,21 @@ struct ShowSplitDayExerciseView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
     
-    func loadSetData(set: Exercise.Set) {
-        weight = Int(set.weight)
+    func loadSetData(set: Exercise.Set, shouldOpenSheet: Bool = true) {
+        if config.roundSetWeights {
+            for index in exercise.sets.indices {
+                exercise.sets[index].weight = Int(exercise.sets[index].weight) // Ensure whole number rounding
+            }
+            config.roundSetWeights = false
+        }
+
+        // Ensure conversion uses the same logic everywhere
+        if config.weightUnit == "Kg" {
+            weight = set.weight
+        } else {
+            weight = set.weight // Convert to lbs with proper rounding
+        }
+
         reps = set.reps
         failure = set.failure
         warmUp = set.warmUp
@@ -170,8 +183,11 @@ struct ShowSplitDayExerciseView: View {
         bodyWeight = set.bodyWeight
         note = set.note
         setNumber = exercise.sets.firstIndex(where: { $0.id == set.id }) ?? 0
-        Task { @MainActor in
-            if !showSheet { showSheet = true }
+
+        if shouldOpenSheet {
+            Task { @MainActor in
+                showSheet = true
+            }
         }
     }
     
