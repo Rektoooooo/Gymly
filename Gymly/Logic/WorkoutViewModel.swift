@@ -265,14 +265,13 @@ final class WorkoutViewModel: ObservableObject {
     func updateDayInSplit() -> Int {
         let calendar = Calendar.current
 
-        // Check if the last update date is today
         if !calendar.isDateInToday(config.lastUpdateDate) {
             let daysPassed = numberOfDaysBetween(start: config.lastUpdateDate, end: Date())
-            
-            // Calculate the new day in split
+
+            // Ensure the correct cycle starting from the chosen start day
             let newDayInSplit = ((config.dayInSplit - 1 + daysPassed) % config.splitLenght) + 1
-            
-            // Update lastUpdateDate to today
+
+            // Update last update date and day in split
             config.lastUpdateDate = Date()
             config.dayInSplit = newDayInSplit
 
@@ -281,7 +280,6 @@ final class WorkoutViewModel: ObservableObject {
             return config.dayInSplit
         }
     }
-
     // Helper function to calculate full days between two dates
     func numberOfDaysBetween(start: Date, end: Date) -> Int {
         let calendar = Calendar.current

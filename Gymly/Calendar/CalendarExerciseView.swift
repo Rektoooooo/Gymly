@@ -23,9 +23,18 @@ struct CalendarExerciseView: View {
     @State var warmUp: Bool = false
     @State var restPause: Bool = false
     @State var dropSet: Bool = false
+    @State var bodyWeight: Bool = false
     @State var setNumber: Int = 0
     @State var note: String = ""
     
+    var convertedWeight: Int {
+        if config.weightUnit == "Kg" {
+            return weight // Keep it as is
+        } else {
+            return weight * Int(2.20462) // Convert Kg to Lbs
+        }
+    }
+
     var body: some View {
         VStack {
             HStack {
@@ -44,7 +53,12 @@ struct CalendarExerciseView: View {
                     Section("Set \(exercise.sets.firstIndex(where: { $0.id == set.id })! + 1)") {
                             HStack {
                                 HStack {
-                                    Text("\(set.weight)")
+                                    if set.bodyWeight {
+                                        Text("BW  +")
+                                            .foregroundStyle(.accent)
+                                            .bold()
+                                    }
+                                    Text("\(String(format: "%.1f", convertedWeight))") // Display one decimal place
                                         .foregroundStyle(.accent)
                                         .bold()
                                     Text("\(config.weightUnit)")
@@ -119,9 +133,12 @@ struct CalendarExerciseView: View {
         warmUp = set.warmUp
         restPause = set.restPause
         dropSet = set.dropSet
+        bodyWeight = set.bodyWeight
         note = set.note
         setNumber = exercise.sets.firstIndex(where: { $0.id == set.id }) ?? 0
-        showSheet = true
+        Task { @MainActor in
+            if !showSheet { showSheet = true }
+        }
     }
     
     func deleteItem(_ set: Exercise.Set) {

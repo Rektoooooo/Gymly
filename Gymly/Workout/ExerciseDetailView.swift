@@ -19,6 +19,14 @@ struct ExerciseDetailView: View {
     @State var setNumber: Int = 0
     @State var bodyWeight: Bool = false
     @State var note: String = ""
+    
+    var convertedWeight: Int {
+        if config.weightUnit == "Kg" {
+            return weight // Keep it as is
+        } else {
+            return weight * Int(2.20462) // Convert Kg to Lbs
+        }
+    }
 
     var body: some View {
         VStack {
@@ -37,7 +45,7 @@ struct ExerciseDetailView: View {
                 ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
                     Section("Set \(index + 1)") {
                         Button {
-                            loadSetData(set: set)
+                            loadSetData(set: set, shouldOpenSheet: true)
                         } label: {
                             HStack {
                                 HStack {
@@ -46,7 +54,7 @@ struct ExerciseDetailView: View {
                                             .foregroundStyle(.accent)
                                             .bold()
                                     }
-                                    Text("\(set.weight)")
+                                    Text("\(Double(set.weight) * (config.weightUnit == "Kg" ? 1.0 : 2.20462), specifier: "%.0f")")
                                         .foregroundStyle(.accent)
                                         .bold()
                                     Text("\(config.weightUnit)")
@@ -126,6 +134,11 @@ struct ExerciseDetailView: View {
                 }
             }
         }
+        .onAppear {
+            for index in exercise.sets.indices {
+                loadSetData(set: exercise.sets[index], shouldOpenSheet: false)
+            }
+        }
         .navigationTitle("\(exercise.name)")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showSheet) {
@@ -146,9 +159,23 @@ struct ExerciseDetailView: View {
         }
     }
 
-    /// **Loads set data and then triggers the sheet**
-    func loadSetData(set: Exercise.Set) {
-        weight = set.weight
+    func loadSetData(set: Exercise.Set, shouldOpenSheet: Bool = true) {
+        // Ensure all set weights are rounded when requested
+        if config.roundSetWeights {
+            for index in exercise.sets.indices {
+                exercise.sets[index].weight = Int(exercise.sets[index].weight) // Ensure whole number rounding
+            }
+            config.roundSetWeights = false // Reset flag after rounding
+        }
+
+        // Convert weight **only if necessary**
+        if config.weightUnit == "Kg" {
+            weight = set.weight // Store weight as Kg
+        } else {
+            weight = Int(Double(set.weight) * 2.20462) // Convert Kg to Lbs, cast back to Int
+        }
+
+        // Assign other properties
         reps = set.reps
         failure = set.failure
         warmUp = set.warmUp
@@ -157,11 +184,15 @@ struct ExerciseDetailView: View {
         bodyWeight = set.bodyWeight
         note = set.note
         setNumber = exercise.sets.firstIndex(where: { $0.id == set.id }) ?? 0
-        Task { @MainActor in
-            if !showSheet { showSheet = true }
+
+        // Open sheet only when explicitly requested (not onAppear)
+        if shouldOpenSheet {
+            Task { @MainActor in
+                showSheet = true
+            }
         }
     }
-
+    
     func deleteItem(_ set: Exercise.Set) {
         if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
             withAnimation {

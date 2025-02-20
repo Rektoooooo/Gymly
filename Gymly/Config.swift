@@ -96,8 +96,14 @@ class Config:ObservableObject {
         }
     }
     
+    @Published var roundSetWeights: Bool {
+        didSet {
+            UserDefaults.standard.set(roundSetWeights, forKey: "roundSetWeights")
+        }
+    }
     
-    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String, allowdateOfBirth: Bool, allowHeight: Bool, allowWeight: Bool, isHealthEnabled: Bool) {
+    
+    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String, allowdateOfBirth: Bool, allowHeight: Bool, allowWeight: Bool, isHealthEnabled: Bool, roundSetWeights: Bool) {
         self.weightUnit = UserDefaults.standard.object(forKey: "weightUnit") as? String ?? "Kg"
         self.splitStarted = UserDefaults.standard.object(forKey: "splitStarted") as? Bool ?? false
         self.daysRecorded = UserDefaults.standard.object(forKey: "daysRecorded") as? [String] ?? []
@@ -112,5 +118,13 @@ class Config:ObservableObject {
         self.allowHeight = UserDefaults.standard.object(forKey: "allowHeight") as? Bool ?? false
         self.allowWeight = UserDefaults.standard.object(forKey: "allowWeight") as? Bool ?? false
         self.isHealthEnabled = UserDefaults.standard.object(forKey: "isHealthEnabled") as? Bool ?? false
+        self.roundSetWeights = UserDefaults.standard.object(forKey: "roundSetWeights") as? Bool ?? false
+    }
+}
+
+extension Double {
+    func rounded(toPlaces places: Int) -> Double {
+        let divisor = pow(10.0, Double(places))
+        return (self * divisor).rounded() / divisor
     }
 }

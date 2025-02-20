@@ -9,6 +9,10 @@ import SwiftUI
 
 struct EditExerciseSetView: View {
     
+    @Environment(\.modelContext) private var context
+    @EnvironmentObject var config: Config
+    @Environment(\.dismiss) var dismiss
+
     @Binding var weight: Int
     @Binding var reps: Int
     @Binding var unit: String
@@ -20,10 +24,15 @@ struct EditExerciseSetView: View {
     @Binding var restPause:Bool
     @Binding var dropSet:Bool
     @Binding var bodyWeight:Bool
-
-    @Environment(\.modelContext) private var context
-    @Environment(\.dismiss) var dismiss
     
+    var convertedWeight: Int {
+        if config.weightUnit == "Kg" {
+            return weight // Keep it as is
+        } else {
+            return weight * Int(2.20462) // Convert Kg to Lbs
+        }
+    }
+
     var body: some View {
         NavigationView {
             List {
@@ -43,7 +52,7 @@ struct EditExerciseSetView: View {
                 Section("Weight (\(unit))") {
                     HStack {
                         Button {
-                            weight -= 1
+                            weight -= (config.weightUnit == "Kg" ? 1 : 1 / Int(2.20462)) // Adjust decrement for Lbs
                         } label: {
                             HStack {
                                 Image(systemName: "minus")
@@ -52,28 +61,32 @@ struct EditExerciseSetView: View {
                         }
                         .font(.title2)
                         .buttonStyle(PlainButtonStyle())
+
                         Button {
-                            weight -= 5
+                            weight -= (config.weightUnit == "Kg" ? 5 : 5 / Int(2.20462)) // Adjust decrement for Lbs
                         } label: {
                             Label("", systemImage: "5.square")
                                 .padding(.leading , -15)
                         }
                         .font(.title2)
                         .buttonStyle(PlainButtonStyle())
+
                         Spacer()
-                        Text("\(weight) \(unit)")
+                        Text("\(convertedWeight) \(unit)")
                             .font(.title2)
                         Spacer()
+
                         Button {
-                            weight += 5
+                            weight += (config.weightUnit == "Kg" ? 5 : 5 / Int(2.20462)) // Adjust increment for Lbs
                         } label: {
                             Label("", systemImage: "5.square")
                                 .padding(.trailing , -15)
                         }
                         .font(.title2)
                         .buttonStyle(PlainButtonStyle())
+
                         Button {
-                            weight += 1
+                            weight += (config.weightUnit == "Kg" ? 1 : 1 / Int(2.20462)) // Adjust increment for Lbs
                         } label: {
                             HStack {
                                 Label("", systemImage: "1.square")
