@@ -25,11 +25,22 @@ struct EditExerciseSetView: View {
     @Binding var dropSet:Bool
     @Binding var bodyWeight:Bool
     
+    var selectedSetTypes: [String] {
+        var selected = [String]()
+        if failure { selected.append("Failure") }
+        if warmup{ selected.append("Warm Up") }
+        if restPause { selected.append("Rest Pause") }
+        if dropSet { selected.append("Drop Set") }
+        return selected
+    }
+    @State private var isDropdownOpen = false
+
+    
     var convertedWeight: Int {
         if config.weightUnit == "Kg" {
-            return weight // ✅ Use weight instead of set.weight
+            return weight // Use weight instead of set.weight
         } else {
-            return Int(round(Double(weight) * 2.20462)) // ✅ Convert kg → lbs (rounded properly)
+            return Int(round(Double(weight) * 2.20462)) // Convert kg → lbs (rounded properly)
         }
     }
 
@@ -37,17 +48,48 @@ struct EditExerciseSetView: View {
         NavigationView {
             List {
                 Section("Set note") {
-                       TextField("Set note", text: $note)
+                    TextField("Set note", text: $note)
                 }
-                Section("Set type") {
-                    Toggle("Warm Up", isOn: $warmup)
-                        .toggleStyle(CheckToggleStyle())
-                    Toggle("Failure", isOn: $failure)
-                        .toggleStyle(CheckToggleStyle())
-                    Toggle("Rest Pause", isOn: $restPause)
-                        .toggleStyle(CheckToggleStyle())
-                    Toggle("Drop Set", isOn: $dropSet)
-                        .toggleStyle(CheckToggleStyle())
+                Section(header: Text("Set Type")) {
+                    Menu {
+                        Button(action: { failure.toggle() }) {
+                            HStack {
+                                Text("Failure")
+                                Spacer()
+                                if failure { Image(systemName: "checkmark") }
+                            }
+                        }
+                        Button(action: { warmup.toggle() }) {
+                            HStack {
+                                Text("Warm Up")
+                                Spacer()
+                                if warmup { Image(systemName: "checkmark") }
+                            }
+                        }
+                        Button(action: { restPause.toggle() }) {
+                            HStack {
+                                Text("Rest Pause")
+                                Spacer()
+                                if restPause { Image(systemName: "checkmark") }
+                            }
+                        }
+                        Button(action: { dropSet.toggle() }) {
+                            HStack {
+                                Text("Drop Set")
+                                Spacer()
+                                if dropSet { Image(systemName: "checkmark") }
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Text("Set Type:")
+                            Spacer()
+                            Text(selectedSetTypes.isEmpty ? "None" : selectedSetTypes.joined(separator: ", "))
+                                .foregroundColor(.gray)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                        }
+                    }
                 }
                 Section("Weight (\(unit))") {
                     HStack {
@@ -146,28 +188,35 @@ struct EditExerciseSetView: View {
                     }
                 }
             }
+            .scrollDisabled(true)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        exercise.sets[setNumber].weight = weight
+                        exercise.sets[setNumber].reps = reps
+                        exercise.sets[setNumber].failure = failure
+                        exercise.sets[setNumber].warmUp = warmup
+                        exercise.sets[setNumber].restPause = restPause
+                        exercise.sets[setNumber].dropSet = dropSet
+                        exercise.sets[setNumber].time = getCurrentTime()
+                        exercise.sets[setNumber].note = note
+                        exercise.sets[setNumber].bodyWeight = bodyWeight
+                        do {
+                            try context.save()
+                        } catch {
+                            debugPrint(error)
+                        }
+                        dismiss()
+                    } label: {
+                        Text("Save")
+                            .bold()
+                    }
+                }
+            }
             .offset(y : -20)
             .navigationTitle("Record set")
             .navigationBarTitleDisplayMode(.inline)
         }
-        Button("Save") {
-            exercise.sets[setNumber].weight = weight
-            exercise.sets[setNumber].reps = reps
-            exercise.sets[setNumber].failure = failure
-            exercise.sets[setNumber].warmUp = warmup
-            exercise.sets[setNumber].restPause = restPause
-            exercise.sets[setNumber].dropSet = dropSet
-            exercise.sets[setNumber].time = getCurrentTime()
-            exercise.sets[setNumber].note = note
-            exercise.sets[setNumber].bodyWeight = bodyWeight
-            do {
-                try context.save()
-            } catch {
-                debugPrint(error)
-            }
-            dismiss()
-        }
-        .padding(20)
     }
     
     func getCurrentTime() -> String {
@@ -195,5 +244,5 @@ struct CheckToggleStyle: ToggleStyle {
         .buttonStyle(.plain)
     }
 }
-
+    
 
