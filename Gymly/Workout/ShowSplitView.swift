@@ -37,7 +37,6 @@ struct ShowSplitView: View {
             await days = viewModel.fetchAllDays()
         }
     }
-
     /// **Helper function to remove duplicate `dayOfSplit` values**
     private func removeDuplicateDays(from days: [Day]) -> [Day] {
         var seenSplits = Set<Int>()

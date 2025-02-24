@@ -19,9 +19,44 @@ struct TodayWorkoutView: View {
     @State private var navigationTitle: String = ""
     @State var muscleGroups:[MuscleGroup] = []
     
+    @State var selectedDay: Day = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
+    @State var allSplitDays: [Day] = []
+    
     var body: some View {
         NavigationView{
             VStack {
+                Menu {
+                    let uniqueDays = removeDuplicateDays(from: allSplitDays)
+                    ForEach(uniqueDays.sorted(by: { $0.dayOfSplit < $1.dayOfSplit }), id: \.self) { day in
+                        Button(action: {
+                            selectedDay = day
+                            viewModel.day = selectedDay
+                            config.dayInSplit = day.dayOfSplit
+                            Task {
+                                await refreshView()
+                            }
+                        }) {
+                            HStack {
+                                Text(day.name)
+                                if day == selectedDay {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Text("\(selectedDay.name)")
+                            .font(.largeTitle)
+                            .bold()
+                            .padding(.leading)
+                        Text(Image(systemName: "chevron.down"))
+                            .font(.title2)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 16)
+                    .foregroundStyle(Color.primary)
+                }
                 List {
                     ForEach(muscleGroups) { group in
                         if !group.exercises.isEmpty {
@@ -44,60 +79,50 @@ struct TodayWorkoutView: View {
                     }
                 }
                 .id(UUID())
-                .navigationTitle(navigationTitle)
-                .navigationBarTitleDisplayMode(.large)
                 .onChange(of: viewModel.addExercise) {
                     Task {
                         await refreshMuscleGroups()
                     }
                 }
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(action: {
-                        showProfileView = true
-                    }) {
-                        if let image = profileImage {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 40, height: 40)
-                                .clipShape(Circle())
-                        } else {
-                            Image("defaultProfileImage")
-                                .resizable()
-                                .frame(width: 40, height: 40)
-                                .clipShape(Circle())
-                                .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(action: {
+                            showProfileView = true
+                        }) {
+                            if let image = profileImage {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(Circle())
+                            } else {
+                                Image("defaultProfileImage")
+                                    .resizable()
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(Circle())
+                                    .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
+                            }
                         }
                     }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        viewModel.editPlan = true
-                    } label: {
-                        Label("", systemImage: "ellipsis.circle")
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            viewModel.editPlan = true
+                        } label: {
+                            Label("", systemImage: "ellipsis.circle")
+                        }
                     }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        viewModel.addExercise = true
-                    } label: {
-                        Label("", systemImage: "plus.circle")
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            viewModel.addExercise = true
+                        } label: {
+                            Label("", systemImage: "plus.circle")
+                        }
                     }
                 }
             }
         }
         .task {
-            // Call sortData asynchronously when the view appears
-            config.dayInSplit = viewModel.updateDayInSplit()
-            config.lastUpdateDate = Date()
-            await refreshMuscleGroups()
-            navigationTitle = viewModel.day.name
-            if let imagePath = config.userProfileImageURL {
-                profileImage = loadImage(from: imagePath)
-            }
-
+           await refreshView()
         }
         .sheet(isPresented: $viewModel.editPlan, onDismiss: {
             Task {
@@ -170,6 +195,23 @@ struct TodayWorkoutView: View {
             return nil
         }
         return uiImage
+    }
+    
+    /// **Helper function to remove duplicate `dayOfSplit` values**
+    private func removeDuplicateDays(from days: [Day]) -> [Day] {
+        var seenSplits = Set<Int>()
+        return days.filter { seenSplits.insert($0.dayOfSplit).inserted } // Keep only the first occurrence
+    }
+    
+    func refreshView() async {
+        allSplitDays = await viewModel.fetchAllDays()
+        config.dayInSplit = viewModel.updateDayInSplit()
+        config.lastUpdateDate = Date()
+        await refreshMuscleGroups()
+        selectedDay = viewModel.day
+        if let imagePath = config.userProfileImageURL {
+            profileImage = loadImage(from: imagePath)
+        }
     }
     
 }
