@@ -37,7 +37,7 @@ struct TodayWorkoutView: View {
                             }
                         }) {
                             HStack {
-                                Text(day.name)
+                                Text("\(day.dayOfSplit) - \(day.name)")
                                 if day == selectedDay {
                                     Image(systemName: "checkmark")
                                 }
@@ -78,12 +78,6 @@ struct TodayWorkoutView: View {
                         .foregroundStyle(Color.accentColor)
                     }
                 }
-                .id(UUID())
-                .onChange(of: viewModel.addExercise) {
-                    Task {
-                        await refreshMuscleGroups()
-                    }
-                }
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button(action: {
@@ -117,6 +111,12 @@ struct TodayWorkoutView: View {
                         } label: {
                             Label("", systemImage: "plus.circle")
                         }
+                    }
+                }
+                .id(UUID())
+                .onChange(of: viewModel.addExercise) {
+                    Task {
+                        await refreshMuscleGroups()
                     }
                 }
             }
