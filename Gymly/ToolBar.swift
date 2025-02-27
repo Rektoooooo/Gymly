@@ -11,30 +11,23 @@ struct ToolBar: View {
     
     @EnvironmentObject var config: Config
     @Environment(\.modelContext) private var context
-
+    
     var body: some View {
         TabView {
-                if config.splitStarted {
-                    TodayWorkoutView(viewModel: WorkoutViewModel(config: config, context: context))
-                        .tabItem {
-                          Label("Routine", systemImage: "dumbbell")
-                        }
-                        .tag(1)
-                } else {
-                    SplitNotSetUpView(viewModel: WorkoutViewModel(config: config, context: context))
-                        .tabItem {
-                            Label("Routine", systemImage: "dumbbell")
-                        }
-                        .tag(1)
+            TodayWorkoutView(viewModel: WorkoutViewModel(config: config, context: context))
+                .tabItem {
+                    Label("Routine", systemImage: "dumbbell")
                 }
-                CalendarView(viewModel: WorkoutViewModel(config: config, context: context))
-                  .tabItem {
+                .tag(1)
+            
+            CalendarView(viewModel: WorkoutViewModel(config: config, context: context))
+                .tabItem {
                     Label("Calendar", systemImage: "calendar")
-                  }
-                  .tag(2)
-                
-            .toolbar(.visible, for: .tabBar)
-            .toolbarBackground(.black, for: .tabBar)
+                }
+                .tag(2)
+            
+                .toolbar(.visible, for: .tabBar)
+                .toolbarBackground(.black, for: .tabBar)
         }
         .sheet(isPresented: Binding(
             get: { !config.isUserLoggedIn },

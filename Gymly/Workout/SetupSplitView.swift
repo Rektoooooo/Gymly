@@ -10,6 +10,7 @@ import SwiftUI
 struct SetupSplitView: View {
     @State private var splitLength: String = ""
     @State private var splitDay: String = ""
+    @State private var name: String = ""
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
@@ -18,6 +19,9 @@ struct SetupSplitView: View {
     
     var body: some View {
         Form {
+            Section("Name your split") {
+                TextField("Push, Pull, Legs", text: $name)
+            }
             Section("How many days is your split ?") {
                 TextField("7", text: $splitLength)
                     .keyboardType(.numbersAndPunctuation)
@@ -28,25 +32,9 @@ struct SetupSplitView: View {
             }
         }
         Button("Start your split") {
-            if viewModel.days.isEmpty {
-                for i in 0...(Int(splitLength) ?? 1) - 1 {
-                    viewModel.addDay(name: "Day \(i + 1)", index: i + 1)
-                }
-                debugPrint("Added days")
-                do {
-                    try context.save()
-                    debugPrint("Context saved")
-                } catch {
-                    debugPrint(error)
-                }
-                config.splitStarted = true
-                config.dayInSplit = Int(splitDay) ?? 1
-                config.lastUpdateDate = Date()
-                config.splitLenght = Int(splitLength) ?? 1
-                dismiss()
-            } else {
-                debugPrint("Days already exist, skipping insertion.")
-            }
+            viewModel.createNewSplit(name: name, numberOfDays: Int(splitLength)!, startDate: Date(), context: context)
+            config.dayInSplit = Int(splitDay)!
+            dismiss()
         }
         .padding()
         .background(Color.graytint)

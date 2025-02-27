@@ -25,99 +25,110 @@ struct TodayWorkoutView: View {
     var body: some View {
         NavigationView{
             VStack {
-                Menu {
-                    let uniqueDays = removeDuplicateDays(from: allSplitDays)
-                    ForEach(uniqueDays.sorted(by: { $0.dayOfSplit < $1.dayOfSplit }), id: \.self) { day in
-                        Button(action: {
-                            selectedDay = day
-                            viewModel.day = selectedDay
-                            config.dayInSplit = day.dayOfSplit
-                            Task {
-                                await refreshView()
-                            }
-                        }) {
-                            HStack {
-                                Text("\(day.dayOfSplit) - \(day.name)")
-                                if day == selectedDay {
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                        }
-                    }
-                } label: {
-                    HStack {
-                        Text("\(selectedDay.name)")
-                            .font(.largeTitle)
-                            .bold()
-                            .padding(.leading)
-                        Text(Image(systemName: "chevron.down"))
-                            .font(.title2)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 16)
-                    .foregroundStyle(Color.primary)
-                }
-                List {
-                    ForEach(muscleGroups) { group in
-                        if !group.exercises.isEmpty {
-                            Section(header: Text(group.name)) {
-                                ForEach(group.exercises, id: \.id) { exercise in
-                                    NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
-                                        Text(exercise.name)
+                if !selectedDay.name.isEmpty {
+                    
+                    
+                    VStack {
+                        Menu {
+                            let uniqueDays = removeDuplicateDays(from: allSplitDays)
+                            ForEach(uniqueDays.sorted(by: { $0.dayOfSplit < $1.dayOfSplit }), id: \.self) { day in
+                                Button(action: {
+                                    selectedDay = day
+                                    viewModel.day = selectedDay
+                                    config.dayInSplit = day.dayOfSplit
+                                    Task {
+                                        await refreshView()
+                                    }
+                                }) {
+                                    HStack {
+                                        Text("\(day.dayOfSplit) - \(day.name)")
+                                        if day == selectedDay {
+                                            Image(systemName: "checkmark")
+                                        }
                                     }
                                 }
                             }
+                        } label: {
+                            HStack {
+                                Text("\(selectedDay.name)")
+                                    .font(.largeTitle)
+                                    .bold()
+                                    .padding(.leading)
+                                Text(Image(systemName: "chevron.down"))
+                                    .font(.title2)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, 16)
+                            .foregroundStyle(Color.primary)
                         }
-                    }
-                    Section("") {
-                        Button("Workout done") {
-                            Task {
-                                await viewModel.insertWorkout()
+                        List {
+                            ForEach(muscleGroups) { group in
+                                if !group.exercises.isEmpty {
+                                    Section(header: Text(group.name)) {
+                                        ForEach(group.exercises, id: \.id) { exercise in
+                                            NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
+                                                Text(exercise.name)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Section("") {
+                                Button("Workout done") {
+                                    Task {
+                                        await viewModel.insertWorkout()
+                                    }
+                                }
+                                .foregroundStyle(Color.accentColor)
                             }
                         }
-                        .foregroundStyle(Color.accentColor)
+                    }
+                } else {
+                    VStack {
+                        Text("Create your split with the \(Image(systemName: "ellipsis.circle")) icon in the top right corner")
+                            .multilineTextAlignment(.center)
                     }
                 }
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button(action: {
-                            showProfileView = true
-                        }) {
-                            if let image = profileImage {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 40, height: 40)
-                                    .clipShape(Circle())
-                            } else {
-                                Image("defaultProfileImage")
-                                    .resizable()
-                                    .frame(width: 40, height: 40)
-                                    .clipShape(Circle())
-                                    .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
-                            }
-                        }
-                    }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            viewModel.editPlan = true
-                        } label: {
-                            Label("", systemImage: "ellipsis.circle")
-                        }
-                    }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            viewModel.addExercise = true
-                        } label: {
-                            Label("", systemImage: "plus.circle")
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: {
+                        showProfileView = true
+                    }) {
+                        if let image = profileImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 40, height: 40)
+                                .clipShape(Circle())
+                        } else {
+                            Image("defaultProfileImage")
+                                .resizable()
+                                .frame(width: 40, height: 40)
+                                .clipShape(Circle())
+                                .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
                         }
                     }
                 }
-                .id(UUID())
-                .onChange(of: viewModel.addExercise) {
-                    Task {
-                        await refreshMuscleGroups()
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.editPlan = true
+                    } label: {
+                        Label("", systemImage: "ellipsis.circle")
                     }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.addExercise = true
+                    } label: {
+                        Label("", systemImage: "plus.circle")
+                    }
+                }
+            }
+            .id(UUID())
+            .onChange(of: viewModel.addExercise) {
+                Task {
+                    await refreshMuscleGroups()
                 }
             }
         }
@@ -130,7 +141,7 @@ struct TodayWorkoutView: View {
                 navigationTitle = viewModel.day.name
             }
         }) {
-            ShowSplitView(viewModel: viewModel)
+            SplitsView(viewModel: viewModel)
         }
         .sheet(isPresented: $showProfileView, onDismiss: {
             if let imagePath = config.userProfileImageURL {
@@ -204,7 +215,7 @@ struct TodayWorkoutView: View {
     }
     
     func refreshView() async {
-        allSplitDays = await viewModel.fetchAllDays()
+        allSplitDays = viewModel.getActiveSplitDays()
         config.dayInSplit = viewModel.updateDayInSplit()
         config.lastUpdateDate = Date()
         await refreshMuscleGroups()

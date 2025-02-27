@@ -9,40 +9,38 @@
 import Foundation
 import SwiftData
 
-// Place Copyable at the top
-protocol Copyable {
-    func copy() -> Self
-}
-
 @Model
-class Exercise: Identifiable, Copyable {
-    var id: UUID
+class Exercise {
+    @Attribute(.unique) var id: UUID
     var name: String
-    var sets: [Set]
+    var sets: [Set] // ✅ List of sets
     var repGoal: Int
     var muscleGroup: String
 
-    required init(id: UUID, name: String, sets: [Set], repGoal: Int, muscleGroup: String) {
+    @Relationship(deleteRule: .cascade, inverse: \Day.exercises) var day: Day? // ✅ Each Exercise belongs to a Day
+
+    init(id: UUID = UUID(), name: String, sets: [Set] = [], repGoal: Int, muscleGroup: String, day: Day? = nil) {
         self.id = id
         self.name = name
         self.sets = sets
         self.repGoal = repGoal
         self.muscleGroup = muscleGroup
+        self.day = day
     }
-
-    func copy() -> Self {
-        return Self.init(
-            id: UUID(), // Ensure a unique ID
+    
+    // ✅ Deep copy function
+    func copy() -> Exercise {
+        return Exercise(
             name: self.name,
-            sets: self.sets.map { $0.copy() }, // Copy each set
+            sets: self.sets.map { $0.copySets() }, // ✅ Deep copy all sets
             repGoal: self.repGoal,
             muscleGroup: self.muscleGroup
         )
     }
     
-
     @Model
-    class Set: Identifiable, Copyable {
+    class Set {
+        @Attribute(.unique) var id: UUID
         var weight: Int
         var reps: Int
         var failure: Bool
@@ -54,35 +52,40 @@ class Exercise: Identifiable, Copyable {
         var createdAt: Date
         var bodyWeight: Bool
 
-        required init(weight: Int, reps: Int, failure: Bool, time: String, note: String?, warmUp: Bool, restPause: Bool, dropSet: Bool, createdAt: Date, bodyWeight: Bool) {
+        @Relationship(deleteRule: .cascade, inverse: \Exercise.sets) var exercise: Exercise? // ✅ Each Set belongs to an Exercise
+
+        init(id: UUID = UUID(), weight: Int, reps: Int, failure: Bool, warmUp: Bool, restPause: Bool, dropSet: Bool, time: String, note: String, createdAt: Date, bodyWeight: Bool, exercise: Exercise? = nil) {
+            self.id = id
             self.weight = weight
             self.reps = reps
             self.failure = failure
-            self.time = time
-            self.note = note ?? ""
             self.warmUp = warmUp
             self.restPause = restPause
             self.dropSet = dropSet
+            self.time = time
+            self.note = note
             self.createdAt = createdAt
             self.bodyWeight = bodyWeight
+            self.exercise = exercise
         }
         
         static func createDefault() -> Set {
             return Set(
-                weight: 0, reps: 0, failure: false, time: "", note: "", warmUp: false, restPause: false, dropSet: false, createdAt: Date(), bodyWeight: false
+                id: UUID(), weight: 0, reps: 0, failure: false, warmUp: false, restPause: false, dropSet: false, time: "", note: "", createdAt: Date(), bodyWeight: false
             )
         }
-
-        func copy() -> Self {
-            return Self.init(
+        
+        // ✅ Deep copy function
+        func copySets() -> Set {
+            return Set(
                 weight: self.weight,
                 reps: self.reps,
                 failure: self.failure,
-                time: self.time,
-                note: self.note,
                 warmUp: self.warmUp,
                 restPause: self.restPause,
                 dropSet: self.dropSet,
+                time: self.time,
+                note: self.note,
                 createdAt: self.createdAt,
                 bodyWeight: self.bodyWeight
             )

@@ -24,7 +24,7 @@ final class WorkoutViewModel: ObservableObject {
     @Published var reps:String = ""
     @Published var setNote:String = ""
     @Published var muslceGroup:String = "Chest"
-    @Published var optionalDay: Day = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
+    @Published var emptyDay: Day = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
     
     enum InsertionError: Error {
         case invalidReps(String)
@@ -39,76 +39,109 @@ final class WorkoutViewModel: ObservableObject {
     }
     
     @MainActor
-    func fetchDay(dayOfSplit: Int?) async -> Day {
-        let predicate = #Predicate<Day> {
-                $0.dayOfSplit == dayOfSplit!
+    func createNewSplit(name: String, numberOfDays: Int, startDate: Date, context: ModelContext) {
+        var days: [Day] = []
+        
+        for i in 1...numberOfDays {
+            let day = Day(name: "Day \(i)", dayOfSplit: i, exercises: [], date: "")
+            days.append(day)
         }
-        let descriptor = FetchDescriptor<Day>(predicate: predicate)
+        
+        deactivateAllSplits(context: context) // ✅ Ensure only ONE split is active
+
+        let newSplit = Split(name: name, days: days, isActive: true, startDate: startDate)
+        context.insert(newSplit)
+
         do {
-            let fetchedData: [Day]
-            do {
-                fetchedData = try context.fetch(descriptor)
-                debugPrint("Fetched day count: \(fetchedData.count)")
-            } catch {
-                debugPrint("Error fetching data: \(error.localizedDescription)")
-                return Day(name: "", dayOfSplit: 0, exercises: [],date: "")
-            }
-            guard !fetchedData.isEmpty else {
-                return Day(name: "", dayOfSplit: 0, exercises: [],date: "")
-            }
-            
-            await MainActor.run {
-                day = fetchedData.first!
-            }
-            
-            return fetchedData.first!
+            try context.save()
+            print("New split '\(name)' created.")
+        } catch {
+            print("Error saving split: \(error)")
         }
+    }
+    
+    @MainActor
+    func getActiveSplit() -> Split? {
+        let fetchDescriptor = FetchDescriptor<Split>(predicate: #Predicate { $0.isActive })
+        do {
+            return try context.fetch(fetchDescriptor).first
+        } catch {
+            print("Error fetching active split: \(error)")
+            return nil
+        }
+    }
+    
+    @MainActor
+    func getActiveSplitDays() -> [Day] {
+        guard let activeSplit = getActiveSplit() else {
+            print("No active split found.")
+            return []
+        }
+        return activeSplit.days
+    }
+
+    @MainActor
+    func deactivateAllSplits(context: ModelContext) {
+        let fetchDescriptor = FetchDescriptor<Split>()
+
+        do {
+            let splits = try context.fetch(fetchDescriptor)
+            for split in splits {
+                split.isActive = false // ✅ Set all splits to inactive
+            }
+            try context.save() // ✅ Save the changes
+        } catch {
+            print("Error deactivating splits: \(error)")
+        }
+    }
+    
+    @MainActor
+    func getAllSplits(context: ModelContext) -> [Split] {
+        let predicate = #Predicate<Split> { _ in true }
+        let fetchDescriptor = FetchDescriptor<Split>(predicate: predicate)
+        return try! context.fetch(fetchDescriptor)
+    }
+    
+    @MainActor
+    func switchActiveSplit(split: Split, context: ModelContext) {
+        deactivateAllSplits(context: context) // ✅ Deactivate all others
+        split.isActive = true // ✅ Activate selected split
+
+        do {
+            try context.save()
+            print("Switched to active split: \(split.name)")
+        } catch {
+            print("Error switching split: \(error)")
+        }
+    }
+    
+    @MainActor
+    func fetchDay(dayOfSplit: Int?) async -> Day {
+        let activeSplitDays = getActiveSplitDays().filter { $0.dayOfSplit == dayOfSplit }
+        debugPrint("Fetched day count : \(activeSplitDays.count)")
+        return activeSplitDays.first ?? emptyDay
     }
     
     @MainActor
     func fetchCalendarDay(date: String) async -> Day {
         let predicate = #Predicate<DayStorage> {
-                $0.date == date
+            $0.date == date
         }
         let descriptor = FetchDescriptor<DayStorage>(predicate: predicate)
+
         do {
-            let fetchedData: [DayStorage]
-            do {
-                fetchedData = try context.fetch(descriptor)
-                debugPrint("Fetched celendar day count: \(fetchedData.count)")
-            } catch {
-                debugPrint("Error fetching data: \(error.localizedDescription)")
-                return Day(name: "", dayOfSplit: 0, exercises: [],date: "")
+            let fetchedData = try context.fetch(descriptor)
+            debugPrint("Fetched calendar day count: \(fetchedData.count)")
+
+            guard let dayStorage = fetchedData.first else {
+                return emptyDay
             }
-            guard !fetchedData.isEmpty else {
-                return Day(name: "", dayOfSplit: 0, exercises: [],date: "")
-            }
-            return fetchedData.first!.day
-        }
-    }
-    
-    @MainActor
-    func fetchAllDays() async -> [Day] {
-        let predicate = #Predicate<Day> { _ in true }
-        let descriptor = FetchDescriptor<Day>(predicate: predicate)
-        do {
-            let fetchedData: [Day]
-            do {
-                fetchedData = try context.fetch(descriptor)
-                debugPrint("Fetched all days count: \(fetchedData.count)")
-            } catch {
-                debugPrint("Error fetching data: \(error.localizedDescription)")
-                return []
-            }
-            guard !fetchedData.isEmpty else {
-                return []
-            }
-            
-            await MainActor.run {
-                day = fetchedData.first!
-            }
-            
-            return fetchedData
+
+            return dayStorage.day // Correctly return the saved day instance!
+
+        } catch {
+            debugPrint("Error fetching data: \(error.localizedDescription)")
+            return emptyDay
         }
     }
     
@@ -243,7 +276,8 @@ final class WorkoutViewModel: ObservableObject {
         )
         
 
-        context.insert(DayStorage(id: UUID(), day: newDay, date: formattedDateString(from: Date())))
+        let dayStorage = DayStorage(id: UUID(), day: newDay, date: formattedDateString(from: Date()))
+        context.insert(dayStorage)
         config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
         
         do {
@@ -293,7 +327,8 @@ final class WorkoutViewModel: ObservableObject {
         if !name.isEmpty && !sets.isEmpty && !reps.isEmpty {
             var setList: [Exercise.Set] = []
             for i in 1...Int(sets)! {
-                let set = Exercise.Set(weight: 0, reps: 0, failure: false, time: "", note: "", warmUp: false, restPause: false, dropSet: false, createdAt: Date().addingTimeInterval(Double(i)), bodyWeight: false)
+                let set = Exercise.Set.createDefault()
+
                 debugPrint(Date().addingTimeInterval(Double(i)))
                 setList.append(set)
             }

@@ -144,7 +144,7 @@ struct ShowSplitDayExerciseView: View {
                     dropSet: $dropSet,
                     bodyWeight: $bodyWeight
                 )
-                    .presentationDetents([.fraction(0.9)])
+                    .presentationDetents([.fraction(0.65)])
             }
             .toolbar {
                 Button {

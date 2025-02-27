@@ -14,27 +14,21 @@ protocol DeepCopyable {
 }
 
 @Model
-class Day: DeepCopyable {
+class Day {
+    @Attribute(.unique) var id: UUID
     var name: String
-    var dayOfSplit: Int
-    var exercises: [Exercise]
-    var date: String
+    var dayOfSplit: Int // 1 = Monday, 2 = Tuesday...
+    var exercises: [Exercise] // Exercises for this day
+    var date: String // Formatted date
 
-    // ✅ Mark initializer as `required` to allow `Self.init(...)`
-    required init(name: String, dayOfSplit: Int, exercises: [Exercise], date: String) {
+    @Relationship(deleteRule: .cascade, inverse: \Split.days) var split: Split? // ✅ Each Day belongs to one Split
+
+    init(id: UUID = UUID(), name: String, dayOfSplit: Int, exercises: [Exercise] = [], date: String, split: Split? = nil) {
+        self.id = id
         self.name = name
         self.dayOfSplit = dayOfSplit
         self.exercises = exercises
         self.date = date
-    }
-
-    // ✅ Implement `copy()`
-    func copy() -> Self {
-        return Self.init(
-            name: self.name,
-            dayOfSplit: self.dayOfSplit,
-            exercises: self.exercises.map { $0.copy() }, // Deep copy exercises
-            date: self.date
-        )
+        self.split = split
     }
 }
