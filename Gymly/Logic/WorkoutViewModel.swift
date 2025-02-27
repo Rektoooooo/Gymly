@@ -24,6 +24,7 @@ final class WorkoutViewModel: ObservableObject {
     @Published var reps:String = ""
     @Published var setNote:String = ""
     @Published var muslceGroup:String = "Chest"
+    @Published var optionalDay: Day = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
     
     enum InsertionError: Error {
         case invalidReps(String)
@@ -82,7 +83,6 @@ final class WorkoutViewModel: ObservableObject {
             guard !fetchedData.isEmpty else {
                 return Day(name: "", dayOfSplit: 0, exercises: [],date: "")
             }
-            
             return fetchedData.first!.day
         }
     }
@@ -241,11 +241,10 @@ final class WorkoutViewModel: ObservableObject {
             dayOfSplit: today.dayOfSplit, exercises: today.exercises.map { $0.copy() },
             date: formattedDateString(from: Date())
         )
+        
 
-        if !config.daysRecorded.contains(formattedDateString(from: Date())) {
-            context.insert(DayStorage(id: UUID(), day: newDay, date: formattedDateString(from: Date())))
-            config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
-        }
+        context.insert(DayStorage(id: UUID(), day: newDay, date: formattedDateString(from: Date())))
+        config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
         
         do {
             try context.save()

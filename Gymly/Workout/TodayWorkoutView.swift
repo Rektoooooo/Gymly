@@ -150,7 +150,7 @@ struct TodayWorkoutView: View {
             viewModel.sets = ""
             viewModel.reps = ""
         } ,content: {
-                CreateExerciseView(viewModel: viewModel, day: viewModel.day)
+            CreateExerciseView(viewModel: viewModel, day: viewModel.day)
                     .navigationTitle("Create Exercise")
                     .presentationDetents([.fraction(0.5)])
                 

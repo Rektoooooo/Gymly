@@ -13,7 +13,6 @@ struct CreateExerciseView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: WorkoutViewModel
-
     @State var day:Day
     
     var body: some View {
@@ -48,7 +47,7 @@ struct CreateExerciseView: View {
                 }
 
             }
-            .navigationTitle("Create exercise for \(day.name)")
+            .navigationTitle("Create exercise")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
