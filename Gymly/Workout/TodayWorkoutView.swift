@@ -26,12 +26,9 @@ struct TodayWorkoutView: View {
         NavigationView{
             VStack {
                 if !selectedDay.name.isEmpty {
-                    
-                    
                     VStack {
                         Menu {
-                            let uniqueDays = removeDuplicateDays(from: allSplitDays)
-                            ForEach(uniqueDays.sorted(by: { $0.dayOfSplit < $1.dayOfSplit }), id: \.self) { day in
+                            ForEach(allSplitDays.sorted(by: { $0.dayOfSplit < $1.dayOfSplit }), id: \.self) { day in
                                 Button(action: {
                                     selectedDay = day
                                     viewModel.day = selectedDay
@@ -126,18 +123,18 @@ struct TodayWorkoutView: View {
                 }
             }
             .id(UUID())
-            .onChange(of: viewModel.addExercise) {
+            .onChange(of: viewModel.exerciseAddedTrigger) {
                 Task {
                     await refreshMuscleGroups()
                 }
             }
         }
         .task {
-           await refreshView()
+            await refreshView()
         }
         .sheet(isPresented: $viewModel.editPlan, onDismiss: {
             Task {
-                await refreshMuscleGroups()
+                await refreshView()
                 navigationTitle = viewModel.day.name
             }
         }) {
@@ -145,7 +142,7 @@ struct TodayWorkoutView: View {
         }
         .sheet(isPresented: $showProfileView, onDismiss: {
             if let imagePath = config.userProfileImageURL {
-                profileImage = loadImage(from: imagePath)
+                profileImage = viewModel.loadImage(from: imagePath)
             }
             Task {
                 await refreshMuscleGroups()
@@ -155,75 +152,60 @@ struct TodayWorkoutView: View {
         }
         .sheet(isPresented: $viewModel.addExercise, onDismiss: {
             Task {
-                await refreshMuscleGroups()
+                await refreshView()
             }
             viewModel.name = ""
             viewModel.sets = ""
             viewModel.reps = ""
         } ,content: {
             CreateExerciseView(viewModel: viewModel, day: viewModel.day)
-                    .navigationTitle("Create Exercise")
-                    .presentationDetents([.fraction(0.5)])
-                
-            })
-        }
+                .navigationTitle("Create Exercise")
+                .presentationDetents([.fraction(0.5)])
+            
+        })
+    }
+
     
+    @MainActor
     func refreshMuscleGroups() async {
         let newMuscleGroups = await viewModel.sortData(dayOfSplit: config.dayInSplit)
 
-        withAnimation {
-            for newGroup in newMuscleGroups {
-                if let index = muscleGroups.firstIndex(where: { $0.id == newGroup.id }) {
-                    muscleGroups[index] = newGroup
-                } else {
-                    muscleGroups.append(newGroup)
+        await MainActor.run {
+            withAnimation() {  // ✅ Ensures smooth updates
+                for newGroup in newMuscleGroups {
+                    if let index = muscleGroups.firstIndex(where: { $0.id == newGroup.id }) {
+                        // ✅ Instead of replacing the entire struct, update `exercises` separately
+                        muscleGroups[index].exercises.append(contentsOf: newGroup.exercises.filter { newExercise in
+                            !muscleGroups[index].exercises.contains(where: { $0.id == newExercise.id })
+                        })
+                    } else {
+                        muscleGroups.append(newGroup)  // ✅ New muscle groups still animate properly
+                    }
                 }
             }
-            
+
+            // ✅ Remove muscle groups that no longer exist
             muscleGroups.removeAll { oldGroup in
                 !newMuscleGroups.contains(where: { $0.id == oldGroup.id })
             }
         }
     }
     
-    func loadImageFromDocuments(filename: String) -> UIImage? {
-        let fileURL = getDocumentsDirectory().appendingPathComponent(filename)
-        if let imageData = try? Data(contentsOf: fileURL) {
-            return UIImage(data: imageData)
-        }
-        return nil
-    }
-    
-    func getDocumentsDirectory() -> URL {
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-    }
-    
-    func loadImage(from path: String) -> UIImage? {
-        let fileURL = URL(fileURLWithPath: path)
-        guard FileManager.default.fileExists(atPath: fileURL.path),
-              let imageData = try? Data(contentsOf: fileURL),
-              let uiImage = UIImage(data: imageData) else {
-            return nil
-        }
-        return uiImage
-    }
-    
-    /// **Helper function to remove duplicate `dayOfSplit` values**
-    private func removeDuplicateDays(from days: [Day]) -> [Day] {
-        var seenSplits = Set<Int>()
-        return days.filter { seenSplits.insert($0.dayOfSplit).inserted } // Keep only the first occurrence
-    }
-    
+    @MainActor
     func refreshView() async {
         allSplitDays = viewModel.getActiveSplitDays()
         config.dayInSplit = viewModel.updateDayInSplit()
-        config.lastUpdateDate = Date()
-        await refreshMuscleGroups()
-        selectedDay = viewModel.day
-        if let imagePath = config.userProfileImageURL {
-            profileImage = loadImage(from: imagePath)
+        config.lastUpdateDate = Date()  // ✅ Track last update time
+        
+        let updatedDay = await viewModel.fetchDay(dayOfSplit: config.dayInSplit)
+        await MainActor.run {
+            viewModel.day = updatedDay
+            selectedDay = updatedDay 
         }
+        if let imagePath = config.userProfileImageURL {
+            profileImage = viewModel.loadImage(from: imagePath)
+        }
+        await refreshMuscleGroups()
     }
-    
 }
 

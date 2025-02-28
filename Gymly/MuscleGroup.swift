@@ -11,7 +11,7 @@ struct MuscleGroup: Identifiable {
     let id = UUID() // Unique ID
     let name: String
     let count: Int
-    let exercises: [Exercise]
+    var exercises: [Exercise]
     
     init(name: String, count: Int, exercises: [Exercise]) {
         self.name = name

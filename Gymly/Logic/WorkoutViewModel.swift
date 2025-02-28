@@ -17,13 +17,14 @@ final class WorkoutViewModel: ObservableObject {
     @Published var muscleGroups:[MuscleGroup] = []
     @Published var editPlan:Bool = false
     @Published var addExercise:Bool = false
+    @Published var exerciseAddedTrigger = false // ✅ Add this to trigger a UI update
     @Published var muscleGroupNames:[String] = ["Chest","Back","Biceps","Triceps","Shoulders","Legs","Abs"]
     @Published var exerciseId: UUID? = nil
     @Published var name:String = ""
     @Published var sets:String = ""
     @Published var reps:String = ""
     @Published var setNote:String = ""
-    @Published var muslceGroup:String = "Chest"
+    @Published var muscleGroup:String = "Chest"
     @Published var emptyDay: Day = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
     
     enum InsertionError: Error {
@@ -118,8 +119,21 @@ final class WorkoutViewModel: ObservableObject {
     @MainActor
     func fetchDay(dayOfSplit: Int?) async -> Day {
         let activeSplitDays = getActiveSplitDays().filter { $0.dayOfSplit == dayOfSplit }
-        debugPrint("Fetched day count : \(activeSplitDays.count)")
-        return activeSplitDays.first ?? emptyDay
+        
+        if let existingDay = activeSplitDays.first {
+            debugPrint("Returning existing day: \(existingDay.name)")
+            return existingDay  // ✅ Return the already managed object
+        } else {
+            debugPrint("No existing day found, creating new one.")
+
+            // ✅ Create a new `Day` and save it immediately to SwiftData
+            let newDay = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
+            
+            context.insert(newDay)  // ✅ Insert into SwiftData
+            try? context.save()  // ✅ Save immediately
+
+            return newDay  // ✅ Now the returned object is properly managed
+        }
     }
     
     @MainActor
@@ -198,29 +212,30 @@ final class WorkoutViewModel: ObservableObject {
     func sortData(dayOfSplit: Int) async -> [MuscleGroup] {
         var newMuscleGroups: [MuscleGroup] = []
         
-        // Fetch current day
-        let currentDay = await fetchDay(dayOfSplit: dayOfSplit)
-        day = currentDay
+        // ✅ Ensure a fresh fetch of the current day
+        let updatedDay = await fetchDay(dayOfSplit: dayOfSplit)
 
+        // ✅ Force a SwiftData re-fetch by accessing `updatedDay.exercises`
+        let freshExercises = updatedDay.exercises
+
+        await MainActor.run {
+            self.day = updatedDay // ✅ Replace the `day` reference
+        }
 
         for name in muscleGroupNames {
-            // Filter exercises for the current muscle group
-            let filteredExercises = day.exercises.filter { exercise in
-                exercise.muscleGroup == name
-            }
+            // ✅ Filter the freshly fetched exercises
+            let filteredExercises = freshExercises.filter { $0.muscleGroup == name }
 
             if !filteredExercises.isEmpty {
-                // Create a new MuscleGroup and append it
                 let group = MuscleGroup(
                     name: name,
                     count: filteredExercises.count,
-                    exercises: filteredExercises
+                    exercises: filteredExercises.sorted { $0.createdAt < $1.createdAt }
                 )
                 newMuscleGroups.append(group)
             }
         }
-
-        // Return the new array to be reassigned in the view
+        
         return newMuscleGroups
     }
     
@@ -326,43 +341,83 @@ final class WorkoutViewModel: ObservableObject {
     func createExercise() async {
         if !name.isEmpty && !sets.isEmpty && !reps.isEmpty {
             var setList: [Exercise.Set] = []
-            for i in 1...Int(sets)! {
-                let set = Exercise.Set.createDefault()
+            
+            guard let numSets = Int(sets) else {
+                debugPrint("Invalid sets value: \(sets)")
+                return
+            }
 
-                debugPrint(Date().addingTimeInterval(Double(i)))
+            for _ in 1...numSets {
+                let set = Exercise.Set.createDefault()
                 setList.append(set)
             }
+
             do {
-                
+                // ✅ Fetch a properly saved `Day`
                 let today = await fetchDay(dayOfSplit: config.dayInSplit)
 
                 guard let validReps = Int(reps) else {
                     throw InsertionError.invalidReps("Invalid reps value: \(reps)")
                 }
 
-                today.exercises.insert(
-                    Exercise(
-                        id: exerciseId ?? UUID(),
-                        name: name,
-                        sets: setList,
-                        repGoal: validReps,
-                        muscleGroup: muslceGroup
-                    ),
-                    at: day.exercises.endIndex
+                // ✅ Ensure no duplicates
+                if today.exercises.contains(where: { $0.name == name }) {
+                    debugPrint("Exercise already exists in today's workout.")
+                    return
+                }
+
+                // ✅ Create a new exercise
+                let newExercise = Exercise(
+                    id: UUID(),
+                    name: name,
+                    sets: setList,
+                    repGoal: validReps,
+                    muscleGroup: muscleGroup,
+                    createdAt: Date()
                 )
-                debugPrint("Successfully inserted exercise \(name) into \(day.name)")
+
+                // ✅ Ensure SwiftData registers the new exercise
+                await MainActor.run {
+                    today.exercises.append(newExercise)  // ✅ Add safely
+                    try? context.save()  // ✅ Save the update
+                }
+
+                debugPrint("Successfully added exercise \(name) to \(today.name)")
+                
+                // ✅ Notify UI to refresh
+                await MainActor.run {
+                    self.exerciseAddedTrigger.toggle()
+                }
+                
             } catch {
                 debugPrint("Error inserting exercise: \(error.localizedDescription)")
-            }
-            do {
-                try context.save()
-                debugPrint("Inserted exercise : \(name)")
-            } catch {
-                debugPrint(error)
             }
         } else {
             debugPrint("Not all text fields are filled")
         }
+    }
+    
+    
+    func loadImageFromDocuments(filename: String) -> UIImage? {
+        let fileURL = getDocumentsDirectory().appendingPathComponent(filename)
+        if let imageData = try? Data(contentsOf: fileURL) {
+            return UIImage(data: imageData)
+        }
+        return nil
+    }
+    
+    func getDocumentsDirectory() -> URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    }
+    
+    func loadImage(from path: String) -> UIImage? {
+        let fileURL = URL(fileURLWithPath: path)
+        guard FileManager.default.fileExists(atPath: fileURL.path),
+              let imageData = try? Data(contentsOf: fileURL),
+              let uiImage = UIImage(data: imageData) else {
+            return nil
+        }
+        return uiImage
     }
 }
     

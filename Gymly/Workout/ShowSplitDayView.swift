@@ -106,14 +106,24 @@ struct ShowSplitDayView: View {
         }
     }
     
-    func deleteItem(_ exercise:Exercise) {
+    func deleteItem(_ exercise: Exercise) {
+        guard let day = exercise.day else {
+            debugPrint("Exercise has no associated day.")
+            return
+        }
+
+        // ✅ Remove exercise from Day first
+        day.exercises.removeAll { $0.id == exercise.id }
+
+        // ✅ Then delete the exercise
         context.delete(exercise)
+
         do {
             try context.save()
+            debugPrint("Deleted exercise: \(exercise.name)")
         } catch {
             debugPrint(error)
         }
-        debugPrint("Deleted exercise: \(exercise.name)")
     }
     
     func refreshMuscleGroups() async {

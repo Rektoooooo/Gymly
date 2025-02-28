@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct SetupSplitView: View {
-    @State private var splitLength: String = ""
-    @State private var splitDay: String = ""
-    @State private var name: String = ""
+    @State private var splitLength: String = "7"
+    @State private var splitDay: String = "1"
+    @State private var name: String = "Push, Pull, Legs"
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config

@@ -30,7 +30,7 @@ struct CreateExerciseView: View {
                         TextField("Repeticions", text: $viewModel.reps)
                         .keyboardType(.numbersAndPunctuation)
                     }
-                    Picker("Muscle Group", selection: $viewModel.muslceGroup) {
+                    Picker("Muscle Group", selection: $viewModel.muscleGroup) {
                         ForEach(viewModel.muscleGroupNames, id: \.self) { muscleGroup in
                             Text(muscleGroup)
                         }
