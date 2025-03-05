@@ -7,13 +7,12 @@
 - **Weight & Reps Tracking** – Log workouts with an intuitive input system.
 - **Unit Switching** – Seamless transition between kg and lbs.
 - **Calendar Overview** – Visual representation of workout history.
-- **Workout Plan Export & Import** – Share workout routines using JSON.
 
 ## Tech Stack
 - **Language:** Swift
-- **Framework:** UIKit (selective use of SwiftUI for certain views)
+- **Framework:** SwiftUI
 - **Architecture:** MVVM + Coordinator
-- **Storage:** UserDefaults for small preferences, CoreData for persistent workout history
+- **Storage:** UserDefaults for small preferences, SwiftData for persistent workout history
 
 ## Installation
 ### Prerequisites:
@@ -22,6 +21,6 @@
 
 ### Setup:
 ```sh
-git clone https://github.com/yourusername/gymly.git
+git clone https://github.com/rektoooooo/gymly.git
 cd gymly
 open Gymly.xcodeproj
