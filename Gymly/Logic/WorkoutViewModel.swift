@@ -310,20 +310,22 @@ final class WorkoutViewModel: ObservableObject {
         return dateFormatter.string(from: date)
     }
     
-    func updateDayInSplit() -> Int {
+    @MainActor func updateDayInSplit() -> Int {
         let calendar = Calendar.current
 
         if !calendar.isDateInToday(config.lastUpdateDate) {
             let daysPassed = numberOfDaysBetween(start: config.lastUpdateDate, end: Date())
 
-            // Ensure the correct cycle starting from the chosen start day
-            let newDayInSplit = ((config.dayInSplit - 1 + daysPassed) % config.splitLenght) + 1
+            let totalDays = config.dayInSplit + daysPassed // ✅ No need to subtract 1
+            
+            let activeSplit = getActiveSplit()
+            
+            let newDayInSplit = (totalDays - 1) % activeSplit!.days.count + 1 // ✅ Ensures range [1, splitLength]
 
-            // Update last update date and day in split
-            config.lastUpdateDate = Date()
             config.dayInSplit = newDayInSplit
+            config.lastUpdateDate = Date() // ✅ Update the last checked date
 
-            return newDayInSplit
+            return config.dayInSplit
         } else {
             return config.dayInSplit
         }
@@ -333,7 +335,8 @@ final class WorkoutViewModel: ObservableObject {
         let calendar = Calendar.current
         let startOfDayStart = calendar.startOfDay(for: start)
         let startOfDayEnd = calendar.startOfDay(for: end)
-        
+        debugPrint(startOfDayStart)
+        debugPrint(startOfDayEnd)
         let components = calendar.dateComponents([.day], from: startOfDayStart, to: startOfDayEnd)
         return components.day ?? 0
     }

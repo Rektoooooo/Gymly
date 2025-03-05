@@ -195,8 +195,7 @@ struct TodayWorkoutView: View {
     func refreshView() async {
         allSplitDays = viewModel.getActiveSplitDays()
         config.dayInSplit = viewModel.updateDayInSplit()
-        config.lastUpdateDate = Date()  // ✅ Track last update time
-        
+        config.lastUpdateDate = Date()  // Track last update time
         let updatedDay = await viewModel.fetchDay(dayOfSplit: config.dayInSplit)
         await MainActor.run {
             viewModel.day = updatedDay
