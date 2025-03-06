@@ -1,6 +1,6 @@
 # Gymly
 
-🏋️ **Gymly** is an iOS fitness tracking app built with UIKit, providing a seamless and customizable workout logging experience.
+🏋️ **Gymly** is an iOS fitness tracking app built with SwiftUI, providing a seamless and customizable workout logging experience.
 
 ## Features
 - **Training Planner** – Set up workout routines with a flexible schedule.
@@ -11,6 +11,7 @@
 ## Tech Stack
 - **Language:** Swift
 - **Framework:** SwiftUI
+- **API'S:** Apple REST, HealthKit
 - **Architecture:** MVVM + Coordinator
 - **Storage:** UserDefaults for small preferences, SwiftData for persistent workout history
 
