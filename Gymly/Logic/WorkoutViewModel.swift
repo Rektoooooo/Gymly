@@ -197,7 +197,6 @@ final class WorkoutViewModel: ObservableObject {
                 // Create a new MuscleGroup and append it
                 let group = MuscleGroup(
                     name: name,
-                    count: filteredExercises.count,
                     exercises: filteredExercises
                 )
                 newMuscleGroups.append(group)
@@ -228,7 +227,6 @@ final class WorkoutViewModel: ObservableObject {
             if !filteredExercises.isEmpty {
                 let group = MuscleGroup(
                     name: name,
-                    count: filteredExercises.count,
                     exercises: filteredExercises.sorted { $0.createdAt < $1.createdAt }
                 )
                 newMuscleGroups.append(group)

@@ -6,16 +6,16 @@
 //
 
 import Foundation
+import SwiftUI
 
-struct MuscleGroup: Identifiable {
-    let id = UUID() // Unique ID
+class MuscleGroup: ObservableObject, Identifiable {
+    let id: UUID
     let name: String
-    let count: Int
-    var exercises: [Exercise]
-    
-    init(name: String, count: Int, exercises: [Exercise]) {
+    @Published var exercises: [Exercise]
+
+    init(id: UUID = UUID(), name: String, exercises: [Exercise]) {
+        self.id = id
         self.name = name
-        self.count = count
         self.exercises = exercises
     }
 }

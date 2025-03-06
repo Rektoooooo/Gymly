@@ -174,29 +174,10 @@ struct TodayWorkoutView: View {
             withAnimation {
                 for newGroup in newMuscleGroups {
                     if let index = muscleGroups.firstIndex(where: { $0.id == newGroup.id }) {
-                        var updatedExercises = muscleGroups[index].exercises
-
-                        for newExercise in newGroup.exercises {
-                            if !updatedExercises.contains(where: { $0.id == newExercise.id }) {
-                                var animatableExercise = newExercise
-                                animatableExercise.animationId = UUID() // ✅ Force animation on insert
-                                updatedExercises.append(animatableExercise)
-                            }
-                        }
-
-                        // ✅ Trick SwiftUI: Remove & Reinsert the MuscleGroup
-                        let updatedGroup = MuscleGroup(
-                            name: newGroup.name,
-                            count: updatedExercises.count,
-                            exercises: updatedExercises
-                        )
-
-                        muscleGroups.remove(at: index)  // Remove first
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { // Small delay
-                            muscleGroups.insert(updatedGroup, at: index) // Reinsert to trigger animation
-                        }
+                        // ✅ Replace the ENTIRE object reference
+                        muscleGroups[index] = MuscleGroup(id: newGroup.id, name: newGroup.name, exercises: newGroup.exercises)
                     } else {
-                        muscleGroups.append(newGroup)  // ✅ Still animates new groups
+                        muscleGroups.append(newGroup) // ✅ New muscle groups animate properly
                     }
                 }
 
