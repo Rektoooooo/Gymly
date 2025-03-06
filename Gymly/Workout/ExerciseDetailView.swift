@@ -86,6 +86,28 @@ struct ExerciseDetailView: View {
                                         .opacity(0.6)
                                         .offset(x: -5)
                                 }
+                                HStack {
+                                    if set.failure {
+                                        Text("F")
+                                            .foregroundStyle(Color.red)
+                                            .offset(x: -5)
+                                    }
+                                    if set.warmUp {
+                                        Text("W")
+                                            .foregroundStyle(Color.orange)
+                                            .offset(x: -5)
+                                    }
+                                    if set.restPause {
+                                        Text("RP")
+                                            .foregroundStyle(Color.green)
+                                            .offset(x: -5)
+                                    }
+                                    if set.dropSet {
+                                        Text("DS")
+                                            .foregroundStyle(Color.blue)
+                                            .offset(x: -5)
+                                    }
+                                }
                                 Spacer()
                                 Text("\(set.time)")
                                     .foregroundStyle(Color.white)
