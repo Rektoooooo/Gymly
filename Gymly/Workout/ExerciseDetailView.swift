@@ -53,7 +53,7 @@ struct ExerciseDetailView: View {
                     .padding()
                     .bold()
             }
-            
+
             Form {
                 /// List of exercise sets
                 ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in

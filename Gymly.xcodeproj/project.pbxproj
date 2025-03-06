@@ -11,6 +11,10 @@
 		EC4FD1532C4ED88300D1A4A6 /* Day.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1522C4ED88300D1A4A6 /* Day.swift */; };
 		EC4FD1572C4EE0A600D1A4A6 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1552C4EE0A600D1A4A6 /* Color.swift */; };
 		EC4FD1582C4EE0A600D1A4A6 /* onFirstAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1542C4EE0A600D1A4A6 /* onFirstAppear.swift */; };
+		EC59224A2D7A3BF200EB39B2 /* RepetitionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC5922492D7A3BF200EB39B2 /* RepetitionCell.swift */; };
+		EC59224C2D7A3D6500EB39B2 /* WeightSelectorCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC59224B2D7A3D6500EB39B2 /* WeightSelectorCell.swift */; };
+		EC59224E2D7A407C00EB39B2 /* SetTypeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC59224D2D7A407C00EB39B2 /* SetTypeCell.swift */; };
+		EC5922502D7A414F00EB39B2 /* SetNoteCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC59224F2D7A414F00EB39B2 /* SetNoteCell.swift */; };
 		EC629C662C9CAE2300009902 /* MuscleGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC629C652C9CAE2300009902 /* MuscleGroup.swift */; };
 		EC71CA8A2D705986003EAB09 /* Split.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC71CA892D705986003EAB09 /* Split.swift */; };
 		EC8C15112C80A94D008E4152 /* DayStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC8C15102C80A94D008E4152 /* DayStorage.swift */; };
@@ -47,6 +51,10 @@
 		EC4FD1522C4ED88300D1A4A6 /* Day.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Day.swift; sourceTree = "<group>"; };
 		EC4FD1542C4EE0A600D1A4A6 /* onFirstAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = onFirstAppear.swift; sourceTree = "<group>"; };
 		EC4FD1552C4EE0A600D1A4A6 /* Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
+		EC5922492D7A3BF200EB39B2 /* RepetitionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepetitionCell.swift; sourceTree = "<group>"; };
+		EC59224B2D7A3D6500EB39B2 /* WeightSelectorCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightSelectorCell.swift; sourceTree = "<group>"; };
+		EC59224D2D7A407C00EB39B2 /* SetTypeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetTypeCell.swift; sourceTree = "<group>"; };
+		EC59224F2D7A414F00EB39B2 /* SetNoteCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetNoteCell.swift; sourceTree = "<group>"; };
 		EC629C652C9CAE2300009902 /* MuscleGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroup.swift; sourceTree = "<group>"; };
 		EC71CA892D705986003EAB09 /* Split.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Split.swift; sourceTree = "<group>"; };
 		EC8C15102C80A94D008E4152 /* DayStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStorage.swift; sourceTree = "<group>"; };
@@ -108,6 +116,17 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
+		EC5922482D7A3BD500EB39B2 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				EC5922492D7A3BF200EB39B2 /* RepetitionCell.swift */,
+				EC59224B2D7A3D6500EB39B2 /* WeightSelectorCell.swift */,
+				EC59224D2D7A407C00EB39B2 /* SetTypeCell.swift */,
+				EC59224F2D7A414F00EB39B2 /* SetNoteCell.swift */,
+			);
+			path = Cells;
+			sourceTree = "<group>";
+		};
 		ECA5D1372BF20CF100DCC9F8 = {
 			isa = PBXGroup;
 			children = (
@@ -133,6 +152,7 @@
 			children = (
 				ECF621932D497912007B4C2E /* Info.plist */,
 				ECDE63122D48D85A00C2DA94 /* Gymly.entitlements */,
+				EC5922482D7A3BD500EB39B2 /* Cells */,
 				ECA863152CC9760C00FFB675 /* Logic */,
 				ECA863112CC9754600FFB675 /* Home */,
 				ECA863122CC9757300FFB675 /* Workout */,
@@ -324,7 +344,11 @@
 				EC4FD1572C4EE0A600D1A4A6 /* Color.swift in Sources */,
 				EC71CA8A2D705986003EAB09 /* Split.swift in Sources */,
 				EC4FD1582C4EE0A600D1A4A6 /* onFirstAppear.swift in Sources */,
+				EC59224E2D7A407C00EB39B2 /* SetTypeCell.swift in Sources */,
+				EC59224C2D7A3D6500EB39B2 /* WeightSelectorCell.swift in Sources */,
 				ECA5D1442BF20CF100DCC9F8 /* GymlyApp.swift in Sources */,
+				EC59224A2D7A3BF200EB39B2 /* RepetitionCell.swift in Sources */,
+				EC5922502D7A414F00EB39B2 /* SetNoteCell.swift in Sources */,
 				EC8C15112C80A94D008E4152 /* DayStorage.swift in Sources */,
 				ECDE63112D48D27B00C2DA94 /* SignInView.swift in Sources */,
 			);

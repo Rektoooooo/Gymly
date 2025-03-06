@@ -50,202 +50,39 @@ struct EditExerciseSetView: View {
             List {
                 /// Section for setting a note
                 Section("Set note") {
-                    TextField("Set note", text: $note)
-                        .onChange(of: note) { oldValue, newValue in
-                            exercise.sets[setNumber].note = newValue
-                            do {
-                                try context.save()
-                            } catch {
-                                debugPrint(error)
-                            }
-                        }
+                    SetNoteCell(
+                        note: $note,
+                        setNumber: setNumber,
+                        exercise: exercise
+                    )
                 }
                 /// Section for selecting set type
                 Section(header: Text("Set Type")) {
-                    Menu {
-                        Button(action: {
-                            failure.toggle()
-                            exercise.sets[setNumber].failure = failure
-                            do {
-                                try context.save()
-                            } catch {
-                                debugPrint(error)
-                            }
-                        }) {
-                            HStack {
-                                Text("Failure")
-                                Spacer()
-                                if failure { Image(systemName: "checkmark") }
-                            }
-                        }
-                        Button(action: {
-                            warmup.toggle()
-                            exercise.sets[setNumber].warmUp = warmup
-                            do {
-                                try context.save()
-                            } catch {
-                                debugPrint(error)
-                            }
-                        }) {
-                            HStack {
-                                Text("Warm Up")
-                                Spacer()
-                                if warmup { Image(systemName: "checkmark") }
-                            }
-                        }
-                        Button(action: {
-                            restPause.toggle()
-                            exercise.sets[setNumber].restPause = restPause
-                            do {
-                                try context.save()
-                            } catch {
-                                debugPrint(error)
-                            }
-                        }) {
-                            HStack {
-                                Text("Rest Pause")
-                                Spacer()
-                                if restPause { Image(systemName: "checkmark") }
-                            }
-                        }
-                        Button(action: {
-                            dropSet.toggle()
-                            exercise.sets[setNumber].dropSet = dropSet
-                            do {
-                                try context.save()
-                            } catch {
-                                debugPrint(error)
-                            }
-                        }) {
-                            HStack {
-                                Text("Drop Set")
-                                Spacer()
-                                if dropSet { Image(systemName: "checkmark") }
-                            }
-                        }
-                    } label: {
-                        HStack {
-                            Text("Set Type:")
-                            Spacer()
-                            Text(selectedSetTypes.isEmpty ? "None" : selectedSetTypes.joined(separator: ", "))
-                                .foregroundColor(.gray)
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                        }
-                    }
+                    SetTypeCell(
+                        failure: $failure,
+                        warmup: $warmup,
+                        restPause: $restPause,
+                        dropSet: $dropSet,
+                        setNumber: setNumber,
+                        exercise: exercise
+                    )
                 }
                 /// Section for adjusting weight
                 Section("Weight (\(unit))") {
-                    HStack {
-                        Button {
-                            decreaseWeight(by: 1)
-                            saveWeight()
-                        } label: {
-                            HStack {
-                                Image(systemName: "minus")
-                                Label("", systemImage: "1.square")
-                            }
-                        }
-                        .font(.title2)
-                        .buttonStyle(PlainButtonStyle())
-
-                        Button {
-                            decreaseWeight(by: 5)
-                            saveWeight()
-                        } label: {
-                            Label("", systemImage: "5.square")
-                                .padding(.leading , -15)
-                        }
-                        .font(.title2)
-                        .buttonStyle(PlainButtonStyle())
-
-                        Spacer()
-                        Text("\(displayedWeight)")
-                            .font(.title2)
-                        Spacer()
-
-                        Button {
-                            increaseWeight(by: 5)
-                            saveWeight()
-                        } label: {
-                            Label("", systemImage: "5.square")
-                                .padding(.trailing , -15)
-                        }
-                        .font(.title2)
-                        .buttonStyle(PlainButtonStyle())
-
-                        Button {
-                            increaseWeight(by: 1)
-                            saveWeight()
-                        } label: {
-                            HStack {
-                                Label("", systemImage: "1.square")
-                                Image(systemName: "plus")
-                                    .padding(.leading , -20)
-                            }
-                        }
-                        .font(.title2)
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                    Toggle("Body Weight", isOn: $bodyWeight)
-                        .toggleStyle(CheckToggleStyle())
-                        .onChange(of: bodyWeight) { _, newValue in
-                            exercise.sets[setNumber].bodyWeight = newValue
-                            do {
-                                try context.save()
-                            } catch {
-                                debugPrint(error)
-                            }
-                        }
+                    WeightSelectorCell(
+                        bodyWeight: $bodyWeight,
+                        displayedWeight: displayedWeight,
+                        setNumber: setNumber,
+                        exercise: exercise,
+                        increaseWeight: increaseWeight,
+                        decreaseWeight: decreaseWeight,
+                        saveWeight: saveWeight
+                    )
                 }
                 /// Section for adjusting repetitions
-                Section("Repetisitions") {
+                Section("Repetitions") {
                     HStack {
-                        Button {
-                            reps -= 1
-                            saveReps()
-                        } label: {
-                            HStack {
-                                Image(systemName: "minus")
-                                Label("", systemImage: "1.square")
-                            }
-                        }
-                        .font(.title2)
-                        .buttonStyle(PlainButtonStyle())
-                        Button {
-                            reps -= 5
-                            saveReps()
-                        } label: {
-                            Label("", systemImage: "5.square")
-                                .padding(.leading , -15)
-                        }
-                        .font(.title2)
-                        .buttonStyle(PlainButtonStyle())
-                        Spacer()
-                        Text("\(reps)")
-                            .font(.title2)
-                        Spacer()
-                        Button {
-                            reps += 5
-                            saveReps()
-                        } label: {
-                            Label("", systemImage: "5.square")
-                                .padding(.trailing , -15)
-                        }
-                        .font(.title2)
-                        .buttonStyle(PlainButtonStyle())
-                        Button {
-                            reps += 1
-                            saveReps()
-                        } label: {
-                            HStack {
-                                Label("", systemImage: "1.square")
-                                Image(systemName: "plus")
-                                    .padding(.leading , -20)
-                            }
-                        }
-                        .font(.title2)
-                        .buttonStyle(PlainButtonStyle())
+                        RepetitionCell(reps: $reps, saveReps: saveReps)
                     }
                 }
             }
@@ -330,24 +167,5 @@ struct EditExerciseSetView: View {
         } catch {
             debugPrint(error)
         }
-    }
-}
-
-/// Toggles set type and saves changes
-struct CheckToggleStyle: ToggleStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        Button {
-            configuration.isOn.toggle()
-        } label: {
-            Label {
-                configuration.label
-            } icon: {
-                Image(systemName: configuration.isOn ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(configuration.isOn ? Color.accentColor : .secondary)
-                    .accessibility(label: Text(configuration.isOn ? "Checked" : "Unchecked"))
-                    .imageScale(.large)
-            }
-        }
-        .buttonStyle(.plain)
     }
 }
