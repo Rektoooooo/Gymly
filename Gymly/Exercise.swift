@@ -17,16 +17,18 @@ class Exercise {
     var repGoal: Int
     var muscleGroup: String
     var createdAt: Date = Date()
+    var animationId = UUID()
 
     @Relationship(deleteRule: .nullify, inverse: \Day.exercises) var day: Day? // ✅ Each Exercise belongs to a Day
 
-    init(id: UUID = UUID(), name: String, sets: [Set] = [], repGoal: Int, muscleGroup: String,createdAt: Date = Date(), day: Day? = nil) {
+    init(id: UUID = UUID(), name: String, sets: [Set] = [], repGoal: Int, muscleGroup: String,createdAt: Date = Date(),animationId: UUID = UUID(), day: Day? = nil) {
         self.id = id
         self.name = name
         self.sets = sets
         self.repGoal = repGoal
         self.muscleGroup = muscleGroup
         self.createdAt = createdAt
+        self.animationId = animationId
         self.day = day
     }
     
@@ -37,7 +39,8 @@ class Exercise {
             sets: self.sets.map { $0.copySets() }, // ✅ Deep copy all sets
             repGoal: self.repGoal,
             muscleGroup: self.muscleGroup,
-            createdAt: self.createdAt
+            createdAt: self.createdAt,
+            animationId: self.animationId
         )
     }
     

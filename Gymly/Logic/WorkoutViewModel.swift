@@ -225,7 +225,6 @@ final class WorkoutViewModel: ObservableObject {
         for name in muscleGroupNames {
             // ✅ Filter the freshly fetched exercises
             let filteredExercises = freshExercises.filter { $0.muscleGroup == name }
-
             if !filteredExercises.isEmpty {
                 let group = MuscleGroup(
                     name: name,

@@ -171,22 +171,39 @@ struct TodayWorkoutView: View {
         let newMuscleGroups = await viewModel.sortData(dayOfSplit: config.dayInSplit)
 
         await MainActor.run {
-            withAnimation() {  // ✅ Ensures smooth updates
+            withAnimation {
                 for newGroup in newMuscleGroups {
                     if let index = muscleGroups.firstIndex(where: { $0.id == newGroup.id }) {
-                        // ✅ Instead of replacing the entire struct, update `exercises` separately
-                        muscleGroups[index].exercises.append(contentsOf: newGroup.exercises.filter { newExercise in
-                            !muscleGroups[index].exercises.contains(where: { $0.id == newExercise.id })
-                        })
+                        var updatedExercises = muscleGroups[index].exercises
+
+                        for newExercise in newGroup.exercises {
+                            if !updatedExercises.contains(where: { $0.id == newExercise.id }) {
+                                var animatableExercise = newExercise
+                                animatableExercise.animationId = UUID() // ✅ Force animation on insert
+                                updatedExercises.append(animatableExercise)
+                            }
+                        }
+
+                        // ✅ Trick SwiftUI: Remove & Reinsert the MuscleGroup
+                        let updatedGroup = MuscleGroup(
+                            name: newGroup.name,
+                            count: updatedExercises.count,
+                            exercises: updatedExercises
+                        )
+
+                        muscleGroups.remove(at: index)  // Remove first
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { // Small delay
+                            muscleGroups.insert(updatedGroup, at: index) // Reinsert to trigger animation
+                        }
                     } else {
-                        muscleGroups.append(newGroup)  // ✅ New muscle groups still animate properly
+                        muscleGroups.append(newGroup)  // ✅ Still animates new groups
                     }
                 }
-            }
 
-            // ✅ Remove muscle groups that no longer exist
-            muscleGroups.removeAll { oldGroup in
-                !newMuscleGroups.contains(where: { $0.id == oldGroup.id })
+                // ✅ Remove muscle groups that no longer exist
+                muscleGroups.removeAll { oldGroup in
+                    !newMuscleGroups.contains(where: { $0.id == oldGroup.id })
+                }
             }
         }
     }
