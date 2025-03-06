@@ -13,10 +13,10 @@ struct EditExerciseSetView: View {
     @EnvironmentObject var config: Config
     @Environment(\.dismiss) var dismiss
 
-    @Binding var weight: Int
+    @Binding var weight: Double
     @Binding var reps: Int
     @Binding var unit: String
-    @Binding var setNumber: Int	
+    @Binding var setNumber: Int
     @Binding var note: String
     @State var exercise:Exercise
     @Binding var failure:Bool
@@ -36,44 +36,82 @@ struct EditExerciseSetView: View {
     @State private var isDropdownOpen = false
 
     
-    var convertedWeight: Int {
-        if config.weightUnit == "Kg" {
-            return weight // Use weight instead of set.weight
-        } else {
-            return Int(round(Double(weight) * 2.20462)) // Convert kg → lbs (rounded properly)
-        }
+    var displayedWeight: String {
+        let weightInLbs = weight * 2.20462
+        return config.weightUnit == "Kg" ? "\(Int(round(weight))) kg" : "\(Int(round(weightInLbs))) lbs"
     }
+
 
     var body: some View {
         NavigationView {
             List {
                 Section("Set note") {
                     TextField("Set note", text: $note)
+                        .onChange(of: note) { oldValue, newValue in
+                            exercise.sets[setNumber].note = newValue
+                            do {
+                                try context.save()
+                            } catch {
+                                debugPrint(error)
+                            }
+                        }
                 }
                 Section(header: Text("Set Type")) {
                     Menu {
-                        Button(action: { failure.toggle() }) {
+                        Button(action: {
+                            failure.toggle()
+                            exercise.sets[setNumber].failure = failure
+                            do {
+                                try context.save()
+                            } catch {
+                                debugPrint(error)
+                            }
+                        }) {
                             HStack {
                                 Text("Failure")
                                 Spacer()
                                 if failure { Image(systemName: "checkmark") }
                             }
                         }
-                        Button(action: { warmup.toggle() }) {
+                        Button(action: {
+                            warmup.toggle()
+                            exercise.sets[setNumber].warmUp = warmup
+                            do {
+                                try context.save()
+                            } catch {
+                                debugPrint(error)
+                            }
+                        }) {
                             HStack {
                                 Text("Warm Up")
                                 Spacer()
                                 if warmup { Image(systemName: "checkmark") }
                             }
                         }
-                        Button(action: { restPause.toggle() }) {
+                        Button(action: {
+                            restPause.toggle()
+                            exercise.sets[setNumber].restPause = restPause
+                            do {
+                                try context.save()
+                            } catch {
+                                debugPrint(error)
+                            }
+                        }) {
                             HStack {
                                 Text("Rest Pause")
                                 Spacer()
                                 if restPause { Image(systemName: "checkmark") }
                             }
                         }
-                        Button(action: { dropSet.toggle() }) {
+                        Button(action: {
+                            dropSet.toggle()
+                            exercise.sets[setNumber].dropSet = dropSet
+                            do {
+                                try context.save()
+                            } catch {
+                                debugPrint(error)
+                            }
+                        }) {
                             HStack {
                                 Text("Drop Set")
                                 Spacer()
@@ -94,7 +132,8 @@ struct EditExerciseSetView: View {
                 Section("Weight (\(unit))") {
                     HStack {
                         Button {
-                            weight -= (config.weightUnit == "Kg" ? 1 : 1 / Int(2.20462)) // Adjust decrement for Lbs
+                            decreaseWeight(by: 1)
+                            saveWeight()
                         } label: {
                             HStack {
                                 Image(systemName: "minus")
@@ -105,7 +144,8 @@ struct EditExerciseSetView: View {
                         .buttonStyle(PlainButtonStyle())
 
                         Button {
-                            weight -= (config.weightUnit == "Kg" ? 5 : 5 / Int(2.20462)) // Adjust decrement for Lbs
+                            decreaseWeight(by: 5)
+                            saveWeight()
                         } label: {
                             Label("", systemImage: "5.square")
                                 .padding(.leading , -15)
@@ -114,12 +154,13 @@ struct EditExerciseSetView: View {
                         .buttonStyle(PlainButtonStyle())
 
                         Spacer()
-                        Text("\(convertedWeight) \(unit)")
+                        Text("\(displayedWeight)")
                             .font(.title2)
                         Spacer()
 
                         Button {
-                            weight += (config.weightUnit == "Kg" ? 5 : 5 / Int(2.20462)) // Adjust increment for Lbs
+                            increaseWeight(by: 5)
+                            saveWeight()
                         } label: {
                             Label("", systemImage: "5.square")
                                 .padding(.trailing , -15)
@@ -128,7 +169,8 @@ struct EditExerciseSetView: View {
                         .buttonStyle(PlainButtonStyle())
 
                         Button {
-                            weight += (config.weightUnit == "Kg" ? 1 : 1 / Int(2.20462)) // Adjust increment for Lbs
+                            increaseWeight(by: 1)
+                            saveWeight()
                         } label: {
                             HStack {
                                 Label("", systemImage: "1.square")
@@ -141,11 +183,20 @@ struct EditExerciseSetView: View {
                     }
                     Toggle("Body Weight", isOn: $bodyWeight)
                         .toggleStyle(CheckToggleStyle())
+                        .onChange(of: bodyWeight) { _, newValue in
+                            exercise.sets[setNumber].bodyWeight = newValue
+                            do {
+                                try context.save()
+                            } catch {
+                                debugPrint(error)
+                            }
+                        }
                 }
                 Section("Repetisitions") {
                     HStack {
                         Button {
                             reps -= 1
+                            saveReps()
                         } label: {
                             HStack {
                                 Image(systemName: "minus")
@@ -156,6 +207,7 @@ struct EditExerciseSetView: View {
                         .buttonStyle(PlainButtonStyle())
                         Button {
                             reps -= 5
+                            saveReps()
                         } label: {
                             Label("", systemImage: "5.square")
                                 .padding(.leading , -15)
@@ -168,6 +220,7 @@ struct EditExerciseSetView: View {
                         Spacer()
                         Button {
                             reps += 5
+                            saveReps()
                         } label: {
                             Label("", systemImage: "5.square")
                                 .padding(.trailing , -15)
@@ -176,6 +229,7 @@ struct EditExerciseSetView: View {
                         .buttonStyle(PlainButtonStyle())
                         Button {
                             reps += 1
+                            saveReps()
                         } label: {
                             HStack {
                                 Label("", systemImage: "1.square")
@@ -208,8 +262,13 @@ struct EditExerciseSetView: View {
                         }
                         dismiss()
                     } label: {
-                        Text("Save")
+                        Text("Done")
+                            .foregroundStyle(Color.accentColor)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.white.opacity(0.1))
                             .bold()
+                            .cornerRadius(10)
                     }
                 }
             }
@@ -224,6 +283,40 @@ struct EditExerciseSetView: View {
         dateFormatter.dateFormat = "H:mm"
         let currentTime = dateFormatter.string(from: Date())
         return currentTime.lowercased()
+    }
+    
+    func increaseWeight(by value: Int) {
+        if config.weightUnit == "Kg" {
+            weight += Double(value)
+        } else {
+            weight += Double(value) / 2.20462 // Convert lbs to kg before adding
+        }
+    }
+
+    func decreaseWeight(by value: Int) {
+        if config.weightUnit == "Kg" {
+            weight -= Double(value)
+        } else {
+            weight -= Double(value) / 2.20462 // Convert lbs to kg before subtracting
+        }
+    }
+
+    private func saveWeight() {
+        exercise.sets[setNumber].weight = weight
+        do {
+            try context.save()
+        } catch {
+            debugPrint(error)
+        }
+    }
+
+    private func saveReps() {
+        exercise.sets[setNumber].reps = reps
+        do {
+            try context.save()
+        } catch {
+            debugPrint(error)
+        }
     }
 }
 
@@ -244,5 +337,3 @@ struct CheckToggleStyle: ToggleStyle {
         .buttonStyle(.plain)
     }
 }
-    
-
