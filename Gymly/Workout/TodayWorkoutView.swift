@@ -18,7 +18,6 @@ struct TodayWorkoutView: View {
     @State private var profileImage: UIImage?
     @State private var navigationTitle: String = ""
     @State var muscleGroups:[MuscleGroup] = []
-    
     @State var selectedDay: Day = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
     @State var allSplitDays: [Day] = []
     
@@ -27,6 +26,7 @@ struct TodayWorkoutView: View {
             VStack {
                 if !selectedDay.name.isEmpty {
                     VStack {
+                        /// Display the navigation title with menu day selection
                         Menu {
                             ForEach(allSplitDays.sorted(by: { $0.dayOfSplit < $1.dayOfSplit }), id: \.self) { day in
                                 Button(action: {
@@ -58,6 +58,7 @@ struct TodayWorkoutView: View {
                             .padding(.top, 16)
                             .foregroundStyle(Color.primary)
                         }
+                        /// Display exercises in a day
                         List {
                             ForEach(muscleGroups) { group in
                                 if !group.exercises.isEmpty {
@@ -70,6 +71,7 @@ struct TodayWorkoutView: View {
                                     }
                                 }
                             }
+                            /// Save workout to the calendar button
                             Section("") {
                                 Button("Workout done") {
                                     Task {
@@ -81,6 +83,7 @@ struct TodayWorkoutView: View {
                         }
                     }
                 } else {
+                    /// If no split is created show help message
                     VStack {
                         Text("Create your split with the \(Image(systemName: "line.2.horizontal.decrease.circle")) icon in the top right corner")
                             .multilineTextAlignment(.center)
@@ -88,6 +91,7 @@ struct TodayWorkoutView: View {
                 }
             }
             .toolbar {
+                /// Display user profile image as a button for getting to setting view
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: {
                         showProfileView = true
@@ -107,6 +111,7 @@ struct TodayWorkoutView: View {
                         }
                     }
                 }
+                /// Button for showing splits view
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         viewModel.editPlan = true
@@ -114,6 +119,7 @@ struct TodayWorkoutView: View {
                         Label("", systemImage: "line.2.horizontal.decrease.circle")
                     }
                 }
+                /// Button for adding exercise
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         viewModel.addExercise = true
@@ -123,15 +129,18 @@ struct TodayWorkoutView: View {
                 }
             }
             .id(UUID())
+            /// On change of adding exercise refresh the exercises
             .onChange(of: viewModel.exerciseAddedTrigger) {
                 Task {
                     await refreshMuscleGroups()
                 }
             }
         }
+        /// Refresh on every appear
         .task {
             await refreshView()
         }
+        /// Sheet for showing splits view
         .sheet(isPresented: $viewModel.editPlan, onDismiss: {
             Task {
                 await refreshView()
@@ -140,6 +149,7 @@ struct TodayWorkoutView: View {
         }) {
             SplitsView(viewModel: viewModel)
         }
+        /// Sheet for showing setting and profile view
         .sheet(isPresented: $showProfileView, onDismiss: {
             if let imagePath = config.userProfileImageURL {
                 profileImage = viewModel.loadImage(from: imagePath)
@@ -150,6 +160,7 @@ struct TodayWorkoutView: View {
         }) {
             SettingsView()
         }
+        /// Sheet for adding exercises
         .sheet(isPresented: $viewModel.addExercise, onDismiss: {
             Task {
                 await refreshView()
@@ -165,23 +176,19 @@ struct TodayWorkoutView: View {
         })
     }
 
-    
+    /// Func for refreshing exercises so UI updates correctly
     @MainActor
     func refreshMuscleGroups() async {
         let newMuscleGroups = await viewModel.sortData(dayOfSplit: config.dayInSplit)
-
         await MainActor.run {
             withAnimation {
                 for newGroup in newMuscleGroups {
                     if let index = muscleGroups.firstIndex(where: { $0.id == newGroup.id }) {
-                        // ✅ Replace the ENTIRE object reference
                         muscleGroups[index] = MuscleGroup(id: newGroup.id, name: newGroup.name, exercises: newGroup.exercises)
                     } else {
-                        muscleGroups.append(newGroup) // ✅ New muscle groups animate properly
+                        muscleGroups.append(newGroup)
                     }
                 }
-
-                // ✅ Remove muscle groups that no longer exist
                 muscleGroups.removeAll { oldGroup in
                     !newMuscleGroups.contains(where: { $0.id == oldGroup.id })
                 }
@@ -189,6 +196,7 @@ struct TodayWorkoutView: View {
         }
     }
     
+    /// Func for keeping up view up to date
     @MainActor
     func refreshView() async {
         allSplitDays = viewModel.getActiveSplitDays()
