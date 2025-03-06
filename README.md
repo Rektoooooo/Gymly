@@ -11,7 +11,7 @@
 ## Tech Stack
 - **Language:** Swift
 - **Framework:** SwiftUI
-- - **API'S:** Apple REST, HealthKit
+- **API'S:** Apple REST, HealthKit
 - **Architecture:** MVVM + Coordinator
 - **Storage:** UserDefaults for small preferences, SwiftData for persistent workout history
 
