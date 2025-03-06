@@ -18,7 +18,7 @@ final class WorkoutViewModel: ObservableObject {
     @Published var editPlan:Bool = false
     @Published var addExercise:Bool = false
     @Published var exerciseAddedTrigger = false // ✅ Add this to trigger a UI update
-    @Published var muscleGroupNames:[String] = ["Chest","Back","Biceps","Triceps","Shoulders","Legs","Abs"]
+    @Published var muscleGroupNames:[String] = ["Chest","Back","Biceps","Triceps","Shoulders","Quads","Hamstrings","Calves","Glutes","Abs"]
     @Published var exerciseId: UUID? = nil
     @Published var name:String = ""
     @Published var sets:String = ""

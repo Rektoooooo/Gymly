@@ -17,7 +17,7 @@ struct CalendarExerciseView: View {
     @State var exercise: Exercise
     @State private var isOn = false
     @State var showSheet = false
-    @State var weight: Int = 0
+    @State var weight: Double = 0.0
     @State var reps: Int = 0
     @State var failure: Bool = false
     @State var warmUp: Bool = false
@@ -27,11 +27,11 @@ struct CalendarExerciseView: View {
     @State var setNumber: Int = 0
     @State var note: String = ""
     
-    var convertedWeight: Int {
+    var convertedWeight: Double {
         if config.weightUnit == "Kg" {
             return weight // Keep it as is
         } else {
-            return weight * Int(2.20462) // Convert Kg to Lbs
+            return weight * 2.20462 // Convert Kg to Lbs
         }
     }
 
@@ -134,7 +134,7 @@ struct CalendarExerciseView: View {
     func loadSetData(set: Exercise.Set) {
         if config.roundSetWeights {
             for index in exercise.sets.indices {
-                exercise.sets[index].weight = Int(exercise.sets[index].weight) // Ensure whole number rounding
+                exercise.sets[index].weight = exercise.sets[index].weight // Ensure whole number rounding
             }
             config.roundSetWeights = false
         }

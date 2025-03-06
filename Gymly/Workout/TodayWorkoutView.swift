@@ -82,7 +82,7 @@ struct TodayWorkoutView: View {
                     }
                 } else {
                     VStack {
-                        Text("Create your split with the \(Image(systemName: "ellipsis.circle")) icon in the top right corner")
+                        Text("Create your split with the \(Image(systemName: "line.2.horizontal.decrease.circle")) icon in the top right corner")
                             .multilineTextAlignment(.center)
                     }
                 }
@@ -111,7 +111,7 @@ struct TodayWorkoutView: View {
                     Button {
                         viewModel.editPlan = true
                     } label: {
-                        Label("", systemImage: "ellipsis.circle")
+                        Label("", systemImage: "line.2.horizontal.decrease.circle")
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {

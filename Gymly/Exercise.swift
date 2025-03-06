@@ -44,7 +44,7 @@ class Exercise {
     @Model
     class Set {
         @Attribute(.unique) var id: UUID
-        var weight: Int
+        var weight: Double
         var reps: Int
         var failure: Bool
         var warmUp: Bool
@@ -57,7 +57,7 @@ class Exercise {
 
         @Relationship(deleteRule: .cascade, inverse: \Exercise.sets) var exercise: Exercise? // ✅ Each Set belongs to an Exercise
 
-        init(id: UUID = UUID(), weight: Int, reps: Int, failure: Bool, warmUp: Bool, restPause: Bool, dropSet: Bool, time: String, note: String, createdAt: Date, bodyWeight: Bool, exercise: Exercise? = nil) {
+        init(id: UUID = UUID(), weight: Double, reps: Int, failure: Bool, warmUp: Bool, restPause: Bool, dropSet: Bool, time: String, note: String, createdAt: Date, bodyWeight: Bool, exercise: Exercise? = nil) {
             self.id = id
             self.weight = weight
             self.reps = reps
@@ -74,7 +74,7 @@ class Exercise {
         
         static func createDefault() -> Set {
             return Set(
-                id: UUID(), weight: 0, reps: 0, failure: false, warmUp: false, restPause: false, dropSet: false, time: "", note: "", createdAt: Date(), bodyWeight: false
+                id: UUID(), weight: 0.0, reps: 0, failure: false, warmUp: false, restPause: false, dropSet: false, time: "", note: "", createdAt: Date(), bodyWeight: false
             )
         }
         
