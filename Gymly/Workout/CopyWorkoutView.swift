@@ -18,6 +18,8 @@ struct CopyWorkoutView: View {
     @State private var selectedDays: [Day] = []
     @State var fetchedExercises: [Exercise] = []
 
+    
+    // TODO: Make copying exercises possible
     var body: some View {
         NavigationView {
             List {
@@ -28,85 +30,16 @@ struct CopyWorkoutView: View {
                     .pickerStyle(.inline)
                 }
                 Button("Copy \(selected)") {
-                    copyWorkout()
                     dismiss()
                 }
             }
             .offset(y: -30)
             .onAppear {
                 selected = day.name
-                fetchData()
-                for i in 0...days.count - 1 {
-                    workoutNames.append(days[i].name)
-                }
             }
             .navigationTitle("Copy workout")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
-    
-    func copyWorkout() {
-        fetchDayToCopy()
-
-        let copiedExercises = fetchedExercises.map { originalExercise -> Exercise in
-            return Exercise(id: originalExercise.id, name:originalExercise.name, sets: originalExercise.sets, repGoal:originalExercise.repGoal, muscleGroup:originalExercise.muscleGroup)
-        }
-
-        day.exercises = copiedExercises
-
-        do {
-            try context.save()
-            debugPrint("Workout copied successfully")
-        } catch {
-            debugPrint("Error saving context: \(error)")
-        }
-    }
-
-    
-    func fetchDayToCopy() {
-        let predicate = #Predicate<Day> {
-            $0.name == selected
-        }
-        let descriptor = FetchDescriptor<Day>(predicate: predicate, sortBy: [SortDescriptor(\.dayOfSplit)])
-        do {
-            let fetchedData = try context.fetch(descriptor)
-            selectedDays = fetchedData
-            fetchedExercises = selectedDays[0].exercises
-            debugPrint("\(fetchedExercises)")
-            if days.isEmpty {
-                debugPrint("No day found for name:")
-            } else {
-                debugPrint("Fetched days: \(selectedDays[0].name)")
-            }
-        } catch {
-            debugPrint("Error fetching data: \(error)")
-        }
-    }
-    
-    
-    func fetchData() {
-        let predicate = #Predicate<Day> {
-            $0.name == $0.name
-        }
-        let descriptor = FetchDescriptor<Day>(predicate: predicate, sortBy: [SortDescriptor(\.dayOfSplit)])
-        do {
-            let fetchedData = try context.fetch(descriptor)
-            days = fetchedData
-            
-            if days.isEmpty {
-                debugPrint("No day found for name:")
-            } else {
-//                for i in 0...days.count - 1 {
-//                    workoutNames.insert(days[i].name, at: 0)
-//                    debugPrint(days[i].name)
-//                }
-                debugPrint("Fetched days: \(days)")
-            }
-        } catch {
-            debugPrint("Error fetching data: \(error)")
-        }
-    }
-    
-    
 }
 

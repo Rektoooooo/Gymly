@@ -10,11 +10,14 @@ import SwiftData
 
 struct ShowSplitDayExerciseView: View {
     
+    /// Environment and observed objects
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
     @Environment(\.dismiss) var dismiss
     @ObservedObject var viewModel: WorkoutViewModel
     @State var exercise: Exercise
+    
+    /// UI State Variables
     @State private var isOn = false
     @State var showSheet = false
     @State var weight: Double = 0.0
@@ -27,16 +30,18 @@ struct ShowSplitDayExerciseView: View {
     @State var setNumber: Int = 0
     @State var note: String = ""
     
+    /// Converts weight to correct unit (Kg/Lbs)
     var convertedWeight: Double {
         if config.weightUnit == "Kg" {
-            return weight // Keep it as is
+            return weight
         } else {
-            return weight * 2.20462 // Convert Kg to Lbs
+            return weight * 2.20462
         }
     }
     
     var body: some View {
         VStack {
+            /// Displays set and rep count
             HStack {
                 Text("\(exercise.sets.count) Sets")
                     .foregroundStyle(.accent)
@@ -48,13 +53,16 @@ struct ShowSplitDayExerciseView: View {
                     .padding()
                     .bold()
             }
+            
             Form {
+                /// List of exercise sets
                 ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
-                    Section("Set \(index + 1)") { // Correct sequential numbering
+                    Section("Set \(index + 1)") {
                         Button {
                             loadSetData(set: set)
                         } label: {
                             HStack {
+                                /// Display set details (weight, reps, notes)
                                 HStack {
                                     if set.bodyWeight {
                                         Text("BW  +")
@@ -101,22 +109,19 @@ struct ShowSplitDayExerciseView: View {
                                     }
                                 }
                                 Spacer()
-                                HStack {
-                                    Text("\(set.time)")
-                                        .foregroundStyle(Color.white)
-                                        .opacity(set.time.isEmpty ? 0 : 0.3)
-                                }
+                                Text("\(set.time)")
+                                    .foregroundStyle(Color.white)
+                                    .opacity(set.time.isEmpty ? 0 : 0.3)
                             }
                         }
                         if !set.note.isEmpty {
-                            HStack {
-                                Text(set.note)
-                                    .foregroundStyle(Color.white)
-                                    .opacity(0.5)
-                            }
+                            Text(set.note)
+                                .foregroundStyle(Color.white)
+                                .opacity(0.5)
                         }
                     }
                     .swipeActions(edge: .trailing) {
+                        /// Swipe-to-delete action for a set
                         Button(role: .destructive) {
                             deleteItem(set)
                         } label: {
@@ -124,6 +129,8 @@ struct ShowSplitDayExerciseView: View {
                         }
                     }
                 }
+                
+                /// Dismiss button
                 Section("") {
                     Button("Done") {
                         dismiss()
@@ -131,6 +138,7 @@ struct ShowSplitDayExerciseView: View {
                 }
             }
             .sheet(isPresented: $showSheet) {
+                /// Sheet for editing a set
                 EditExerciseSetView(
                     weight: $weight,
                     reps: $reps,
@@ -144,9 +152,10 @@ struct ShowSplitDayExerciseView: View {
                     dropSet: $dropSet,
                     bodyWeight: $bodyWeight
                 )
-                    .presentationDetents([.fraction(0.65)])
+                .presentationDetents([.fraction(0.65)])
             }
             .toolbar {
+                /// Add set button
                 Button {
                     Task {
                         await addSet()
@@ -160,21 +169,9 @@ struct ShowSplitDayExerciseView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
     
+    /// Loads set data into state variables for editing
     func loadSetData(set: Exercise.Set, shouldOpenSheet: Bool = true) {
-        if config.roundSetWeights {
-            for index in exercise.sets.indices {
-                exercise.sets[index].weight = exercise.sets[index].weight // Ensure whole number rounding
-            }
-            config.roundSetWeights = false
-        }
-
-        // Ensure conversion uses the same logic everywhere
-        if config.weightUnit == "Kg" {
-            weight = set.weight
-        } else {
-            weight = set.weight // Convert to lbs with proper rounding
-        }
-
+        weight = set.weight
         reps = set.reps
         failure = set.failure
         warmUp = set.warmUp
@@ -183,7 +180,7 @@ struct ShowSplitDayExerciseView: View {
         bodyWeight = set.bodyWeight
         note = set.note
         setNumber = exercise.sets.firstIndex(where: { $0.id == set.id }) ?? 0
-
+        
         if shouldOpenSheet {
             Task { @MainActor in
                 showSheet = true
@@ -191,6 +188,7 @@ struct ShowSplitDayExerciseView: View {
         }
     }
     
+    /// Deletes a set from the exercise
     func deleteItem(_ set: Exercise.Set) {
         if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
             withAnimation {
@@ -201,13 +199,11 @@ struct ShowSplitDayExerciseView: View {
         refreshExercise()
     }
     
+    /// Adds a new set to the exercise
     func addSet() async {
         let newSet = Exercise.Set.createDefault()
         exercise.sets.append(newSet)
-
-        // Force UI refresh by updating the exercise reference
-        exercise = exercise
-
+        
         do {
             try context.save()
             refreshExercise()
@@ -216,10 +212,10 @@ struct ShowSplitDayExerciseView: View {
         }
     }
     
+    /// Refreshes the exercise data
     func refreshExercise() {
         Task {
             exercise = await viewModel.fetchExercise(id: exercise.id)
         }
     }
 }
-

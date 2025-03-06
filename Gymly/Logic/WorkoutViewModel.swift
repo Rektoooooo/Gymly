@@ -235,6 +235,21 @@ final class WorkoutViewModel: ObservableObject {
         
         return newMuscleGroups
     }
+
+    func deleteExercise(_ exercise: Exercise) {
+        guard let day = exercise.day else {
+            debugPrint("Exercise has no associated day.")
+            return
+        }
+        day.exercises.removeAll { $0.id == exercise.id }
+        context.delete(exercise)
+        do {
+            try context.save()
+            debugPrint("Deleted exercise: \(exercise.name)")
+        } catch {
+            debugPrint(error)
+        }
+    }
     
     func deleteItem(set: Exercise.Set, exercise: Exercise) async -> Exercise {
         if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {

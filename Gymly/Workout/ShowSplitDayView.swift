@@ -10,17 +10,21 @@ import SwiftData
 
 struct ShowSplitDayView: View {
     
+    /// State variables for UI control
     @State var name: String = ""
-    @State private var createExercise:Bool = false
-    @State private var copyWorkout:Bool = false
-    @State private var popup:Bool = false
+    @State private var createExercise: Bool = false
+    @State private var copyWorkout: Bool = false
+    @State private var popup: Bool = false
     @State private var days: [Day] = []
     @State var day: Day
+    
+    /// Environment and observed objects
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
-    @State var muscleGroups:[MuscleGroup] = []
+    @State var muscleGroups: [MuscleGroup] = []
     @ObservedObject var viewModel: WorkoutViewModel
     
+    /// Custom initializer
     init(viewModel: WorkoutViewModel, day: Day) {
         self.viewModel = viewModel
         self.day = day
@@ -29,6 +33,7 @@ struct ShowSplitDayView: View {
     var body: some View {
         VStack {
             List {
+                /// Display muscle groups and their exercises
                 ForEach(muscleGroups) { group in
                     if !group.exercises.isEmpty {
                         Section(header: Text(group.name)) {
@@ -37,8 +42,9 @@ struct ShowSplitDayView: View {
                                     Text(exercise.name)
                                 }
                                 .swipeActions(edge: .trailing) {
+                                    /// Swipe-to-delete action
                                     Button(role: .destructive) {
-                                        deleteItem(exercise)
+                                        viewModel.deleteExercise(exercise)
                                     } label: {
                                         Label("Delete", systemImage: "trash")
                                     }
@@ -53,26 +59,31 @@ struct ShowSplitDayView: View {
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
             Task {
+                /// Fetch updated day and refresh muscle groups
                 await day = viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
                 await refreshMuscleGroups()
             }
         }
         .alert("Enter workout name", isPresented: $popup) {
+            /// Popup for editing the workout name
             TextField("Workout name", text: $name)
-            Button("OK", action: addName)
+            Button("OK", action: saveDayName)
         } message: {
             Text("Enter the name of new section")
         }
         .sheet(isPresented: $createExercise, content: {
+            /// Modal for creating a new exercise
             CreateExerciseView(viewModel: viewModel, day: viewModel.day)
                 .navigationTitle("Create Exercise")
         })
         .sheet(isPresented: $copyWorkout, content: {
+            /// Modal for copying a workout
             CopyWorkoutView(day: day)
                 .navigationTitle("Create Exercise")
                 .presentationDetents([.fraction(0.25)])
         })
         .toolbar {
+            /// Toolbar menu for editing options
             Menu {
                 Button(action: {
                     createExercise.toggle()
@@ -93,11 +104,10 @@ struct ShowSplitDayView: View {
                 Text("Edit")
             }
         }
-        
     }
     
-    
-    func addName() {
+    /// Saves the edited workout name
+    func saveDayName() {
         day.name = name
         do {
             try context.save()
@@ -106,30 +116,9 @@ struct ShowSplitDayView: View {
         }
     }
     
-    func deleteItem(_ exercise: Exercise) {
-        guard let day = exercise.day else {
-            debugPrint("Exercise has no associated day.")
-            return
-        }
-
-        // ✅ Remove exercise from Day first
-        day.exercises.removeAll { $0.id == exercise.id }
-
-        // ✅ Then delete the exercise
-        context.delete(exercise)
-
-        do {
-            try context.save()
-            debugPrint("Deleted exercise: \(exercise.name)")
-        } catch {
-            debugPrint(error)
-        }
-    }
-    
+    /// Refreshes muscle groups by fetching updated data
     func refreshMuscleGroups() async {
         muscleGroups.removeAll() // Clear array to trigger UI update
         muscleGroups = await viewModel.sortData(dayOfSplit: day.dayOfSplit) // Reassign updated data
     }
-    
 }
-

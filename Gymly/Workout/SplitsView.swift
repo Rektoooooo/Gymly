@@ -12,20 +12,23 @@ struct SplitsView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
     @Environment(\.modelContext) var context: ModelContext
+    @Environment(\.dismiss) private var dismiss
     @State var splits: [Split] = []
     @State var createSplit: Bool = false
-    @Environment(\.dismiss) private var dismiss
     var body: some View {
         NavigationView {
             List {
+                /// Show all splits
                 ForEach(splits) { split in
                     NavigationLink(destination: SplitDetailView(split: split, viewModel: viewModel)) {
                         VStack {
+                            /// Display split name
                             HStack {
                                 Text(split.name)
                                     .bold()
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            /// Display graphic if split is active or not
                             HStack {
                                 if split.isActive {
                                     Circle()
@@ -51,6 +54,7 @@ struct SplitsView: View {
             .padding(.vertical)
             .navigationTitle("My Splits")
             .toolbar {
+                /// Button for adding splits
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         createSplit = true

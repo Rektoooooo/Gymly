@@ -10,14 +10,16 @@ import SwiftData
 
 struct CreateExerciseView: View {
     
+    /// Environment objects for managing state and dismissal
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: WorkoutViewModel
-    @State var day:Day
+    @State var day: Day
     
     var body: some View {
         NavigationView {
             List {
+                /// Section for entering exercise details
                 Section("Exercise parameters") {
                     LazyVStack {
                         TextField("Name", text: $viewModel.name)
@@ -27,8 +29,8 @@ struct CreateExerciseView: View {
                             .keyboardType(.numbersAndPunctuation)
                     }
                     LazyVStack {
-                        TextField("Repeticions", text: $viewModel.reps)
-                        .keyboardType(.numbersAndPunctuation)
+                        TextField("Repetitions", text: $viewModel.reps)
+                            .keyboardType(.numbersAndPunctuation)
                     }
                     Picker("Muscle Group", selection: $viewModel.muscleGroup) {
                         ForEach(viewModel.muscleGroupNames, id: \.self) { muscleGroup in
@@ -36,21 +38,20 @@ struct CreateExerciseView: View {
                         }
                     }
                 }
+                
+                /// Section for saving the exercise
                 Section(" ") {
                     Button("Save", action: {
                         debugPrint(day.name)
                         Task {
                             await viewModel.createExercise()
                         }
-                            dismiss()
+                        dismiss()
                     })
                 }
-
             }
             .navigationTitle("Create exercise")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
-    
-
 }

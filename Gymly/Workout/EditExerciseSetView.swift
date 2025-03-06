@@ -9,10 +9,12 @@ import SwiftUI
 
 struct EditExerciseSetView: View {
     
+    /// Environment and observed objects
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
     @Environment(\.dismiss) var dismiss
 
+    /// Bindings for exercise set data
     @Binding var weight: Double
     @Binding var reps: Int
     @Binding var unit: String
@@ -25,6 +27,7 @@ struct EditExerciseSetView: View {
     @Binding var dropSet:Bool
     @Binding var bodyWeight:Bool
     
+    /// Returns a list of selected set types
     var selectedSetTypes: [String] {
         var selected = [String]()
         if failure { selected.append("Failure") }
@@ -35,7 +38,7 @@ struct EditExerciseSetView: View {
     }
     @State private var isDropdownOpen = false
 
-    
+    /// Formats displayed weight based on the unit
     var displayedWeight: String {
         let weightInLbs = weight * 2.20462
         return config.weightUnit == "Kg" ? "\(Int(round(weight))) kg" : "\(Int(round(weightInLbs))) lbs"
@@ -45,6 +48,7 @@ struct EditExerciseSetView: View {
     var body: some View {
         NavigationView {
             List {
+                /// Section for setting a note
                 Section("Set note") {
                     TextField("Set note", text: $note)
                         .onChange(of: note) { oldValue, newValue in
@@ -56,6 +60,7 @@ struct EditExerciseSetView: View {
                             }
                         }
                 }
+                /// Section for selecting set type
                 Section(header: Text("Set Type")) {
                     Menu {
                         Button(action: {
@@ -129,6 +134,7 @@ struct EditExerciseSetView: View {
                         }
                     }
                 }
+                /// Section for adjusting weight
                 Section("Weight (\(unit))") {
                     HStack {
                         Button {
@@ -192,6 +198,7 @@ struct EditExerciseSetView: View {
                             }
                         }
                 }
+                /// Section for adjusting repetitions
                 Section("Repetisitions") {
                     HStack {
                         Button {
@@ -244,6 +251,7 @@ struct EditExerciseSetView: View {
             }
             .scrollDisabled(true)
             .toolbar {
+                /// Toolbar button to save changes
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         exercise.sets[setNumber].weight = weight
@@ -278,6 +286,7 @@ struct EditExerciseSetView: View {
         }
     }
     
+    /// Get current time for set
     func getCurrentTime() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "H:mm"
@@ -285,6 +294,7 @@ struct EditExerciseSetView: View {
         return currentTime.lowercased()
     }
     
+    /// Increase the weight
     func increaseWeight(by value: Int) {
         if config.weightUnit == "Kg" {
             weight += Double(value)
@@ -293,6 +303,7 @@ struct EditExerciseSetView: View {
         }
     }
 
+    /// Decrease the weight
     func decreaseWeight(by value: Int) {
         if config.weightUnit == "Kg" {
             weight -= Double(value)
@@ -301,6 +312,7 @@ struct EditExerciseSetView: View {
         }
     }
 
+    /// Save weight to context
     private func saveWeight() {
         exercise.sets[setNumber].weight = weight
         do {
@@ -310,6 +322,7 @@ struct EditExerciseSetView: View {
         }
     }
 
+    /// Save reps to context
     private func saveReps() {
         exercise.sets[setNumber].reps = reps
         do {
@@ -320,6 +333,7 @@ struct EditExerciseSetView: View {
     }
 }
 
+/// Toggles set type and saves changes
 struct CheckToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
         Button {

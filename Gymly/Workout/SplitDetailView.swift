@@ -13,6 +13,7 @@ struct SplitDetailView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     var body: some View {
         List {
+            /// Show all days in a split and display them in a list
             ForEach(days.sorted(by: { $0.dayOfSplit < $1.dayOfSplit })) { day in
                 NavigationLink(destination: ShowSplitDayView(viewModel: viewModel, day: day)) {
                     Text("Day \(day.dayOfSplit) - \(day.name)")
