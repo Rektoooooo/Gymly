@@ -124,7 +124,8 @@ struct ShowSplitDayExerciseView: View {
                     .swipeActions(edge: .trailing) {
                         /// Swipe-to-delete action for a set
                         Button(role: .destructive) {
-                            deleteItem(set)
+                            viewModel.deleteSet(set, exercise: exercise)
+                            refreshExercise()
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
@@ -159,7 +160,7 @@ struct ShowSplitDayExerciseView: View {
                 /// Add set button
                 Button {
                     Task {
-                        await addSet()
+                        await viewModel.addSet(exercise: exercise)
                     }
                 } label: {
                     Label("Add set", systemImage: "plus.circle")
@@ -188,31 +189,7 @@ struct ShowSplitDayExerciseView: View {
             }
         }
     }
-    
-    /// Deletes a set from the exercise
-    func deleteItem(_ set: Exercise.Set) {
-        if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
-            withAnimation {
-                _ = exercise.sets.remove(at: index)
-            }
-        }
-        context.delete(set)
-        refreshExercise()
-    }
-    
-    /// Adds a new set to the exercise
-    func addSet() async {
-        let newSet = Exercise.Set.createDefault()
-        exercise.sets.append(newSet)
-        
-        do {
-            try context.save()
-            refreshExercise()
-        } catch {
-            debugPrint(error)
-        }
-    }
-    
+
     /// Refreshes the exercise data
     func refreshExercise() {
         Task {

@@ -9,7 +9,7 @@ import SwiftUI
 import AuthenticationServices
 
 struct SignInView: View {
-    
+    @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) var dismiss
@@ -38,20 +38,20 @@ struct SignInView: View {
                             .foregroundStyle(ColorSchemeAdaptiveColor(light: .black, dark: .white))
                     }
                     VStack {
+                        /// Sign in with apple id
                         SignInWithAppleButton(.signUp) { request in
-                            request.requestedScopes = [.fullName, .email] // ✅ Request email & name
+                            request.requestedScopes = [.fullName, .email]
                         } onCompletion: { result in
                             switch result {
                             case .success(let authorization):
                                 config.isUserLoggedIn = true
                                 if let userCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
                                     print("User ID: \(userCredential.user)")
-
-                                    // ✅ Use optional binding to safely handle email
+                                    
                                     if let email = userCredential.email {
                                         print("User Email: \(email)")
                                         config.userEmail = email
-                                        UserDefaults.standard.set(email, forKey: "userEmail") // ✅ Save email for later
+                                        UserDefaults.standard.set(email, forKey: "userEmail")
                                     } else {
                                         print("Email not available (User has logged in before)")
                                         if let savedEmail = UserDefaults.standard.string(forKey: "userEmail") {
@@ -60,7 +60,6 @@ struct SignInView: View {
                                         }
                                     }
 
-                                    // ✅ Optional binding for fullName
                                     if let fullName = userCredential.fullName {
                                         print("User Full Name: \(fullName)")
                                     }
@@ -79,29 +78,7 @@ struct SignInView: View {
         }
     }
     
-    private func handleSuccessfulLogin(with authorization: ASAuthorization) {
-        if let userCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
-            print(userCredential.user)
-            
-            if userCredential.authorizedScopes.contains(.fullName) {
-                print(userCredential.fullName?.givenName ?? "No given name")
-            }
-            
-            if userCredential.authorizedScopes.contains(.email) {
-                print(userCredential.email ?? "No email")
-            }
-        }
-    }
-    
-    private func handleLoginError(with error: Error) {
-        print("Could not authenticate: \\(error.localizedDescription)")
-    }
-    
     func ColorSchemeAdaptiveColor(light: Color, dark: Color) -> Color {
         return Color(UIColor { $0.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light) })
     }
-}
-
-#Preview {
-    SignInView()
 }

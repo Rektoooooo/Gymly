@@ -8,7 +8,6 @@
 import Foundation
 import SwiftData
 
-// ✅ Rename to avoid conflicts
 protocol DeepCopyable {
     func copy() -> Self
 }
@@ -17,11 +16,11 @@ protocol DeepCopyable {
 class Day {
     @Attribute(.unique) var id: UUID
     var name: String
-    var dayOfSplit: Int // 1 = Monday, 2 = Tuesday...
-    var exercises: [Exercise] // Exercises for this day
-    var date: String // Formatted date
+    var dayOfSplit: Int 
+    var exercises: [Exercise]
+    var date: String
 
-    @Relationship(deleteRule: .cascade, inverse: \Split.days) var split: Split? // ✅ Each Day belongs to one Split
+    @Relationship(deleteRule: .cascade, inverse: \Split.days) var split: Split?
 
     init(id: UUID = UUID(), name: String, dayOfSplit: Int, exercises: [Exercise] = [], date: String, split: Split? = nil) {
         self.id = id

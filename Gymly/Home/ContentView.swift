@@ -10,11 +10,12 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         NavigationView {
+            // TODO: Make the graph function with real data
             ZStack {
                 ContentViewGraph()
                 RadarLabels()
             }
-            .frame(maxWidth: 100, maxHeight: 100) // Allow full expansion
+            .frame(maxWidth: 100, maxHeight: 100)
             .padding()
         }
     }

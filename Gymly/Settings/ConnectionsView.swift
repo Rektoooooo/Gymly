@@ -9,6 +9,7 @@ import SwiftUI
 import HealthKit
 
 struct ConnectionsView: View {
+    @ObservedObject var viewModel: WorkoutViewModel
     @StateObject var healthKitManager = HealthKitManager()
     @EnvironmentObject var config: Config
     private let healthStore = HKHealthStore()
@@ -41,7 +42,8 @@ struct ConnectionsView: View {
         }
     }
     
-    /// **Requests HealthKit authorization and updates UI instantly**
+    
+    /// Requests HealthKit authorization and updates UI instantly
     private func requestHealthKitAuthorization() {
         let healthDataToRead: Set = [
             HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!,
@@ -56,7 +58,7 @@ struct ConnectionsView: View {
         }
     }
     
-    /// **Syncs UI toggles with HealthKit permissions**
+    /// Syncs UI toggles with HealthKit permissions
     private func updateHealthPermissions() {
         let dateOfBirthType = HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!
         let heightType = HKObjectType.quantityType(forIdentifier: .height)!
@@ -68,14 +70,14 @@ struct ConnectionsView: View {
             let weightStatus = self.healthStore.authorizationStatus(for: weightType)
             
             DispatchQueue.main.async {
-                config.allowDateOfBirth = (dateOfBirthStatus == .sharingAuthorized)
-                config.allowHeight = (heightStatus == .sharingAuthorized)
-                config.allowWeight = (weightStatus == .sharingAuthorized)
+                self.config.allowDateOfBirth = (dateOfBirthStatus == .sharingAuthorized)
+                self.config.allowHeight = (heightStatus == .sharingAuthorized)
+                self.config.allowWeight = (weightStatus == .sharingAuthorized)
             }
         }
     }
     
-    /// **Resets permissions when HealthKit is disabled**
+    /// Resets permissions when HealthKit is disabled
     private func disableHealthKitAccess() {
         config.allowDateOfBirth = false
         config.allowHeight = false

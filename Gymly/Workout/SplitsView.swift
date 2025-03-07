@@ -17,6 +17,7 @@ struct SplitsView: View {
     @State var createSplit: Bool = false
     var body: some View {
         NavigationView {
+            // TODO: Make switching between split possible
             List {
                 /// Show all splits
                 ForEach(splits) { split in
@@ -37,13 +38,13 @@ struct SplitsView: View {
                                     Text("Active")
                                         .foregroundStyle(Color.green)
                                         .multilineTextAlignment(.leading)
-                                    
                                 } else {
-                                    Text("Inactive")
                                     Circle()
                                         .fill(Color.red)
                                         .frame(width: 8, height: 8)
+                                    Text("Inactive")
                                         .foregroundStyle(Color.red)
+                                        .multilineTextAlignment(.leading)
                                 }
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)

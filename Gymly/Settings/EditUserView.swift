@@ -9,7 +9,7 @@ import SwiftUI
 import PhotosUI
 
 struct EditUserView: View {
-    
+    @ObservedObject var viewModel: WorkoutViewModel
     @State private var avatarItem: PhotosPickerItem?
     @State private var avatarImage: UIImage?
     @EnvironmentObject var config: Config
@@ -23,21 +23,7 @@ struct EditUserView: View {
                     HStack {
                         Spacer()
                         if avatarImage == nil {
-                            if let image = profileImage {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 100, height: 100)
-                                    .clipShape(Circle())
-                                    .padding()
-                            } else {
-                                Image("defaultProfileImage")
-                                    .resizable()
-                                    .frame(width: 100, height: 100)
-                                    .clipShape(Circle())
-                                    .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
-                                    .padding()
-                            }
+                            ProfileImageCell(profileImage: profileImage, frameSize: 100)
                         } else {
                             if let avatarImage = avatarImage {
                                 Image(uiImage: avatarImage)
@@ -75,7 +61,7 @@ struct EditUserView: View {
                 Section("") {
                     Button("Save changes") {
                         if let image = avatarImage {
-                            let savedPath = saveImageToDocuments(image: image)
+                            let savedPath = viewModel.saveImageToDocuments(image: image)
                             config.userProfileImageURL = savedPath // Update the config
                             debugPrint(config.userProfileImageURL!)
                         }
@@ -86,36 +72,10 @@ struct EditUserView: View {
             .navigationTitle("Edit profile")
             .onAppear() {
                 if let imagePath = config.userProfileImageURL {
-                    profileImage = loadImage(from: imagePath)
+                    profileImage = viewModel.loadImage(from: imagePath)
                 }
             }
         }
-    }
-    
-    /// Saves the UIImage to the Documents directory
-    func saveImageToDocuments(image: UIImage) -> String? {
-        guard let data = image.jpegData(compressionQuality: 0.8) else { return nil }
-        
-        let filename = "profile_picture.jpg"
-        let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(filename)
-        
-        do {
-            try data.write(to: fileURL)
-            return fileURL.path
-        } catch {
-            print("❌ Error saving image: \(error)")
-            return nil
-        }
-    }
-    
-    func loadImage(from path: String) -> UIImage? {
-        let fileURL = URL(fileURLWithPath: path)
-        guard FileManager.default.fileExists(atPath: fileURL.path),
-              let imageData = try? Data(contentsOf: fileURL),
-              let uiImage = UIImage(data: imageData) else {
-            return nil
-        }
-        return uiImage
     }
 }
 

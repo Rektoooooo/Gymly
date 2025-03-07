@@ -8,6 +8,8 @@
 import Foundation
 import SwiftData
 import SwiftUI
+import AuthenticationServices
+import HealthKit
 
 final class WorkoutViewModel: ObservableObject {
     
@@ -17,7 +19,7 @@ final class WorkoutViewModel: ObservableObject {
     @Published var muscleGroups:[MuscleGroup] = []
     @Published var editPlan:Bool = false
     @Published var addExercise:Bool = false
-    @Published var exerciseAddedTrigger = false // ✅ Add this to trigger a UI update
+    @Published var exerciseAddedTrigger = false
     @Published var muscleGroupNames:[String] = ["Chest","Back","Biceps","Triceps","Shoulders","Quads","Hamstrings","Calves","Glutes","Abs"]
     @Published var exerciseId: UUID? = nil
     @Published var name:String = ""
@@ -26,6 +28,7 @@ final class WorkoutViewModel: ObservableObject {
     @Published var setNote:String = ""
     @Published var muscleGroup:String = "Chest"
     @Published var emptyDay: Day = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
+
     
     enum InsertionError: Error {
         case invalidReps(String)
@@ -39,6 +42,9 @@ final class WorkoutViewModel: ObservableObject {
         self.context = context
     }
     
+    // MARK: Split related funcs
+    
+    /// Create new split
     @MainActor
     func createNewSplit(name: String, numberOfDays: Int, startDate: Date, context: ModelContext) {
         var days: [Day] = []
@@ -48,7 +54,7 @@ final class WorkoutViewModel: ObservableObject {
             days.append(day)
         }
         
-        deactivateAllSplits(context: context) // ✅ Ensure only ONE split is active
+        deactivateAllSplits(context: context)
 
         let newSplit = Split(name: name, days: days, isActive: true, startDate: startDate)
         context.insert(newSplit)
@@ -61,6 +67,7 @@ final class WorkoutViewModel: ObservableObject {
         }
     }
     
+    /// Fetch active split
     @MainActor
     func getActiveSplit() -> Split? {
         let fetchDescriptor = FetchDescriptor<Split>(predicate: #Predicate { $0.isActive })
@@ -72,6 +79,7 @@ final class WorkoutViewModel: ObservableObject {
         }
     }
     
+    /// Fetch all days for active split
     @MainActor
     func getActiveSplitDays() -> [Day] {
         guard let activeSplit = getActiveSplit() else {
@@ -81,6 +89,7 @@ final class WorkoutViewModel: ObservableObject {
         return activeSplit.days
     }
 
+    /// Set all splits as inactive
     @MainActor
     func deactivateAllSplits(context: ModelContext) {
         let fetchDescriptor = FetchDescriptor<Split>()
@@ -88,14 +97,15 @@ final class WorkoutViewModel: ObservableObject {
         do {
             let splits = try context.fetch(fetchDescriptor)
             for split in splits {
-                split.isActive = false // ✅ Set all splits to inactive
+                split.isActive = false
             }
-            try context.save() // ✅ Save the changes
+            try context.save()
         } catch {
             print("Error deactivating splits: \(error)")
         }
     }
     
+    /// Fetch all splits
     @MainActor
     func getAllSplits(context: ModelContext) -> [Split] {
         let predicate = #Predicate<Split> { _ in true }
@@ -103,11 +113,11 @@ final class WorkoutViewModel: ObservableObject {
         return try! context.fetch(fetchDescriptor)
     }
     
+    /// Switch split from inactive to active
     @MainActor
     func switchActiveSplit(split: Split, context: ModelContext) {
-        deactivateAllSplits(context: context) // ✅ Deactivate all others
-        split.isActive = true // ✅ Activate selected split
-
+        deactivateAllSplits(context: context)
+        split.isActive = true
         do {
             try context.save()
             print("Switched to active split: \(split.name)")
@@ -116,26 +126,29 @@ final class WorkoutViewModel: ObservableObject {
         }
     }
     
+    // MARK: Day related funcs
+    
+    /// Fetch day with dayOfSplit as input
     @MainActor
     func fetchDay(dayOfSplit: Int?) async -> Day {
         let activeSplitDays = getActiveSplitDays().filter { $0.dayOfSplit == dayOfSplit }
         
         if let existingDay = activeSplitDays.first {
             debugPrint("Returning existing day: \(existingDay.name)")
-            return existingDay  // ✅ Return the already managed object
+            return existingDay
         } else {
             debugPrint("No existing day found, creating new one.")
 
-            // ✅ Create a new `Day` and save it immediately to SwiftData
             let newDay = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
             
-            context.insert(newDay)  // ✅ Insert into SwiftData
-            try? context.save()  // ✅ Save immediately
+            context.insert(newDay)
+            try? context.save()
 
-            return newDay  // ✅ Now the returned object is properly managed
+            return newDay
         }
     }
     
+    /// Fetch day based on date
     @MainActor
     func fetchCalendarDay(date: String) async -> Day {
         let predicate = #Predicate<DayStorage> {
@@ -158,7 +171,242 @@ final class WorkoutViewModel: ObservableObject {
             return emptyDay
         }
     }
+
+    /// Sort exercises to there respective muscle group from date
+    @MainActor
+    func sortDataForCalendar(date: String) async -> [MuscleGroup] {
+        var newMuscleGroups: [MuscleGroup] = []
+        
+        let today = await fetchCalendarDay(date: date)
+
+        for name in muscleGroupNames {
+            let filteredExercises = today.exercises.filter { exercise in
+                exercise.muscleGroup == name
+            }
+
+            if !filteredExercises.isEmpty {
+                let group = MuscleGroup(
+                    name: name,
+                    exercises: filteredExercises
+                )
+                newMuscleGroups.append(group)
+            }
+        }
+
+        return newMuscleGroups
+    }
     
+    /// Sort exercises to there respective muscle group from dayOfSplit
+    @MainActor
+    func sortData(dayOfSplit: Int) async -> [MuscleGroup] {
+        var newMuscleGroups: [MuscleGroup] = []
+        
+        let updatedDay = await fetchDay(dayOfSplit: dayOfSplit)
+
+        let freshExercises = updatedDay.exercises
+
+        await MainActor.run {
+            self.day = updatedDay
+        }
+
+        for name in muscleGroupNames {
+            let filteredExercises = freshExercises.filter { $0.muscleGroup == name }
+            if !filteredExercises.isEmpty {
+                let group = MuscleGroup(
+                    name: name,
+                    exercises: filteredExercises.sorted { $0.createdAt < $1.createdAt }
+                )
+                newMuscleGroups.append(group)
+            }
+        }
+        
+        return newMuscleGroups
+    }
+    
+    /// Helper function for creating days when creating split
+    func addDay(name: String, index: Int) {
+        debugPrint("Attempting to add: \(name) with index \(index)")
+        
+        if days.contains(where: { $0.dayOfSplit == index }) {
+            debugPrint("Skipping duplicate day: \(name)")
+            return
+        }
+        context.insert(Day(name: name, dayOfSplit: index, exercises: [], date: ""))
+        debugPrint("Added day: \(name)")
+    }
+
+    /// Insert day into **DayStorage** and display it in calendar
+    @MainActor
+    func insertWorkout() async {
+        let today = await fetchDay(dayOfSplit: config.dayInSplit)
+        
+        let newDay = Day(
+            name: today.name,
+            dayOfSplit: today.dayOfSplit, exercises: today.exercises.map { $0.copy() },
+            date: formattedDateString(from: Date())
+        )
+        
+
+        let dayStorage = DayStorage(id: UUID(), day: newDay, date: formattedDateString(from: Date()))
+        context.insert(dayStorage)
+        config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
+        
+        do {
+            try context.save()
+            debugPrint("Day saved with date: \(formattedDateString(from: Date()))")
+        } catch {
+            debugPrint(error)
+        }
+    }
+    
+ // MARK: Calendar oriented functions
+    
+    /// Get time for comparing
+    func formattedDateString(from date: Date) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "d MMMM yyyy"
+        return dateFormatter.string(from: date)
+    }
+    
+    /// Get year and moth for calnedar day titile
+    func monthAndYearString(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter.string(from: date)
+    }
+
+    /// Get how many days ar ein a month for calendar
+    func getDaysInMonth(for date: Date) -> [DayCalendar] {
+        guard let range = Calendar.current.range(of: .day, in: .month, for: date),
+              let firstDayOfMonth = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: date)) else {
+            return []
+        }
+        let firstWeekday = Calendar.current.component(.weekday, from: firstDayOfMonth)
+        var days: [DayCalendar] = []
+
+        let offset = (firstWeekday + 5) % 7
+        days.append(contentsOf: Array(repeating: DayCalendar(day: 0, date: Date()), count: offset))
+
+        days.append(contentsOf: range.compactMap { day -> DayCalendar? in
+            if let date = Calendar.current.date(byAdding: .day, value: day - 1, to: firstDayOfMonth) {
+                return DayCalendar(day: day, date: date)
+            }
+            return nil
+        })
+
+        return days
+    }
+    
+    // MARK: Functions for keeping app to date
+    
+    /// Update day in split based on how many days user  dident open the app
+    @MainActor func updateDayInSplit() -> Int {
+        let calendar = Calendar.current
+
+        if !calendar.isDateInToday(config.lastUpdateDate) {
+            let daysPassed = numberOfDaysBetween(start: config.lastUpdateDate, end: Date())
+
+            let totalDays = config.dayInSplit + daysPassed
+            
+            let activeSplit = getActiveSplit()
+            
+            let newDayInSplit = (totalDays - 1) % activeSplit!.days.count + 1
+
+            config.dayInSplit = newDayInSplit
+            config.lastUpdateDate = Date()
+
+            return config.dayInSplit
+        } else {
+            return config.dayInSplit
+        }
+    }
+    
+    /// Get number of days from last time user opened app
+    func numberOfDaysBetween(start: Date, end: Date) -> Int {
+        let calendar = Calendar.current
+        let startOfDayStart = calendar.startOfDay(for: start)
+        let startOfDayEnd = calendar.startOfDay(for: end)
+        debugPrint(startOfDayStart)
+        debugPrint(startOfDayEnd)
+        let components = calendar.dateComponents([.day], from: startOfDayStart, to: startOfDayEnd)
+        return components.day ?? 0
+    }
+    
+    // MARK: Functions for exercise
+    
+    /// Create new exercises and add it to respective day
+    func createExercise() async {
+        if !name.isEmpty && !sets.isEmpty && !reps.isEmpty {
+            var setList: [Exercise.Set] = []
+            
+            guard let numSets = Int(sets) else {
+                debugPrint("Invalid sets value: \(sets)")
+                return
+            }
+
+            for _ in 1...numSets {
+                let set = Exercise.Set.createDefault()
+                setList.append(set)
+            }
+
+            do {
+                let today = await fetchDay(dayOfSplit: config.dayInSplit)
+
+                guard let validReps = Int(reps) else {
+                    throw InsertionError.invalidReps("Invalid reps value: \(reps)")
+                }
+
+                if today.exercises.contains(where: { $0.name == name }) {
+                    debugPrint("Exercise already exists in today's workout.")
+                    return
+                }
+
+                let newExercise = Exercise(
+                    id: UUID(),
+                    name: name,
+                    sets: setList,
+                    repGoal: validReps,
+                    muscleGroup: muscleGroup,
+                    createdAt: Date()
+                )
+
+                await MainActor.run {
+                    today.exercises.append(newExercise)
+                    try? context.save()
+                }
+
+                debugPrint("Successfully added exercise \(name) to \(today.name)")
+                
+                /// Notify UI to refresh
+                await MainActor.run {
+                    self.exerciseAddedTrigger.toggle()
+                }
+                
+            } catch {
+                debugPrint("Error inserting exercise: \(error.localizedDescription)")
+            }
+        } else {
+            debugPrint("Not all text fields are filled")
+        }
+    }
+    /// Delete exercise for day
+    func deleteExercise(_ exercise: Exercise) {
+        guard let day = exercise.day else {
+            debugPrint("Exercise has no associated day.")
+            return
+        }
+        day.exercises.removeAll { $0.id == exercise.id }
+        context.delete(exercise)
+        do {
+            try context.save()
+            debugPrint("Deleted exercise: \(exercise.name)")
+        } catch {
+            debugPrint(error)
+        }
+    }
+    
+    
+    /// Fetch exercise from id
     func fetchExercise(id: UUID) async -> Exercise {
         let predicate = #Predicate<Exercise> {
             $0.id == id
@@ -181,90 +429,18 @@ final class WorkoutViewModel: ObservableObject {
         }
     }
     
-    @MainActor
-    func sortDataForCalendar(date: String) async -> [MuscleGroup] {
-        var newMuscleGroups: [MuscleGroup] = []
-        
-        let today = await fetchCalendarDay(date: date)
-
-        for name in muscleGroupNames {
-            // Filter exercises for the current muscle group
-            let filteredExercises = today.exercises.filter { exercise in
-                exercise.muscleGroup == name
-            }
-
-            if !filteredExercises.isEmpty {
-                // Create a new MuscleGroup and append it
-                let group = MuscleGroup(
-                    name: name,
-                    exercises: filteredExercises
-                )
-                newMuscleGroups.append(group)
-            }
-        }
-
-        // Return the new array to be reassigned in the view
-        return newMuscleGroups
-    }
+    // MARK: Functions for sets
     
-    @MainActor
-    func sortData(dayOfSplit: Int) async -> [MuscleGroup] {
-        var newMuscleGroups: [MuscleGroup] = []
-        
-        // ✅ Ensure a fresh fetch of the current day
-        let updatedDay = await fetchDay(dayOfSplit: dayOfSplit)
-
-        // ✅ Force a SwiftData re-fetch by accessing `updatedDay.exercises`
-        let freshExercises = updatedDay.exercises
-
-        await MainActor.run {
-            self.day = updatedDay // ✅ Replace the `day` reference
-        }
-
-        for name in muscleGroupNames {
-            // ✅ Filter the freshly fetched exercises
-            let filteredExercises = freshExercises.filter { $0.muscleGroup == name }
-            if !filteredExercises.isEmpty {
-                let group = MuscleGroup(
-                    name: name,
-                    exercises: filteredExercises.sorted { $0.createdAt < $1.createdAt }
-                )
-                newMuscleGroups.append(group)
-            }
-        }
-        
-        return newMuscleGroups
-    }
-
-    func deleteExercise(_ exercise: Exercise) {
-        guard let day = exercise.day else {
-            debugPrint("Exercise has no associated day.")
-            return
-        }
-        day.exercises.removeAll { $0.id == exercise.id }
-        context.delete(exercise)
-        do {
-            try context.save()
-            debugPrint("Deleted exercise: \(exercise.name)")
-        } catch {
-            debugPrint(error)
-        }
-    }
-    
-    func deleteItem(set: Exercise.Set, exercise: Exercise) async -> Exercise {
+    /// Delete set for exercise
+    func deleteSet(_ set: Exercise.Set, exercise: Exercise) {
         if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
-                exercise.sets.remove(at: index)
+            withAnimation {
+                _ = exercise.sets.remove(at: index)
+            }
         }
         context.delete(set)
-        do {
-            try context.save()
-            debugPrint("Deleted set")
-        } catch {
-            debugPrint(error)
-        }
-            return await fetchExercise(id : exercise.id)
     }
-    
+    /// Add set for exercise
     func addSet(exercise: Exercise) async -> Exercise {
         let currentExercise = await fetchExercise(id: exercise.id)
         currentExercise.sets.insert(
@@ -276,154 +452,17 @@ final class WorkoutViewModel: ObservableObject {
         } catch {
             debugPrint(error)
         }
-            return await fetchExercise(id : exercise.id)
+        return await fetchExercise(id : exercise.id)
     }
     
-    func addDay(name: String, index: Int) {
-        debugPrint("Attempting to add: \(name) with index \(index)")
-        
-        if days.contains(where: { $0.dayOfSplit == index }) {
-            debugPrint("Skipping duplicate day: \(name)")
-            return
-        }
-        
-        context.insert(Day(name: name, dayOfSplit: index, exercises: [], date: ""))
-        debugPrint("Added day: \(name)")
-    }
-
-    @MainActor
-    func insertWorkout() async {
-        let today = await fetchDay(dayOfSplit: config.dayInSplit)
-        
-        // Create a new deep copy of the day and its exercises
-        let newDay = Day(
-            name: today.name,
-            dayOfSplit: today.dayOfSplit, exercises: today.exercises.map { $0.copy() },
-            date: formattedDateString(from: Date())
-        )
-        
-
-        let dayStorage = DayStorage(id: UUID(), day: newDay, date: formattedDateString(from: Date()))
-        context.insert(dayStorage)
-        config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
-        
-        do {
-            try context.save()
-            debugPrint("Day saved with date: \(formattedDateString(from: Date()))")
-        } catch {
-            debugPrint(error)
-        }
-    }
+    // MARK: Functions for loading profile image
     
-    func formattedDateString(from date: Date) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "d MMMM yyyy"
-        return dateFormatter.string(from: date)
-    }
-    
-    @MainActor func updateDayInSplit() -> Int {
-        let calendar = Calendar.current
-
-        if !calendar.isDateInToday(config.lastUpdateDate) {
-            let daysPassed = numberOfDaysBetween(start: config.lastUpdateDate, end: Date())
-
-            let totalDays = config.dayInSplit + daysPassed // ✅ No need to subtract 1
-            
-            let activeSplit = getActiveSplit()
-            
-            let newDayInSplit = (totalDays - 1) % activeSplit!.days.count + 1 // ✅ Ensures range [1, splitLength]
-
-            config.dayInSplit = newDayInSplit
-            config.lastUpdateDate = Date() // ✅ Update the last checked date
-
-            return config.dayInSplit
-        } else {
-            return config.dayInSplit
-        }
-    }
-    // Helper function to calculate full days between two dates
-    func numberOfDaysBetween(start: Date, end: Date) -> Int {
-        let calendar = Calendar.current
-        let startOfDayStart = calendar.startOfDay(for: start)
-        let startOfDayEnd = calendar.startOfDay(for: end)
-        debugPrint(startOfDayStart)
-        debugPrint(startOfDayEnd)
-        let components = calendar.dateComponents([.day], from: startOfDayStart, to: startOfDayEnd)
-        return components.day ?? 0
-    }
-    
-    func createExercise() async {
-        if !name.isEmpty && !sets.isEmpty && !reps.isEmpty {
-            var setList: [Exercise.Set] = []
-            
-            guard let numSets = Int(sets) else {
-                debugPrint("Invalid sets value: \(sets)")
-                return
-            }
-
-            for _ in 1...numSets {
-                let set = Exercise.Set.createDefault()
-                setList.append(set)
-            }
-
-            do {
-                // ✅ Fetch a properly saved `Day`
-                let today = await fetchDay(dayOfSplit: config.dayInSplit)
-
-                guard let validReps = Int(reps) else {
-                    throw InsertionError.invalidReps("Invalid reps value: \(reps)")
-                }
-
-                // ✅ Ensure no duplicates
-                if today.exercises.contains(where: { $0.name == name }) {
-                    debugPrint("Exercise already exists in today's workout.")
-                    return
-                }
-
-                // ✅ Create a new exercise
-                let newExercise = Exercise(
-                    id: UUID(),
-                    name: name,
-                    sets: setList,
-                    repGoal: validReps,
-                    muscleGroup: muscleGroup,
-                    createdAt: Date()
-                )
-
-                // ✅ Ensure SwiftData registers the new exercise
-                await MainActor.run {
-                    today.exercises.append(newExercise)  // ✅ Add safely
-                    try? context.save()  // ✅ Save the update
-                }
-
-                debugPrint("Successfully added exercise \(name) to \(today.name)")
-                
-                // ✅ Notify UI to refresh
-                await MainActor.run {
-                    self.exerciseAddedTrigger.toggle()
-                }
-                
-            } catch {
-                debugPrint("Error inserting exercise: \(error.localizedDescription)")
-            }
-        } else {
-            debugPrint("Not all text fields are filled")
-        }
-    }
-    
-    
-    func loadImageFromDocuments(filename: String) -> UIImage? {
-        let fileURL = getDocumentsDirectory().appendingPathComponent(filename)
-        if let imageData = try? Data(contentsOf: fileURL) {
-            return UIImage(data: imageData)
-        }
-        return nil
-    }
-    
+    /// Get url for image
     func getDocumentsDirectory() -> URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     }
     
+    /// Load image from path
     func loadImage(from path: String) -> UIImage? {
         let fileURL = URL(fileURLWithPath: path)
         guard FileManager.default.fileExists(atPath: fileURL.path),
@@ -432,6 +471,42 @@ final class WorkoutViewModel: ObservableObject {
             return nil
         }
         return uiImage
+    }
+    
+    /// Saves the UIImage to the Documents directory
+    func saveImageToDocuments(image: UIImage) -> String? {
+        guard let data = image.jpegData(compressionQuality: 0.8) else { return nil }
+        
+        let filename = "profile_picture.jpg"
+        let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(filename)
+        
+        do {
+            try data.write(to: fileURL)
+            return fileURL.path
+        } catch {
+            print("Error saving image: \(error)")
+            return nil
+        }
+    }
+    
+    // MARK: Authentication funcs
+    
+    private func handleSuccessfulLogin(with authorization: ASAuthorization) {
+        if let userCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+            print(userCredential.user)
+            
+            if userCredential.authorizedScopes.contains(.fullName) {
+                print(userCredential.fullName?.givenName ?? "No given name")
+            }
+            
+            if userCredential.authorizedScopes.contains(.email) {
+                print(userCredential.email ?? "No email")
+            }
+        }
+    }
+    
+    private func handleLoginError(with error: Error) {
+        print("Could not authenticate: \\(error.localizedDescription)")
     }
 }
     

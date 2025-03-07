@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct WeightSelectorCell: View {
+struct SetWeightCell: View {
     @Environment(\.modelContext) private var context
     @Binding var bodyWeight: Bool
     var displayedWeight: String

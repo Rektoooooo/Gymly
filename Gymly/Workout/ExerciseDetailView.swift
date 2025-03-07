@@ -53,84 +53,19 @@ struct ExerciseDetailView: View {
                     .padding()
                     .bold()
             }
-
             Form {
                 /// List of exercise sets
                 ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
-                    Section("Set \(index + 1)") {
-                        Button {
-                            loadSetData(set: set, shouldOpenSheet: true)
-                        } label: {
-                            HStack {
-                                /// Display set details (weight, reps, notes)
-                                HStack {
-                                    if set.bodyWeight {
-                                        Text("BW  +")
-                                            .foregroundStyle(.accent)
-                                            .bold()
-                                    }
-                                    Text("\(Int(round(Double(set.weight) * (config.weightUnit == "Kg" ? 1.0 : 2.20462))))")
-                                        .foregroundStyle(.accent)
-                                        .bold()
-                                    Text("\(config.weightUnit)")
-                                        .foregroundStyle(.accent)
-                                        .opacity(0.6)
-                                        .offset(x: -5)
-                                }
-                                HStack {
-                                    Text("\(set.reps)")
-                                        .foregroundStyle(Color.green)
-                                        .bold()
-                                    Text("Reps")
-                                        .foregroundStyle(Color.green)
-                                        .opacity(0.6)
-                                        .offset(x: -5)
-                                }
-                                HStack {
-                                    if set.failure {
-                                        Text("F")
-                                            .foregroundStyle(Color.red)
-                                            .offset(x: -5)
-                                    }
-                                    if set.warmUp {
-                                        Text("W")
-                                            .foregroundStyle(Color.orange)
-                                            .offset(x: -5)
-                                    }
-                                    if set.restPause {
-                                        Text("RP")
-                                            .foregroundStyle(Color.green)
-                                            .offset(x: -5)
-                                    }
-                                    if set.dropSet {
-                                        Text("DS")
-                                            .foregroundStyle(Color.blue)
-                                            .offset(x: -5)
-                                    }
-                                }
-                                Spacer()
-                                Text("\(set.time)")
-                                    .foregroundStyle(Color.white)
-                                    .opacity(set.time.isEmpty ? 0 : 0.3)
-                            }
-                        }
-                        
-                        if !set.note.isEmpty {
-                            Text(set.note)
-                                .foregroundStyle(Color.white)
-                                .opacity(0.5)
-                        }
-                    }
-                    .swipeActions(edge: .trailing) {
-                        /// Swipe-to-delete action for a set
-                        Button(role: .destructive) {
-                            deleteItem(set)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
-                    }
+                    SetCell(
+                        viewModel: viewModel,
+                        index: index,
+                        set: set,
+                        config: config,
+                        loadSetData: loadSetData,
+                        exercise: exercise,
+                        setForCalendar: false
+                    )
                 }
-                
                 /// Dismiss button
                 Section("") {
                     Button("Done") {
@@ -195,16 +130,6 @@ struct ExerciseDetailView: View {
         }
     }
     
-    /// Deletes a set from the exercise
-    func deleteItem(_ set: Exercise.Set) {
-        if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
-            withAnimation {
-                _ = exercise.sets.remove(at: index)
-            }
-        }
-        context.delete(set)
-        refreshExercise()
-    }
     
     /// Refreshes the exercise data
     func refreshExercise() {

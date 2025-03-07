@@ -13,13 +13,13 @@ import SwiftData
 class Exercise {
     @Attribute(.unique) var id: UUID
     var name: String
-    var sets: [Set] // ✅ List of sets
+    var sets: [Set]
     var repGoal: Int
     var muscleGroup: String
     var createdAt: Date = Date()
     var animationId = UUID()
 
-    @Relationship(deleteRule: .nullify, inverse: \Day.exercises) var day: Day? // ✅ Each Exercise belongs to a Day
+    @Relationship(deleteRule: .nullify, inverse: \Day.exercises) var day: Day?
 
     init(id: UUID = UUID(), name: String, sets: [Set] = [], repGoal: Int, muscleGroup: String,createdAt: Date = Date(),animationId: UUID = UUID(), day: Day? = nil) {
         self.id = id
@@ -32,11 +32,10 @@ class Exercise {
         self.day = day
     }
     
-    // ✅ Deep copy function
     func copy() -> Exercise {
         return Exercise(
             name: self.name,
-            sets: self.sets.map { $0.copySets() }, // ✅ Deep copy all sets
+            sets: self.sets.map { $0.copySets() },
             repGoal: self.repGoal,
             muscleGroup: self.muscleGroup,
             createdAt: self.createdAt,
@@ -58,7 +57,7 @@ class Exercise {
         var createdAt: Date
         var bodyWeight: Bool
 
-        @Relationship(deleteRule: .cascade, inverse: \Exercise.sets) var exercise: Exercise? // ✅ Each Set belongs to an Exercise
+        @Relationship(deleteRule: .cascade, inverse: \Exercise.sets) var exercise: Exercise?
 
         init(id: UUID = UUID(), weight: Double, reps: Int, failure: Bool, warmUp: Bool, restPause: Bool, dropSet: Bool, time: String, note: String, createdAt: Date, bodyWeight: Bool, exercise: Exercise? = nil) {
             self.id = id
@@ -81,7 +80,6 @@ class Exercise {
             )
         }
         
-        // ✅ Deep copy function
         func copySets() -> Set {
             return Set(
                 weight: self.weight,

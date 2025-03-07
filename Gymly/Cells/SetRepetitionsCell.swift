@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct RepetitionCell: View {
+struct SetRepetitionsCell: View {
     @Binding var reps: Int
     var saveReps: () -> Void
 

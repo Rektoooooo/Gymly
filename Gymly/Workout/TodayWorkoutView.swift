@@ -10,7 +10,6 @@ import Foundation
 import SwiftData
 
 struct TodayWorkoutView: View {
-    
     @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
     @Environment(\.modelContext) var context: ModelContext
@@ -96,19 +95,7 @@ struct TodayWorkoutView: View {
                     Button(action: {
                         showProfileView = true
                     }) {
-                        if let image = profileImage {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 40, height: 40)
-                                .clipShape(Circle())
-                        } else {
-                            Image("defaultProfileImage")
-                                .resizable()
-                                .frame(width: 40, height: 40)
-                                .clipShape(Circle())
-                                .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
-                        }
+                        ProfileImageCell(profileImage: profileImage, frameSize: 45)
                     }
                 }
                 /// Button for showing splits view
@@ -158,7 +145,7 @@ struct TodayWorkoutView: View {
                 await refreshMuscleGroups()
             }
         }) {
-            SettingsView()
+            SettingsView(viewModel: viewModel)
         }
         /// Sheet for adding exercises
         .sheet(isPresented: $viewModel.addExercise, onDismiss: {
@@ -175,6 +162,8 @@ struct TodayWorkoutView: View {
             
         })
     }
+    
+    // TODO: When adding exercise, adding new exercise into new muscle group works fine with animation and everything, but when adding second exercise to already existing muscle group there is no animation Sadge
 
     /// Func for refreshing exercises so UI updates correctly
     @MainActor

@@ -10,6 +10,7 @@ import SwiftUI
 struct RadarLabels: View {
     var body: some View {
         ZStack {
+            /// Positioning text above the graph
             Text("Chest")
                 .position(x: 120, y: 5)
             Text("Back")

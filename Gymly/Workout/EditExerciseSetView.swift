@@ -69,7 +69,7 @@ struct EditExerciseSetView: View {
                 }
                 /// Section for adjusting weight
                 Section("Weight (\(unit))") {
-                    WeightSelectorCell(
+                    SetWeightCell(
                         bodyWeight: $bodyWeight,
                         displayedWeight: displayedWeight,
                         setNumber: setNumber,
@@ -82,7 +82,10 @@ struct EditExerciseSetView: View {
                 /// Section for adjusting repetitions
                 Section("Repetitions") {
                     HStack {
-                        RepetitionCell(reps: $reps, saveReps: saveReps)
+                        SetRepetitionsCell(
+                            reps: $reps,
+                            saveReps: saveReps
+                        )
                     }
                 }
             }

@@ -11,20 +11,20 @@ import Foundation
 import SwiftData
 
 struct CalendarDayView: View {
-    
+    /// Environment and observed objects
     @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
     @Environment(\.modelContext) var context: ModelContext
     
+    /// Bindings for exercise data
     @State var date: String
     @State var day: Day = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
-    
-    @State private var navigationTitle: String = ""
     @State var muscleGroups:[MuscleGroup] = []
     
     var body: some View {
         ZStack {
             if muscleGroups.isEmpty {
+                /// If there is no recorded day display text
                 VStack {
                     Spacer()
                     Text("Workout not recorded for the date")
@@ -33,6 +33,7 @@ struct CalendarDayView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            /// Else display the day name and all the exercises
             VStack {
                 HStack {
                     Text(day.name)
@@ -68,7 +69,7 @@ struct CalendarDayView: View {
     func refreshMuscleGroups() async {
         day = await viewModel.fetchCalendarDay(date: date)
         debugPrint(day.name)
-        muscleGroups.removeAll() // Clear array to trigger UI update
-        muscleGroups = await viewModel.sortDataForCalendar(date: date) // Reassign updated data
+        muscleGroups.removeAll() /// Clear array to trigger UI update
+        muscleGroups = await viewModel.sortDataForCalendar(date: date) /// Reassign updated data
     }
 }

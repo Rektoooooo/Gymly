@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ToolBar: View {
-    
     @EnvironmentObject var config: Config
     @Environment(\.modelContext) private var context
     
@@ -33,7 +32,7 @@ struct ToolBar: View {
             get: { !config.isUserLoggedIn },
             set: { newValue in config.isUserLoggedIn = !newValue }
         )) {
-            SignInView()
+            SignInView(viewModel: WorkoutViewModel(config: config, context: context))
         }
         .environmentObject(config)
     }

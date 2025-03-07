@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct SettingsView: View {
-    
+    @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
     @Environment(\.dismiss) var dismiss
     @StateObject var healthKitManager = HealthKitManager()
@@ -34,22 +34,8 @@ struct SettingsView: View {
                         .cornerRadius(20)
                         HStack {
                             HStack {
-                                if let image = profileImage {
-                                    Image(uiImage: image)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 80, height: 80)
-                                        .clipShape(Circle())
-                                        .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
-                                        .padding()
-                                } else {
-                                    Image("defaultProfileImage")
-                                        .resizable()
-                                        .frame(width: 80, height: 80)
-                                        .clipShape(Circle())
-                                        .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
-                                        .padding()
-                                }
+                                ProfileImageCell(profileImage: profileImage, frameSize: 80)
+                                    .padding()
                                 VStack {
                                     VStack {
                                         Text("\(config.username)")
@@ -165,7 +151,7 @@ struct SettingsView: View {
                         }
                     }
                     .frame(width: 300)
-                    NavigationLink(destination: ConnectionsView()) {
+                    NavigationLink(destination: ConnectionsView(viewModel: viewModel)) {
                         Image(systemName: "square.2.layers.3d.top.filled")
                         Text("App connections")
                     }
@@ -196,7 +182,7 @@ struct SettingsView: View {
             }
             .onAppear() {
                 if let imagePath = config.userProfileImageURL {
-                    profileImage = loadImage(from: imagePath)
+                    profileImage = viewModel.loadImage(from: imagePath)
                 }
                 healthKitManager.fetchHeight { height in self.height = height }
                 healthKitManager.fetchWeight { weight in self.weight = weight }
@@ -204,30 +190,11 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $editUser, onDismiss: {
                 if let imagePath = config.userProfileImageURL {
-                    profileImage = loadImage(from: imagePath)
+                    profileImage = viewModel.loadImage(from: imagePath)
                 }
             }) {
-                EditUserView()
+                EditUserView(viewModel: viewModel)
             }
         }
-    }
-    func loadImage(from path: String) -> UIImage? {
-        let fileURL = URL(fileURLWithPath: path)
-        guard FileManager.default.fileExists(atPath: fileURL.path),
-              let imageData = try? Data(contentsOf: fileURL),
-              let uiImage = UIImage(data: imageData) else {
-            return nil
-        }
-        return uiImage
-    }
-    
-    @ViewBuilder
-    func DefaultProfileImage() -> some View {
-        Image("defaultProfileImage")
-            .resizable()
-            .frame(width: 100, height: 100)
-            .clipShape(Circle())
-            .padding()
-            .shadow(color: Color.black.opacity(0.6), radius: 15, x: 0, y: 0)
     }
 }

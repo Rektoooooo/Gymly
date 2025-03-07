@@ -12,9 +12,9 @@ import SwiftData
 class Split {
     @Attribute(.unique) var id: UUID
     var name: String
-    var days: [Day] // Each split contains multiple days
-    var isActive: Bool // Only ONE split should be active
-    var startDate: Date // When the split begins
+    var days: [Day] 
+    var isActive: Bool
+    var startDate: Date
 
     init(id: UUID = UUID(), name: String, days: [Day] = [], isActive: Bool = false, startDate: Date) {
         self.id = id

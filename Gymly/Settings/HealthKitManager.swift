@@ -11,12 +11,12 @@ import HealthKit
 class HealthKitManager: ObservableObject {
     let healthStore = HKHealthStore()
 
-    // Check if HealthKit is available
+    /// Check if HealthKit is available
     func isHealthKitAvailable() -> Bool {
         return HKHealthStore.isHealthDataAvailable()
     }
 
-    // Request authorization for Height, Weight, and Date of Birth (age)
+    /// Request authorization for Height, Weight, and Date of Birth (age)
     func requestAuthorization() {
         guard isHealthKitAvailable() else {
             print("HealthKit is not available on this device.")
@@ -37,6 +37,7 @@ class HealthKitManager: ObservableObject {
             }
         }
     }
+    /// Fetch users height
     func fetchHeight(completion: @escaping (Double?) -> Void) {
         let heightType = HKQuantityType.quantityType(forIdentifier: .height)!
         let query = HKSampleQuery(sampleType: heightType, predicate: nil, limit: 1, sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)]) { _, results, _ in
@@ -50,6 +51,7 @@ class HealthKitManager: ObservableObject {
         healthStore.execute(query)
     }
 
+    /// Fetch users weight
     func fetchWeight(completion: @escaping (Double?) -> Void) {
         let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
         let query = HKSampleQuery(sampleType: weightType, predicate: nil, limit: 1, sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)]) { _, results, _ in
@@ -63,6 +65,7 @@ class HealthKitManager: ObservableObject {
         healthStore.execute(query)
     }
     
+    /// Fetch users age
     func fetchAge(completion: @escaping (Int?) -> Void) {
         do {
             let birthDate = try healthStore.dateOfBirthComponents()
