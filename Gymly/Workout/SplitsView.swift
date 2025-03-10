@@ -20,7 +20,7 @@ struct SplitsView: View {
             // TODO: Make switching between split possible
             List {
                 /// Show all splits
-                ForEach(splits) { split in
+                ForEach(splits.sorted(by: { $0.isActive && !$1.isActive })) { split in
                     NavigationLink(destination: SplitDetailView(split: split, viewModel: viewModel)) {
                         VStack {
                             /// Display split name
