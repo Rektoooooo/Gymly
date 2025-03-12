@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class Split {
+class Split: ObservableObject {
     @Attribute(.unique) var id: UUID
     var name: String
     var days: [Day] 

@@ -54,10 +54,11 @@ final class WorkoutViewModel: ObservableObject {
             days.append(day)
         }
         
-        deactivateAllSplits(context: context)
+        
 
         let newSplit = Split(name: name, days: days, isActive: true, startDate: startDate)
         context.insert(newSplit)
+        switchActiveSplit(split: newSplit, context: context)
 
         do {
             try context.save()
@@ -84,45 +85,62 @@ final class WorkoutViewModel: ObservableObject {
     func getActiveSplitDays() -> [Day] {
         guard let activeSplit = getActiveSplit() else {
             print("No active split found.")
-            return []
+            return []   
         }
         return activeSplit.days
     }
 
     /// Set all splits as inactive
     @MainActor
-    func deactivateAllSplits(context: ModelContext) {
-        let fetchDescriptor = FetchDescriptor<Split>()
-
-        do {
-            let splits = try context.fetch(fetchDescriptor)
-            for split in splits {
-                split.isActive = false
+    func deactivateAllSplits() {
+        Task { @MainActor in
+            do {
+                let splits = getAllSplits()
+                for split in splits {
+                    split.isActive = false
+                }
+                try context.save()
+                objectWillChange.send() // Force UI to refresh
+            } catch {
+                print("Error deactivating splits: \(error)")
             }
-            try context.save()
-        } catch {
-            print("Error deactivating splits: \(error)")
         }
-    }
-    
-    /// Fetch all splits
-    @MainActor
-    func getAllSplits(context: ModelContext) -> [Split] {
-        let predicate = #Predicate<Split> { _ in true }
-        let fetchDescriptor = FetchDescriptor<Split>(predicate: predicate)
-        return try! context.fetch(fetchDescriptor)
     }
     
     /// Switch split from inactive to active
     @MainActor
     func switchActiveSplit(split: Split, context: ModelContext) {
-        deactivateAllSplits(context: context)
-        split.isActive = true
+        deactivateAllSplits()
+        
+        Task { @MainActor in
+            split.isActive = true
+            do {
+                try context.save()
+                print("Switched to active split: \(split.name)")
+                objectWillChange.send() // Manually notify SwiftUI of changes
+            } catch {
+                print("Error switching split: \(error)")
+            }
+        }
+    }
+    
+    /// Fetch all splits
+    @MainActor
+    func getAllSplits() -> [Split] {
+        let predicate = #Predicate<Split> { _ in true }
+        let fetchDescriptor = FetchDescriptor<Split>(predicate: predicate)
+        return try! context.fetch(fetchDescriptor)
+    }
+    
+    /// Delete split
+    @MainActor
+    func deleteSplit(split: Split) {
+        context.delete(split)
         do {
             try context.save()
-            print("Switched to active split: \(split.name)")
+            debugPrint("Deleted split: \(split.name)")
         } catch {
-            print("Error switching split: \(error)")
+            debugPrint(error)
         }
     }
     

@@ -20,34 +20,56 @@ struct SplitsView: View {
             // TODO: Make switching between split possible
             List {
                 /// Show all splits
-                ForEach(splits.sorted(by: { $0.isActive && !$1.isActive })) { split in
+                ForEach($splits.sorted(by: { $0.wrappedValue.isActive && !$1.wrappedValue.isActive })) { $split in
                     NavigationLink(destination: SplitDetailView(split: split, viewModel: viewModel)) {
                         VStack {
-                            /// Display split name
                             HStack {
-                                Text(split.name)
-                                    .bold()
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                            /// Display graphic if split is active or not
-                            HStack {
-                                if split.isActive {
-                                    Circle()
-                                        .fill(Color.green)
-                                        .frame(width: 8, height: 8)
-                                    Text("Active")
-                                        .foregroundStyle(Color.green)
-                                        .multilineTextAlignment(.leading)
-                                } else {
-                                    Circle()
-                                        .fill(Color.red)
-                                        .frame(width: 8, height: 8)
-                                    Text("Inactive")
-                                        .foregroundStyle(Color.red)
-                                        .multilineTextAlignment(.leading)
+                                HStack {
+                                    Toggle("", isOn: $split.isActive)
+                                        .toggleStyle(CheckToggleStyle())
+                                        .onChange(of: split.isActive) {
+                                            if split.isActive {
+                                                viewModel.switchActiveSplit(split: split, context: context)
+                                            }
+                                        }
+
+                                }
+                                VStack {
+                                    /// Display split name
+                                    HStack {
+                                        Text(split.name)
+                                            .bold()
+                                    }
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                                    /// Display graphic if split is active or not
+                                    HStack {
+                                        if split.isActive {
+                                            Circle()
+                                                .fill(Color.green)
+                                                .frame(width: 8, height: 8)
+                                            Text("Active")
+                                                .foregroundStyle(Color.green)
+                                                .multilineTextAlignment(.leading)
+                                        } else {
+                                            Circle()
+                                                .fill(Color.red)
+                                                .frame(width: 8, height: 8)
+                                            Text("Inactive")
+                                                .foregroundStyle(Color.red)
+                                                .multilineTextAlignment(.leading)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                                 }
                             }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                        }
+                    }
+                    .swipeActions(edge: .trailing) {
+                        /// Swipe-to-delete action
+                        Button(role: .destructive) {
+                            viewModel.deleteSplit(split: split)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
                         }
                     }
                 }
@@ -66,7 +88,7 @@ struct SplitsView: View {
             }
         }
         .task {
-            splits = viewModel.getAllSplits(context: context)
+            splits = viewModel.getAllSplits()
         }
         .sheet(isPresented: $createSplit, onDismiss: {
             
@@ -75,4 +97,23 @@ struct SplitsView: View {
                 .presentationDetents([.fraction(0.5)])
         }
     }
+    /// Toggles set type and saves changes
+    struct CheckToggleStyle: ToggleStyle {
+        func makeBody(configuration: Configuration) -> some View {
+            Button {
+                configuration.isOn.toggle()
+            } label: {
+                Label {
+                    configuration.label
+                } icon: {
+                    Image(systemName: configuration.isOn ? "checkmark.circle.fill" : "circle")
+                        .foregroundStyle(configuration.isOn ? Color.accentColor : .secondary)
+                        .accessibility(label: Text(configuration.isOn ? "Checked" : "Unchecked"))
+                        .imageScale(.large)
+                }
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
 }
