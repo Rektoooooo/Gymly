@@ -87,6 +87,16 @@ struct SplitsView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name.importSplit)) { notification in
+            if let split = notification.object as? Split {
+                print("📩 Received imported split notification: \(split.name)")
+                
+                DispatchQueue.main.async {
+                    viewModel.deactivateAllSplits()
+                    splits = viewModel.getAllSplits() // Reload all splits from database
+                }
+            }
+        }
         .task {
             splits = viewModel.getAllSplits()
         }
@@ -115,5 +125,4 @@ struct SplitsView: View {
             .buttonStyle(.plain)
         }
     }
-
 }

@@ -122,6 +122,11 @@ struct TodayWorkoutView: View {
                     await refreshMuscleGroups()
                 }
             }
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name.importSplit)) { notification in
+                Task {
+                    await refreshView()
+                }
+            }
         }
         /// Refresh on every appear
         .task {

@@ -526,5 +526,79 @@ final class WorkoutViewModel: ObservableObject {
     private func handleLoginError(with error: Error) {
         print("Could not authenticate: \\(error.localizedDescription)")
     }
+    
+    func importSplit(from url: URL) -> Split? {
+        do {
+            // 🗂 Read data from file
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            let decodedSplit = try decoder.decode(Split.self, from: data)
+
+            print("✅ Decoded Split: \(decodedSplit.name), Days: \(decodedSplit.days.count)")
+
+            // ✅ Create a new split object
+            let newSplit = Split(
+                id: UUID(),
+                name: decodedSplit.name,
+                days: [],
+                isActive: decodedSplit.isActive,
+                startDate: decodedSplit.startDate
+            )
+
+            // 📌 Add Days & Exercises
+            for decodedDay in decodedSplit.days {
+                let newDay = Day(
+                    id: UUID(),
+                    name: decodedDay.name,
+                    dayOfSplit: decodedDay.dayOfSplit,
+                    exercises: [],
+                    date: decodedDay.date
+                )
+
+                for decodedExercise in decodedDay.exercises {
+                    let newExercise = Exercise(
+                        id: UUID(),
+                        name: decodedExercise.name,
+                        sets: decodedExercise.sets,
+                        repGoal: decodedExercise.repGoal,
+                        muscleGroup: decodedExercise.muscleGroup,
+                        createdAt: decodedExercise.createdAt
+                    )
+                    newDay.exercises.append(newExercise)
+                }
+
+                newSplit.days.append(newDay)
+            }
+
+            // 🏋️ Insert and Save
+            context.insert(newSplit)
+            try context.save()
+            print("✅ Split successfully saved: \(newSplit.name)")
+
+            return newSplit // ✅ Return the newly created split
+
+        } catch {
+            print("❌ Error importing split: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    func exportSplit(_ split: Split) -> URL? {
+        let encoder = JSONEncoder()
+        do {
+            let data = try encoder.encode(split)
+
+            // Save to the Documents directory
+            let fileManager = FileManager.default
+            let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let fileURL = documentsURL.appendingPathComponent("\(split.name).gymlysplit")
+
+            try data.write(to: fileURL, options: .atomic) // Ensure file is properly saved
+            return fileURL
+        } catch {
+            print("Error exporting split: \(error)")
+            return nil
+        }
+    }
 }
     

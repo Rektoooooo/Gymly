@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct GymlyApp: App {
@@ -14,9 +15,33 @@ struct GymlyApp: App {
         WindowGroup {
             ToolBar()
                 .environmentObject(config)
-            
-            
+                .onOpenURL { url in
+                    handleIncomingFile(url, config: config)
+                }
         }
         .modelContainer(for: [Exercise.self, Day.self, DayStorage.self])
     }
+    
+    private func handleIncomingFile(_ url: URL, config: Config) {
+        print("Opened file: \(url)")
+
+        if let modelContainer = try? ModelContainer(for: Exercise.self, Day.self, DayStorage.self) {
+            let context = modelContainer.mainContext
+            let viewModel = WorkoutViewModel(config: config, context: context)
+            
+            if let split = viewModel.importSplit(from: url) {
+                print("✅ Successfully decoded split: \(split.name)") // Debug log
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .importSplit, object: split)
+                    print("📢 Notification posted for imported split")
+                }
+            } else {
+                print("❌ Failed to decode split")
+            }
+        }
+    }
+}
+
+extension Notification.Name {
+    static let importSplit = Notification.Name("importSplit")
 }

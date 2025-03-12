@@ -10,7 +10,7 @@ import Foundation
 import SwiftData
 
 @Model
-class Exercise {
+class Exercise: Codable {
     @Attribute(.unique) var id: UUID
     var name: String
     var sets: [Set]
@@ -43,8 +43,33 @@ class Exercise {
         )
     }
     
+    // MARK: - Codable Compliance
+    enum CodingKeys: String, CodingKey {
+        case id, name, sets, repGoal, muscleGroup, createdAt
+    }
+
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(UUID.self, forKey: .id)
+        self.name = try container.decode(String.self, forKey: .name)
+        self.sets = try container.decode([Set].self, forKey: .sets)
+        self.repGoal = try container.decode(Int.self, forKey: .repGoal)
+        self.muscleGroup = try container.decode(String.self, forKey: .muscleGroup)
+        self.createdAt = try container.decode(Date.self, forKey: .createdAt)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(sets, forKey: .sets)
+        try container.encode(repGoal, forKey: .repGoal)
+        try container.encode(muscleGroup, forKey: .muscleGroup)
+        try container.encode(createdAt, forKey: .createdAt)
+    }
+    
     @Model
-    class Set {
+    class Set: Codable {
         @Attribute(.unique) var id: UUID
         var weight: Double
         var reps: Int
@@ -93,6 +118,42 @@ class Exercise {
                 createdAt: self.createdAt,
                 bodyWeight: self.bodyWeight
             )
+        }
+        
+        
+        // MARK: - Codable Compliance
+        enum CodingKeys: String, CodingKey {
+            case id, weight, reps, failure, warmUp, restPause, dropSet, time, note, createdAt, bodyWeight
+        }
+
+        required init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.id = try container.decode(UUID.self, forKey: .id)
+            self.weight = try container.decode(Double.self, forKey: .weight)
+            self.reps = try container.decode(Int.self, forKey: .reps)
+            self.failure = try container.decode(Bool.self, forKey: .failure)
+            self.warmUp = try container.decode(Bool.self, forKey: .warmUp)
+            self.restPause = try container.decode(Bool.self, forKey: .restPause)
+            self.dropSet = try container.decode(Bool.self, forKey: .dropSet)
+            self.time = try container.decode(String.self, forKey: .time)
+            self.note = try container.decode(String.self, forKey: .note)
+            self.createdAt = try container.decode(Date.self, forKey: .createdAt)
+            self.bodyWeight = try container.decode(Bool.self, forKey: .bodyWeight)
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(id, forKey: .id)
+            try container.encode(weight, forKey: .weight)
+            try container.encode(reps, forKey: .reps)
+            try container.encode(failure, forKey: .failure)
+            try container.encode(warmUp, forKey: .warmUp)
+            try container.encode(restPause, forKey: .restPause)
+            try container.encode(dropSet, forKey: .dropSet)
+            try container.encode(time, forKey: .time)
+            try container.encode(note, forKey: .note)
+            try container.encode(createdAt, forKey: .createdAt)
+            try container.encode(bodyWeight, forKey: .bodyWeight)
         }
     }
 }
