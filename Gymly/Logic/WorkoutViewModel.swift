@@ -527,16 +527,18 @@ final class WorkoutViewModel: ObservableObject {
         print("Could not authenticate: \\(error.localizedDescription)")
     }
     
+    // MARK: Import export SPLIT functions
+    /// Import split
     func importSplit(from url: URL) -> Split? {
         do {
-            // 🗂 Read data from file
+            // Read data from file
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
             let decodedSplit = try decoder.decode(Split.self, from: data)
 
             print("✅ Decoded Split: \(decodedSplit.name), Days: \(decodedSplit.days.count)")
 
-            // ✅ Create a new split object
+            // Create a new split object
             let newSplit = Split(
                 id: UUID(),
                 name: decodedSplit.name,
@@ -545,7 +547,7 @@ final class WorkoutViewModel: ObservableObject {
                 startDate: decodedSplit.startDate
             )
 
-            // 📌 Add Days & Exercises
+            // Add Days & Exercises
             for decodedDay in decodedSplit.days {
                 let newDay = Day(
                     id: UUID(),
@@ -575,14 +577,15 @@ final class WorkoutViewModel: ObservableObject {
             try context.save()
             print("✅ Split successfully saved: \(newSplit.name)")
 
-            return newSplit // ✅ Return the newly created split
+            return newSplit // Return the newly created split
 
         } catch {
-            print("❌ Error importing split: \(error.localizedDescription)")
+            print("Error importing split: \(error.localizedDescription)")
             return nil
         }
     }
     
+    /// Export split
     func exportSplit(_ split: Split) -> URL? {
         let encoder = JSONEncoder()
         do {
