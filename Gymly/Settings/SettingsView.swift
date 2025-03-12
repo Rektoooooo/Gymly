@@ -157,7 +157,11 @@ struct SettingsView: View {
                     }
                     .frame(width: 300)
                 }
-                Section("Graph") {
+                Section(header: HStack {
+                    Text("Graph")
+                    Text("(Not working yet)")
+                        .foregroundColor(.red)
+                }) {
                     ZStack {
                         ContentViewGraph()
                         RadarLabels()
@@ -169,13 +173,15 @@ struct SettingsView: View {
             }
             .scrollIndicators(.hidden)
             .navigationTitle("My profile")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         editUser = true
                     } label: {
-                        Label("", systemImage: "square.and.pencil")
+                        HStack {
+                            Text("Edit")
+                            Image(systemName: "person.crop.circle")
+                        }
                     }
                 }
                 
