@@ -11,31 +11,29 @@ import SwiftData
 struct CopyWorkoutView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) var dismiss
+    @ObservedObject var viewModel: WorkoutViewModel
     @State var day:Day
-    @State private var days: [Day] = []
-    @State var workoutNames: [String] = []
-    @State var selected: String = ""
-    @State private var selectedDays: [Day] = []
-    @State var fetchedExercises: [Exercise] = []
-
+    @State var availableDays: [Day] = []
+    @State var selected: Day = Day(name: "", dayOfSplit: 0, date: "")
     
     // TODO: Make copying exercises possible
     var body: some View {
         NavigationView {
             List {
                 Picker("Chose workout", selection: $selected) {
-                    ForEach(workoutNames, id: \.self) {
-                        Text($0)
+                    ForEach(availableDays.sorted(by: {$0.dayOfSplit < $1.dayOfSplit}), id: \.self) {  day in
+                        Text(day.name)
                     }
                     .pickerStyle(.inline)
                 }
-                Button("Copy \(selected)") {
+                Button("Copy \(selected.name)") {
                     dismiss()
+                    viewModel.copyWorkout(from: selected, to: day)
                 }
             }
             .offset(y: -30)
             .onAppear {
-                selected = day.name
+                    availableDays = viewModel.getActiveSplitDays()
             }
             .navigationTitle("Copy workout")
             .navigationBarTitleDisplayMode(.inline)

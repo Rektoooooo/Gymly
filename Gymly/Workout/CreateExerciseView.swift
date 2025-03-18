@@ -44,7 +44,7 @@ struct CreateExerciseView: View {
                     Button("Save", action: {
                         debugPrint(day.name)
                         Task {
-                            await viewModel.createExercise()
+                            await viewModel.createExercise(to: day)
                         }
                         dismiss()
                     })

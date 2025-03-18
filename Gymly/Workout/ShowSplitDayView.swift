@@ -71,17 +71,26 @@ struct ShowSplitDayView: View {
         } message: {
             Text("Enter the name of new section")
         }
-        .sheet(isPresented: $createExercise, content: {
-            /// Modal for creating a new exercise
+        .sheet(isPresented: $createExercise, onDismiss: {
+            Task {
+                day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
+                await refreshMuscleGroups()
+            }
+        }) {
             CreateExerciseView(viewModel: viewModel, day: viewModel.day)
                 .navigationTitle("Create Exercise")
-        })
-        .sheet(isPresented: $copyWorkout, content: {
-            /// Modal for copying a workout
-            CopyWorkoutView(day: day)
+                .presentationDetents([.fraction(0.5)])
+        }
+        .sheet(isPresented: $copyWorkout, onDismiss: {
+            Task {
+                day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
+                await refreshMuscleGroups()
+            }
+        }) {
+            CopyWorkoutView(viewModel: viewModel, day: day)
                 .navigationTitle("Create Exercise")
                 .presentationDetents([.fraction(0.25)])
-        })
+        }
         .toolbar {
             /// Toolbar menu for editing options
             Menu {

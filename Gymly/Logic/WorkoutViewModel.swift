@@ -264,7 +264,7 @@ final class WorkoutViewModel: ObservableObject {
             date: formattedDateString(from: Date())
         )
         
-
+        
         let dayStorage = DayStorage(id: UUID(), day: newDay, date: formattedDateString(from: Date()))
         context.insert(dayStorage)
         config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
@@ -275,6 +275,11 @@ final class WorkoutViewModel: ObservableObject {
         } catch {
             debugPrint(error)
         }
+    }
+    
+    @MainActor
+    func copyWorkout(from: Day, to: Day) {
+        to.exercises = from.exercises.map { $0.copy() }
     }
     
  // MARK: Calendar oriented functions
@@ -354,7 +359,7 @@ final class WorkoutViewModel: ObservableObject {
     // MARK: Functions for exercise
     
     /// Create new exercises and add it to respective day
-    func createExercise() async {
+    func createExercise(to: Day) async {
         if !name.isEmpty && !sets.isEmpty && !reps.isEmpty {
             var setList: [Exercise.Set] = []
             
@@ -388,7 +393,7 @@ final class WorkoutViewModel: ObservableObject {
                 )
 
                 await MainActor.run {
-                    today.exercises.append(newExercise)
+                    to.exercises.append(newExercise)
                     try? context.save()
                 }
 
@@ -441,6 +446,25 @@ final class WorkoutViewModel: ObservableObject {
             }
             
             return fetchedData.first!
+        }
+    }
+    
+    /// Fetch exercises for day
+    func fetchAllExerciseForDay(day: Day) async -> [Exercise] {
+        let descriptor = FetchDescriptor<Exercise>()
+        do {
+            let fetchedData: [Exercise]
+            do {
+                fetchedData = try context.fetch(descriptor)
+                debugPrint("Fetched exercises: \(fetchedData.count)")
+            } catch {
+                debugPrint("Error fetching data: \(error.localizedDescription)")
+                return []
+            }
+            guard !fetchedData.isEmpty else {
+                return []
+            }
+            return fetchedData
         }
     }
     
