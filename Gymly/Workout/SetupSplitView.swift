@@ -11,9 +11,9 @@ import SwiftUI
 struct SetupSplitView: View {
     
     /// User input state variables
-    @State private var splitLength: String = "7"
-    @State private var splitDay: String = "1"
-    @State private var name: String = "Push, Pull, Legs"
+    @State private var splitLength: String = ""
+    @State private var splitDay: String = ""
+    @State private var name: String = ""
     
     /// Environment objects for dismissing the view and accessing app context
     @Environment(\.dismiss) private var dismiss
