@@ -371,10 +371,6 @@ final class WorkoutViewModel: ObservableObject {
             do {
                 let today = await fetchDay(dayOfSplit: config.dayInSplit)
 
-                guard let validReps = Int(reps) else {
-                    throw InsertionError.invalidReps("Invalid reps value: \(reps)")
-                }
-
                 if today.exercises.contains(where: { $0.name == name }) {
                     debugPrint("Exercise already exists in today's workout.")
                     return
@@ -385,7 +381,7 @@ final class WorkoutViewModel: ObservableObject {
                     id: UUID(),
                     name: name,
                     sets: setList,
-                    repGoal: validReps,
+                    repGoal: reps,
                     muscleGroup: muscleGroup,
                     createdAt: Date(),
                     exerciseOrder: await fetchDay(dayOfSplit: config.dayInSplit).exercises.count + 1
@@ -403,8 +399,6 @@ final class WorkoutViewModel: ObservableObject {
                     self.exerciseAddedTrigger.toggle()
                 }
                 
-            } catch {
-                debugPrint("Error inserting exercise: \(error.localizedDescription)")
             }
         } else {
             debugPrint("Not all text fields are filled")
@@ -440,10 +434,10 @@ final class WorkoutViewModel: ObservableObject {
                 debugPrint("Fetched exercises: \(fetchedData.count)")
             } catch {
                 debugPrint("Error fetching data: \(error.localizedDescription)")
-                return Exercise(id: UUID(), name: "", sets: [], repGoal: 0, muscleGroup: "", exerciseOrder: 0)
+                return Exercise(id: UUID(), name: "", sets: [], repGoal: "", muscleGroup: "", exerciseOrder: 0)
             }
             guard !fetchedData.isEmpty else {
-                return Exercise(id: UUID(), name: "", sets: [], repGoal: 0, muscleGroup: "", exerciseOrder: 0)
+                return Exercise(id: UUID(), name: "", sets: [], repGoal: "", muscleGroup: "", exerciseOrder: 0)
             }
             
             return fetchedData.first!

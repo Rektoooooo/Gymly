@@ -14,7 +14,7 @@ class Exercise: Codable {
     @Attribute(.unique) var id: UUID
     var name: String
     var sets: [Set]
-    var repGoal: Int
+    var repGoal: String
     var muscleGroup: String
     var createdAt: Date = Date()
     var animationId = UUID()
@@ -22,7 +22,7 @@ class Exercise: Codable {
 
     @Relationship(deleteRule: .nullify, inverse: \Day.exercises) var day: Day?
 
-    init(id: UUID = UUID(), name: String, sets: [Set] = [], repGoal: Int, muscleGroup: String, createdAt: Date = Date(), animationId: UUID = UUID(), exerciseOrder: Int, day: Day? = nil) {
+    init(id: UUID = UUID(), name: String, sets: [Set] = [], repGoal: String, muscleGroup: String, createdAt: Date = Date(), animationId: UUID = UUID(), exerciseOrder: Int, day: Day? = nil) {
         self.id = id
         self.name = name
         self.sets = sets
@@ -56,7 +56,7 @@ class Exercise: Codable {
         self.id = try container.decode(UUID.self, forKey: .id)
         self.name = try container.decode(String.self, forKey: .name)
         self.sets = try container.decode([Set].self, forKey: .sets)
-        self.repGoal = try container.decode(Int.self, forKey: .repGoal)
+        self.repGoal = try container.decode(String.self, forKey: .repGoal)
         self.muscleGroup = try container.decode(String.self, forKey: .muscleGroup)
         self.createdAt = try container.decode(Date.self, forKey: .createdAt)
         self.exerciseOrder = try container.decode(Int.self, forKey: .exerciseOrder)

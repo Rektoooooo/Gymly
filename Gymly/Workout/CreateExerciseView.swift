@@ -22,14 +22,14 @@ struct CreateExerciseView: View {
                 /// Section for entering exercise details
                 Section("Exercise parameters") {
                     LazyVStack {
-                        TextField("Name", text: $viewModel.name)
+                        TextField("Name : Bench Press", text: $viewModel.name)
                     }
                     LazyVStack {
-                        TextField("Sets", text: $viewModel.sets)
+                        TextField("Sets : 3", text: $viewModel.sets)
                             .keyboardType(.numbersAndPunctuation)
                     }
                     LazyVStack {
-                        TextField("Repetitions", text: $viewModel.reps)
+                        TextField("Repetitions : 8-10", text: $viewModel.reps)
                             .keyboardType(.numbersAndPunctuation)
                     }
                     Picker("Muscle Group", selection: $viewModel.muscleGroup) {
