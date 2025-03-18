@@ -108,8 +108,14 @@ class Config:ObservableObject {
         }
     }
     
+    @Published var activeExercise: Int {
+        didSet {
+            UserDefaults.standard.set(activeExercise, forKey: "activeExercise")
+        }
+    }
     
-    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String, allowdateOfBirth: Bool, allowHeight: Bool, allowWeight: Bool, isHealthEnabled: Bool, roundSetWeights: Bool, firstSplitEdit:Bool) {
+    
+    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String, allowdateOfBirth: Bool, allowHeight: Bool, allowWeight: Bool, isHealthEnabled: Bool, roundSetWeights: Bool, firstSplitEdit:Bool, activeExercise: Int) {
         self.weightUnit = UserDefaults.standard.object(forKey: "weightUnit") as? String ?? "Kg"
         self.splitStarted = UserDefaults.standard.object(forKey: "splitStarted") as? Bool ?? false
         self.daysRecorded = UserDefaults.standard.object(forKey: "daysRecorded") as? [String] ?? []
@@ -126,6 +132,7 @@ class Config:ObservableObject {
         self.isHealthEnabled = UserDefaults.standard.object(forKey: "isHealthEnabled") as? Bool ?? false
         self.roundSetWeights = UserDefaults.standard.object(forKey: "roundSetWeights") as? Bool ?? false
         self.firstSplitEdit = UserDefaults.standard.object(forKey: "firstSplitEdit") as? Bool ?? true
+        self.activeExercise = UserDefaults.standard.object(forKey: "activeExercise") as? Int ?? 1
     }
 }
 

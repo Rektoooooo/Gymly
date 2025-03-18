@@ -69,6 +69,7 @@ struct ExerciseDetailView: View {
                 /// Dismiss button
                 Section("") {
                     Button("Done") {
+                        config.activeExercise = exercise.exerciseOrder + 1
                         dismiss()
                     }
                 }

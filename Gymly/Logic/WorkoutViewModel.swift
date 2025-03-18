@@ -28,7 +28,7 @@ final class WorkoutViewModel: ObservableObject {
     @Published var setNote:String = ""
     @Published var muscleGroup:String = "Chest"
     @Published var emptyDay: Day = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
-
+    @Published var activeExercise: Int = 1
     
     enum InsertionError: Error {
         case invalidReps(String)
@@ -332,6 +332,7 @@ final class WorkoutViewModel: ObservableObject {
 
             config.dayInSplit = newDayInSplit
             config.lastUpdateDate = Date()
+            config.activeExercise = 1
 
             return config.dayInSplit
         } else {
@@ -379,13 +380,15 @@ final class WorkoutViewModel: ObservableObject {
                     return
                 }
 
+                
                 let newExercise = Exercise(
                     id: UUID(),
                     name: name,
                     sets: setList,
                     repGoal: validReps,
                     muscleGroup: muscleGroup,
-                    createdAt: Date()
+                    createdAt: Date(),
+                    exerciseOrder: await fetchDay(dayOfSplit: config.dayInSplit).exercises.count + 1
                 )
 
                 await MainActor.run {
@@ -437,10 +440,10 @@ final class WorkoutViewModel: ObservableObject {
                 debugPrint("Fetched exercises: \(fetchedData.count)")
             } catch {
                 debugPrint("Error fetching data: \(error.localizedDescription)")
-                return Exercise(id: UUID(), name: "", sets: [], repGoal: 0, muscleGroup: "")
+                return Exercise(id: UUID(), name: "", sets: [], repGoal: 0, muscleGroup: "", exerciseOrder: 0)
             }
             guard !fetchedData.isEmpty else {
-                return Exercise(id: UUID(), name: "", sets: [], repGoal: 0, muscleGroup: "")
+                return Exercise(id: UUID(), name: "", sets: [], repGoal: 0, muscleGroup: "", exerciseOrder: 0)
             }
             
             return fetchedData.first!
@@ -564,7 +567,8 @@ final class WorkoutViewModel: ObservableObject {
                         sets: decodedExercise.sets,
                         repGoal: decodedExercise.repGoal,
                         muscleGroup: decodedExercise.muscleGroup,
-                        createdAt: decodedExercise.createdAt
+                        createdAt: decodedExercise.createdAt,
+                        exerciseOrder: decodedExercise.exerciseOrder
                     )
                     newDay.exercises.append(newExercise)
                 }

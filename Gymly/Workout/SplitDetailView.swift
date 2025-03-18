@@ -12,6 +12,7 @@ struct SplitDetailView: View {
     @State var days: [Day] = []
     @State var shareSplit: Bool = false
     @ObservedObject var viewModel: WorkoutViewModel
+    @Environment(\.dismiss) private var dismiss
     @State private var shareURL: URL?
     var body: some View {
             List {
@@ -26,6 +27,7 @@ struct SplitDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     if let url = viewModel.exportSplit(split) {
+                        viewModel.editPlan = false
                         shareURL = url
                         presentShareSheet(url: url)
                     }

@@ -28,9 +28,9 @@ struct ConnectionsView: View {
                 
                 // TODO: Toggles does not sinc with the healt kit so there are doing nothing
                 if config.isHealthEnabled {
-                    Toggle("Allow Date of Birth", isOn: $config.allowDateOfBirth)
-                    Toggle("Allow Height", isOn: $config.allowHeight)
-                    Toggle("Allow Weight", isOn: $config.allowWeight)
+                   // Toggle("Allow Date of Birth", isOn: $config.allowDateOfBirth)
+                   // Toggle("Allow Height", isOn: $config.allowHeight)
+                   // Toggle("Allow Weight", isOn: $config.allowWeight)
                 }
             }
         }

@@ -64,7 +64,13 @@ struct TodayWorkoutView: View {
                                     Section(header: Text(group.name)) {
                                         ForEach(group.exercises, id: \.id) { exercise in
                                             NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
-                                                Text(exercise.name)
+                                                HStack {
+                                                    
+                                                    Text("\(exercise.exerciseOrder)")
+                                                        .foregroundStyle(Color.white.opacity(0.4))
+                                                    Text(exercise.name)
+                                                    
+                                                }
                                             }
                                         }
                                     }
@@ -95,7 +101,7 @@ struct TodayWorkoutView: View {
                     Button(action: {
                         showProfileView = true
                     }) {
-                        ProfileImageCell(profileImage: profileImage, frameSize: 45)
+                        ProfileImageCell(profileImage: profileImage, frameSize: 43)
                     }
                 }
                 /// Button for showing splits view
@@ -169,7 +175,7 @@ struct TodayWorkoutView: View {
     }
     
     // TODO: When adding exercise, adding new exercise into new muscle group works fine with animation and everything, but when adding second exercise to already existing muscle group there is no animation Sadge
-
+    
     /// Func for refreshing exercises so UI updates correctly
     @MainActor
     func refreshMuscleGroups() async {
@@ -199,7 +205,7 @@ struct TodayWorkoutView: View {
         let updatedDay = await viewModel.fetchDay(dayOfSplit: config.dayInSplit)
         await MainActor.run {
             viewModel.day = updatedDay
-            selectedDay = updatedDay 
+            selectedDay = updatedDay
         }
         if let imagePath = config.userProfileImageURL {
             profileImage = viewModel.loadImage(from: imagePath)

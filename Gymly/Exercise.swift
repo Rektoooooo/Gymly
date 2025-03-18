@@ -18,10 +18,11 @@ class Exercise: Codable {
     var muscleGroup: String
     var createdAt: Date = Date()
     var animationId = UUID()
+    var exerciseOrder: Int
 
     @Relationship(deleteRule: .nullify, inverse: \Day.exercises) var day: Day?
 
-    init(id: UUID = UUID(), name: String, sets: [Set] = [], repGoal: Int, muscleGroup: String,createdAt: Date = Date(),animationId: UUID = UUID(), day: Day? = nil) {
+    init(id: UUID = UUID(), name: String, sets: [Set] = [], repGoal: Int, muscleGroup: String, createdAt: Date = Date(), animationId: UUID = UUID(), exerciseOrder: Int, day: Day? = nil) {
         self.id = id
         self.name = name
         self.sets = sets
@@ -29,6 +30,7 @@ class Exercise: Codable {
         self.muscleGroup = muscleGroup
         self.createdAt = createdAt
         self.animationId = animationId
+        self.exerciseOrder = exerciseOrder
         self.day = day
     }
     
@@ -39,13 +41,14 @@ class Exercise: Codable {
             repGoal: self.repGoal,
             muscleGroup: self.muscleGroup,
             createdAt: self.createdAt,
-            animationId: self.animationId
+            animationId: self.animationId,
+            exerciseOrder: self.exerciseOrder
         )
     }
     
     // MARK: - Codable Compliance
     enum CodingKeys: String, CodingKey {
-        case id, name, sets, repGoal, muscleGroup, createdAt
+        case id, name, sets, repGoal, muscleGroup, createdAt, exerciseOrder
     }
 
     required init(from decoder: Decoder) throws {
@@ -56,6 +59,7 @@ class Exercise: Codable {
         self.repGoal = try container.decode(Int.self, forKey: .repGoal)
         self.muscleGroup = try container.decode(String.self, forKey: .muscleGroup)
         self.createdAt = try container.decode(Date.self, forKey: .createdAt)
+        self.exerciseOrder = try container.decode(Int.self, forKey: .exerciseOrder)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -66,6 +70,7 @@ class Exercise: Codable {
         try container.encode(repGoal, forKey: .repGoal)
         try container.encode(muscleGroup, forKey: .muscleGroup)
         try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(exerciseOrder, forKey: .exerciseOrder)
     }
     
     @Model
