@@ -220,6 +220,7 @@ final class WorkoutViewModel: ObservableObject {
         var newMuscleGroups: [MuscleGroup] = []
         
         let updatedDay = await fetchDay(dayOfSplit: dayOfSplit)
+        debugPrint("Exercises fetch for day : \(updatedDay.exercises.count)")
 
         let freshExercises = updatedDay.exercises
 

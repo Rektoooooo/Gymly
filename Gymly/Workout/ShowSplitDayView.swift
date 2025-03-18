@@ -66,8 +66,8 @@ struct ShowSplitDayView: View {
         }
         .alert("Enter workout name", isPresented: $popup) {
             /// Popup for editing the workout name
-            TextField("Workout name", text: $name)
-            Button("OK", action: saveDayName)
+            TextField("Workout name", text: $day.name)
+            Button("OK", action: {})
         } message: {
             Text("Enter the name of new section")
         }
