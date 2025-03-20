@@ -34,6 +34,7 @@ struct CopyWorkoutView: View {
             .offset(y: -30)
             .onAppear {
                     availableDays = viewModel.getActiveSplitDays()
+                    selected = availableDays.first ?? Day(name: "", dayOfSplit: 0, date: "")
             }
             .navigationTitle("Copy workout")
             .navigationBarTitleDisplayMode(.inline)

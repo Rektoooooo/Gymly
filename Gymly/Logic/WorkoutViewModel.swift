@@ -280,6 +280,7 @@ final class WorkoutViewModel: ObservableObject {
     
     @MainActor
     func copyWorkout(from: Day, to: Day) {
+        to.exercises.removeAll()
         to.exercises = from.exercises.map { $0.copy() }
     }
     

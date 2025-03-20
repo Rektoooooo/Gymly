@@ -35,15 +35,20 @@ class Exercise: Codable {
     }
     
     func copy() -> Exercise {
-        return Exercise(
+        let newExercise = Exercise(
+            id: UUID(),  // Ensure a unique ID
             name: self.name,
-            sets: self.sets.map { $0.copySets() },
+            sets: [],  // Start with an empty array, avoid duplication
             repGoal: self.repGoal,
             muscleGroup: self.muscleGroup,
             createdAt: self.createdAt,
-            animationId: self.animationId,
             exerciseOrder: self.exerciseOrder
         )
+
+        // **Deep copy each set without duplication**
+        newExercise.sets = self.sets.map { $0.copySets() }
+        
+        return newExercise
     }
     
     // MARK: - Codable Compliance
@@ -112,6 +117,7 @@ class Exercise: Codable {
         
         func copySets() -> Set {
             return Set(
+                id: UUID(), // Ensure a unique ID
                 weight: self.weight,
                 reps: self.reps,
                 failure: self.failure,
