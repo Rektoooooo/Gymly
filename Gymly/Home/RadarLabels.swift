@@ -71,7 +71,7 @@ struct RadarChart: Shape {
     var maxValue: Double
 
     func path(in rect: CGRect) -> Path {
-        let sides = 7
+        let sides = values.count
         let center = CGPoint(x: rect.width / 2, y: rect.height / 2)
         let radius = min(rect.width, rect.height) / 2
         

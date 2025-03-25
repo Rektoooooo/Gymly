@@ -29,6 +29,11 @@ final class WorkoutViewModel: ObservableObject {
     @Published var muscleGroup:String = "Chest"
     @Published var emptyDay: Day = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
     @Published var activeExercise: Int = 1
+    enum MuscleGroupEnum: String, CaseIterable, Identifiable {
+        case chest, back, biceps, triceps, shoulders, quads, hamstrings, calves, glutes, abs
+        
+        var id: String { self.rawValue }
+    }
     
     enum InsertionError: Error {
         case invalidReps(String)
@@ -43,6 +48,26 @@ final class WorkoutViewModel: ObservableObject {
     }
     
     // MARK: Split related funcs
+    @MainActor
+    func updateMuscleGroupDataValues(from exercises: [Exercise]) {
+        var muscleCounts: [MuscleGroupEnum: Double] = [:]
+
+        for exercise in exercises {
+            if let group = MuscleGroupEnum(rawValue: exercise.muscleGroup.lowercased()) {
+                muscleCounts[group, default: 0] += Double(exercise.sets.count)
+            }
+        }
+
+        let orderedGroups = MuscleGroupEnum.allCases
+        let normalizedValues = orderedGroups.map { group in
+            let rawValue = muscleCounts[group] ?? 0
+            return max(1.0, min(rawValue, 6.0)) // ⬅️ Clamp between 1.0 and 6.0
+        }
+
+        debugPrint("Values before \(config.graphDataValues)")
+        config.graphDataValues = normalizedValues
+        debugPrint("Values after \(config.graphDataValues)")
+    }
     
     /// Create new split
     @MainActor

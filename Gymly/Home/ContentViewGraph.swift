@@ -8,21 +8,24 @@
 import SwiftUI
 
 struct ContentViewGraph: View {
-    let dataValues = [1.0, 1.0, 6.0, 4.0, 5.5, 6.0, 5.0] // Abs,Legs,Triceps,Biceps,Back,Chest,Shoulders
-    let maxValue = 6.0 // Maximum value
-        
+    @EnvironmentObject var config: Config
+    @State var maxValue = 6.0
+    
         var body: some View {
             ZStack {
                 RadarBackground(levels: 3)
                     .stroke(Color.gray, lineWidth: 1)
                     .opacity(0.5)
                 
-                RadarChart(values: dataValues, maxValue: maxValue)
+                RadarChart(values: config.graphDataValues, maxValue: maxValue)
                     .fill(Color.red.opacity(0.4))
                     .overlay(
-                        RadarChart(values: dataValues, maxValue: maxValue)
+                        RadarChart(values: config.graphDataValues, maxValue: maxValue)
                             .stroke(Color.red, lineWidth: 2)
                     )
+            }
+            .onAppear {
+                debugPrint(config.graphDataValues)
             }
             .frame(width: 250, height: 250)
             .padding()

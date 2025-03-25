@@ -159,9 +159,9 @@ struct SettingsView: View {
                 }
                 Section(header: HStack {
                     Text("Graph")
-                    Text("(Not working yet)")
-                        .foregroundColor(.red)
                 }) {
+                    Text("Data: \(config.graphDataValues.description)")
+                        .foregroundColor(.white)
                     ZStack {
                         ContentViewGraph()
                         RadarLabels()
