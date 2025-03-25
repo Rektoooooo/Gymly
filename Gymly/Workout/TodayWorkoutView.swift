@@ -122,7 +122,6 @@ struct TodayWorkoutView: View {
                     }
                 }
             }
-            .id(UUID())
             /// On change of adding exercise refresh the exercises
             .onChange(of: viewModel.exerciseAddedTrigger) {
                 Task {

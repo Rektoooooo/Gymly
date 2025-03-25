@@ -25,50 +25,55 @@ struct SettingsView: View {
         NavigationView {
             List {
                 Section("") {
-                    ZStack {
-                        LinearGradient(
-                            gradient: Gradient(colors: [.red, .pink]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                        .cornerRadius(20)
-                        HStack {
+                    Button(action: {
+                        editUser = true
+                    }) {
+                        ZStack {
+                            LinearGradient(
+                                gradient: Gradient(colors: [.red, .pink]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                            .cornerRadius(20)
                             HStack {
-                                ProfileImageCell(profileImage: profileImage, frameSize: 80)
-                                    .padding()
-                                VStack {
+                                HStack {
+                                    ProfileImageCell(profileImage: profileImage, frameSize: 80)
+                                        .padding()
                                     VStack {
-                                        Text("\(config.username)")
-                                            .multilineTextAlignment(.leading)
-                                            .bold()
-                                            .padding()
+                                        VStack {
+                                            Text("\(config.username)")
+                                                .multilineTextAlignment(.leading)
+                                                .bold()
+                                                .padding()
+                                        }
+                                        HStack {
+                                            Spacer()
+                                            VStack() {
+                                                Text(weight != nil ? "\(String(format: "%.1f", weight!)) kg" : "nil")
+                                                    .bold()
+                                                Text("weight")
+                                                    .font(.caption)
+                                            }
+                                            Spacer()
+                                            VStack() {
+                                                Text("\(height != nil ? "\(height!) m" : "nil")")
+                                                    .bold()
+                                                Text("height")
+                                                    .font(.caption)
+                                            }
+                                            Spacer()
+                                            VStack() {
+                                                Text("\(age != nil ? "\(age!)" : "nil")")
+                                                    .bold()
+                                                Text("age")
+                                                    .font(.caption)
+                                            }
+                                            Spacer()
+                                        }
                                     }
-                                    HStack {
-                                        Spacer()
-                                        VStack() {
-                                            Text(weight != nil ? "\(String(format: "%.1f", weight!)) kg" : "nil")
-                                                .bold()
-                                            Text("weight")
-                                                .font(.caption)
-                                        }
-                                        Spacer()
-                                        VStack() {
-                                            Text("\(height != nil ? "\(height!) m" : "nil")")
-                                                .bold()
-                                            Text("height")
-                                                .font(.caption)
-                                        }
-                                        Spacer()
-                                        VStack() {
-                                            Text("\(age != nil ? "\(age!)" : "nil")")
-                                                .bold()
-                                            Text("age")
-                                                .font(.caption)
-                                        }
-                                        Spacer()
-                                    }
+                                    .foregroundStyle(Color.white)
+                                    Spacer()
                                 }
-                                Spacer()
                             }
                         }
                     }
@@ -171,19 +176,6 @@ struct SettingsView: View {
             }
             .scrollIndicators(.hidden)
             .navigationTitle("My profile")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        editUser = true
-                    } label: {
-                        HStack {
-                            Text("Edit")
-                            Image(systemName: "person.crop.circle")
-                        }
-                    }
-                }
-                
-            }
             .onAppear() {
                 if let imagePath = config.userProfileImageURL {
                     profileImage = viewModel.loadImage(from: imagePath)
