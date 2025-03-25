@@ -17,29 +17,34 @@
             </array>
         </dict>
     </array>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>UTImportedTypeDeclarations</key>
-	<array>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>Gymly Split File</string>
-			<key>UTTypeIdentifier</key>
-			<string>com.gymly.split</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>gymlysplit</string>
-				</array>
-				<key>public.mime-type</key>
-				<string>application/json</string>
-			</dict>
-		</dict>
-	</array>
+
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
+
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
+
+    <key>UTImportedTypeDeclarations</key>
+    <array>
+        <dict>
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.data</string>
+            </array>
+            <key>UTTypeDescription</key>
+            <string>Gymly Split File</string>
+            <key>UTTypeIdentifier</key>
+            <string>com.gymly.split</string>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>gymlysplit</string>
+                </array>
+                <key>public.mime-type</key>
+                <string>application/json</string>
+            </dict>
+        </dict>
+    </array>
 </dict>
 </plist>

@@ -162,6 +162,9 @@ struct SettingsView: View {
                 }) {
                     Text("Data: \(config.graphDataValues.description)")
                         .foregroundColor(.white)
+                    Text("Max Value: \(config.graphMaxValue.description)")
+                        .foregroundColor(.white)
+
                     ZStack {
                         ContentViewGraph()
                         RadarLabels()

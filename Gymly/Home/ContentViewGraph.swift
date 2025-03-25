@@ -9,18 +9,16 @@ import SwiftUI
 
 struct ContentViewGraph: View {
     @EnvironmentObject var config: Config
-    @State var maxValue = 6.0
-    
         var body: some View {
             ZStack {
                 RadarBackground(levels: 3)
                     .stroke(Color.gray, lineWidth: 1)
                     .opacity(0.5)
                 
-                RadarChart(values: config.graphDataValues, maxValue: maxValue)
+                RadarChart(values: config.graphDataValues, maxValue: config.graphMaxValue)
                     .fill(Color.red.opacity(0.4))
                     .overlay(
-                        RadarChart(values: config.graphDataValues, maxValue: maxValue)
+                        RadarChart(values: config.graphDataValues, maxValue: config.graphMaxValue)
                             .stroke(Color.red, lineWidth: 2)
                     )
             }

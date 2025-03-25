@@ -120,8 +120,20 @@ class Config:ObservableObject {
         }
     }
     
+    @Published var graphMaxValue: Double {
+        didSet {
+            UserDefaults.standard.set(graphMaxValue, forKey: "graphMaxValue")
+        }
+    }
     
-    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String, allowdateOfBirth: Bool, allowHeight: Bool, allowWeight: Bool, isHealthEnabled: Bool, roundSetWeights: Bool, firstSplitEdit:Bool, activeExercise: Int, graphDataValues: [Double]) {
+    @Published var graphUpdatedExerciseIDs: Set<UUID> {
+        didSet {
+            let idsAsStrings = graphUpdatedExerciseIDs.map { $0.uuidString }
+            UserDefaults.standard.set(idsAsStrings, forKey: "graphUpdatedExerciseIDs")
+        }
+    }
+    
+    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String, allowdateOfBirth: Bool, allowHeight: Bool, allowWeight: Bool, isHealthEnabled: Bool, roundSetWeights: Bool, firstSplitEdit:Bool, activeExercise: Int, graphDataValues: [Double], graphMaxValue: Double, graphUpdatedExercisesIDs: Set<UUID>) {
         self.weightUnit = UserDefaults.standard.object(forKey: "weightUnit") as? String ?? "Kg"
         self.splitStarted = UserDefaults.standard.object(forKey: "splitStarted") as? Bool ?? false
         self.daysRecorded = UserDefaults.standard.object(forKey: "daysRecorded") as? [String] ?? []
@@ -140,6 +152,8 @@ class Config:ObservableObject {
         self.firstSplitEdit = UserDefaults.standard.object(forKey: "firstSplitEdit") as? Bool ?? true
         self.activeExercise = UserDefaults.standard.object(forKey: "activeExercise") as? Int ?? 1
         self.graphDataValues = UserDefaults.standard.object(forKey: "graphDataValues") as? [Double] ?? []
+        self.graphMaxValue = UserDefaults.standard.object(forKey: "graphMaxValue") as? Double ?? 1.0
+        self.graphUpdatedExerciseIDs = UserDefaults.standard.object(forKey: "graphUpdatedExerciseIDs") as? Set<UUID> ?? []
     }
 }
 

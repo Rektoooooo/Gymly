@@ -52,21 +52,36 @@ final class WorkoutViewModel: ObservableObject {
     func updateMuscleGroupDataValues(from exercises: [Exercise]) {
         var muscleCounts: [MuscleGroupEnum: Double] = [:]
 
-        for exercise in exercises {
+        // Start from existing values
+        for (index, group) in MuscleGroupEnum.allCases.enumerated() {
+            muscleCounts[group] = config.graphDataValues.indices.contains(index)
+                ? config.graphDataValues[index]
+                : 0.0
+        }
+
+        // Filter out already-used exercises
+        let newExercises = exercises.filter { !config.graphUpdatedExerciseIDs.contains($0.id) }
+
+        // Add new exercise contributions
+        for exercise in newExercises {
             if let group = MuscleGroupEnum(rawValue: exercise.muscleGroup.lowercased()) {
                 muscleCounts[group, default: 0] += Double(exercise.sets.count)
             }
         }
 
         let orderedGroups = MuscleGroupEnum.allCases
-        let normalizedValues = orderedGroups.map { group in
-            let rawValue = muscleCounts[group] ?? 0
-            return max(1.0, min(rawValue, 6.0)) // ⬅️ Clamp between 1.0 and 6.0
-        }
+        let rawValues = orderedGroups.map { muscleCounts[$0] ?? 0 }
 
-        debugPrint("Values before \(config.graphDataValues)")
-        config.graphDataValues = normalizedValues
-        debugPrint("Values after \(config.graphDataValues)")
+        let computedMax = rawValues.max() ?? 1.0
+        let safeMax = max(computedMax, 1.0)
+
+        config.graphDataValues = rawValues
+        config.graphMaxValue = safeMax
+
+        // Record these exercise IDs as "used"
+        config.graphUpdatedExerciseIDs.formUnion(newExercises.map { $0.id })
+
+        debugPrint("Updated graphDataValues: \(rawValues)")
     }
     
     /// Create new split
@@ -576,17 +591,24 @@ final class WorkoutViewModel: ObservableObject {
     }
     
     // MARK: Import export SPLIT functions
-    /// Import split
     func importSplit(from url: URL) -> Split? {
+        guard url.startAccessingSecurityScopedResource() else {
+            print("❌ Could not access security scoped resource.")
+            return nil
+        }
+        defer { url.stopAccessingSecurityScopedResource() }
+
         do {
-            // Read data from file
+            guard FileManager.default.fileExists(atPath: url.path) else {
+                print("❌ File not found at: \(url.path)")
+                return nil
+            }
+
+            print("📂 Importing file from: \(url.path)")
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
             let decodedSplit = try decoder.decode(Split.self, from: data)
 
-            print("✅ Decoded Split: \(decodedSplit.name), Days: \(decodedSplit.days.count)")
-
-            // Create a new split object
             let newSplit = Split(
                 id: UUID(),
                 name: decodedSplit.name,
@@ -595,7 +617,6 @@ final class WorkoutViewModel: ObservableObject {
                 startDate: decodedSplit.startDate
             )
 
-            // Add Days & Exercises
             for decodedDay in decodedSplit.days {
                 let newDay = Day(
                     id: UUID(),
@@ -621,15 +642,14 @@ final class WorkoutViewModel: ObservableObject {
                 newSplit.days.append(newDay)
             }
 
-            // 🏋️ Insert and Save
             context.insert(newSplit)
             try context.save()
             print("✅ Split successfully saved: \(newSplit.name)")
 
-            return newSplit // Return the newly created split
+            return newSplit
 
         } catch {
-            print("Error importing split: \(error.localizedDescription)")
+            print("❌ Error importing split: \(error.localizedDescription)")
             return nil
         }
     }
