@@ -70,10 +70,12 @@ final class WorkoutViewModel: ObservableObject {
         }
 
         let orderedGroups = MuscleGroupEnum.allCases
-        let rawValues = orderedGroups.map { muscleCounts[$0] ?? 0 }
 
-        let computedMax = rawValues.max() ?? 1.0
+        let computedMax = muscleCounts.values.max() ?? 1.0
         let safeMax = max(computedMax, 1.0)
+        let dynamicMin = max(1.0, safeMax * 0.2)
+
+        let rawValues = orderedGroups.map { max(dynamicMin, muscleCounts[$0] ?? 0) }
 
         config.graphDataValues = rawValues
         config.graphMaxValue = safeMax

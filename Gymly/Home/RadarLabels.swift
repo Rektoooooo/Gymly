@@ -8,25 +8,37 @@
 import SwiftUI
 
 struct RadarLabels: View {
+    let labels = ["Chest","Back","Biceps","Triceps","Shoulders","Quads","Hamstrings","Calves","Glutes","Abs"]
+
     var body: some View {
-        ZStack {
-            /// Positioning text above the graph
-            Text("Chest")
-                .position(x: 120, y: 5)
-            Text("Back")
-                .position(x: 0, y: 80)
-            Text("Biceps")
-                .position(x: -5, y: 200)
-            Text("Triceps")
-                .position(x: 110, y: 280)
-            Text("Legs")
-                .position(x: 240, y: 260)
-            Text("Abs")
-                .position(x: 290, y: 150)
-            Text("Shoulders")
-                .position(x: 270, y: 30)
+        GeometryReader { geo in
+            let positions = radarLabelPositions(size: geo.size, count: labels.count)
+
+            ZStack {
+                ForEach(0..<labels.count, id: \.self) { i in
+                    Text(labels[i])
+                        .font(.caption)
+                        .position(x: positions[i].x, y: positions[i].y)
+                }
+            }
         }
+        .frame(width: 300, height: 300)
     }
+}
+
+func radarLabelPositions(size: CGSize, count: Int, radiusOffset: CGFloat = 2) -> [CGPoint] {
+    let center = CGPoint(x: size.width / 2, y: size.height / 2)
+    let radius = min(size.width, size.height) / 2 + radiusOffset
+    var points: [CGPoint] = []
+
+    for i in 0..<count {
+        let angle = (Double(i) / Double(count)) * 2 * .pi
+        let x = center.x + CGFloat(cos(angle)) * radius
+        let y = center.y + CGFloat(sin(angle)) * radius
+        points.append(CGPoint(x: x, y: y))
+    }
+
+    return points
 }
 
 #Preview {
@@ -38,7 +50,7 @@ struct RadarBackground: Shape {
     var levels: Int
 
     func path(in rect: CGRect) -> Path {
-        let sides = 7
+        let sides = 10
         let center = CGPoint(x: rect.width / 2, y: rect.height / 2)
         let radius = min(rect.width, rect.height) / 2
 
