@@ -19,6 +19,7 @@
 		EC5922522D7B0A6200EB39B2 /* SetCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC5922512D7B0A6200EB39B2 /* SetCell.swift */; };
 		EC5922542D7B1BE100EB39B2 /* ProfileImageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC5922532D7B1BE100EB39B2 /* ProfileImageCell.swift */; };
 		EC629C662C9CAE2300009902 /* MuscleGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC629C652C9CAE2300009902 /* MuscleGroup.swift */; };
+		EC66F6992D92CF380086D625 /* SettingUserInfoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC66F6982D92CF380086D625 /* SettingUserInfoCell.swift */; };
 		EC71CA8A2D705986003EAB09 /* Split.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC71CA892D705986003EAB09 /* Split.swift */; };
 		EC8C15112C80A94D008E4152 /* DayStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC8C15102C80A94D008E4152 /* DayStorage.swift */; };
 		ECA5D1442BF20CF100DCC9F8 /* GymlyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA5D1432BF20CF100DCC9F8 /* GymlyApp.swift */; };
@@ -62,6 +63,7 @@
 		EC5922512D7B0A6200EB39B2 /* SetCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetCell.swift; sourceTree = "<group>"; };
 		EC5922532D7B1BE100EB39B2 /* ProfileImageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileImageCell.swift; sourceTree = "<group>"; };
 		EC629C652C9CAE2300009902 /* MuscleGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroup.swift; sourceTree = "<group>"; };
+		EC66F6982D92CF380086D625 /* SettingUserInfoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingUserInfoCell.swift; sourceTree = "<group>"; };
 		EC71CA892D705986003EAB09 /* Split.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Split.swift; sourceTree = "<group>"; };
 		EC8C15102C80A94D008E4152 /* DayStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayStorage.swift; sourceTree = "<group>"; };
 		ECA5D1402BF20CF100DCC9F8 /* Gymly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gymly.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -132,6 +134,7 @@
 				EC59224B2D7A3D6500EB39B2 /* SetWeightCell.swift */,
 				EC59224D2D7A407C00EB39B2 /* SetTypeCell.swift */,
 				EC59224F2D7A414F00EB39B2 /* SetNoteCell.swift */,
+				EC66F6982D92CF380086D625 /* SettingUserInfoCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -352,6 +355,7 @@
 				ECA5D1762BF22C2000DCC9F8 /* Exercise.swift in Sources */,
 				EC4FD1572C4EE0A600D1A4A6 /* Color.swift in Sources */,
 				EC71CA8A2D705986003EAB09 /* Split.swift in Sources */,
+				EC66F6992D92CF380086D625 /* SettingUserInfoCell.swift in Sources */,
 				EC4FD1582C4EE0A600D1A4A6 /* onFirstAppear.swift in Sources */,
 				EC59224E2D7A407C00EB39B2 /* SetTypeCell.swift in Sources */,
 				EC5922462D79A81000EB39B2 /* ImageExtension.swift in Sources */,

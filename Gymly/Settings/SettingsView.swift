@@ -15,6 +15,9 @@ struct SettingsView: View {
     @StateObject var healthKitManager = HealthKitManager()
     @State private var height: Double?
     @State private var weight: Double?
+    @State private var bmi: Double?
+    @State var bmiStatus: String = ""
+    @State var bmiColor: Color = .green
     @State private var age: Int?
     @State private var editUser: Bool = false
     @State private var profileImage: UIImage?
@@ -24,7 +27,6 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             List {
-                Section("") {
                     Button(action: {
                         editUser = true
                     }) {
@@ -44,31 +46,10 @@ struct SettingsView: View {
                                             Text("\(config.username)")
                                                 .multilineTextAlignment(.leading)
                                                 .bold()
-                                                .padding()
+                                                .padding(2)
                                         }
                                         HStack {
-                                            Spacer()
-                                            VStack() {
-                                                Text(weight != nil ? "\(String(format: "%.1f", weight!)) kg" : "nil")
-                                                    .bold()
-                                                Text("weight")
-                                                    .font(.caption)
-                                            }
-                                            Spacer()
-                                            VStack() {
-                                                Text("\(height != nil ? "\(height!) m" : "nil")")
-                                                    .bold()
-                                                Text("height")
-                                                    .font(.caption)
-                                            }
-                                            Spacer()
-                                            VStack() {
-                                                Text("\(age != nil ? "\(age!)" : "nil")")
-                                                    .bold()
-                                                Text("age")
-                                                    .font(.caption)
-                                            }
-                                            Spacer()
+                                            Text(config.userEmail)
                                         }
                                     }
                                     .foregroundStyle(Color.white)
@@ -79,118 +60,121 @@ struct SettingsView: View {
                     }
                     .listRowBackground(Color.clear)
                     .frame(width: 340, height: 120)
-                    HStack {
-                        VStack {
-                            ZStack {
-                                LinearGradient(
-                                    gradient: Gradient(colors: [.red, .orange]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                                Image(systemName: "flame")
-                            }
-                            .frame(width: 70, height: 70, alignment: .leading)
-                            .cornerRadius(25)
-                            Text("5")
-                                .bold()
-                            Text("Streak")
-                                .font(.caption)
-                        }
-                        Spacer()
-                        VStack {
-                            ZStack {
-                                LinearGradient(
-                                    gradient: Gradient(colors: [.orange, .yellow]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                                Image(systemName: "clock")
-                            }
-                            .frame(width: 70, height: 70, alignment: .leading)
-                            .cornerRadius(25)
-                            Text("1453h")
-                                .bold()
-                            Text("working out")
-                                .font(.caption)
-                        }
-                        Spacer()
-                        VStack {
-                            ZStack {
-                                LinearGradient(
-                                    gradient: Gradient(colors: [.yellow, .red]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                                Image(systemName: "medal")
-                            }
-                            .frame(width: 70, height: 70, alignment: .leading)
-                            .cornerRadius(25)
-                            Text("12")
-                                .bold()
-                            Text("Medals")
-                                .font(.caption)
-                        }
-                    }
                     .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                }
-                Section("Preferences") {
+                if let weight = weight,
+                   let bmi = bmi {
                     HStack {
+                            HStack(spacing: 16) {
+                                SettingUserInfoCell(
+                                    value: String(format: "%.1f", weight),
+                                    metric: config.weightUnit,
+                                    headerColor: .gray,
+                                    additionalInfo: "Body weight",
+                                    icon: "figure.run"
+                                )
+                                SettingUserInfoCell(
+                                    value: String(format: "%.1f", bmi),
+                                    metric: "BMI",
+                                    headerColor: bmiColor.opacity(0.9),
+                                    additionalInfo: bmiStatus,
+                                    icon: "figure.run"
+                                )
+//                                SettingUserInfoCell(
+//                                    value: String(format: "%.2f", height),
+//                                    metric: "M",
+//                                    headerColor: .green,
+//                                    additionalInfo: "Height",
+//                                    icon: "figure.wave"
+//                                )
+//                                SettingUserInfoCell(
+//                                    value: String(format: "%.0f", Double(age)),
+//                                    metric: "YO",
+//                                    headerColor: .green,
+//                                    additionalInfo: "Age",
+//                                    icon: "person.text.rectangle"
+//                                )
+                            }
+                        
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                }
+                    Section("Preferences") {
                         HStack {
-                            Image(systemName: "scalemass")
-                            Text("Unit")
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        Picker(selection: $config.weightUnit, label: Text("")) {
-                            ForEach(units, id: \.self) { unit in
-                                Text(unit)
+                            HStack {
+                                Image(systemName: "scalemass")
+                                Text("Unit")
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Picker(selection: $config.weightUnit, label: Text("")) {
+                                ForEach(units, id: \.self) { unit in
+                                    Text(unit)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .padding(.trailing, -30)
+                            .onChange(of: config.weightUnit) {
+                                debugPrint("Selected unit: \(config.weightUnit)")
+                                config.roundSetWeights = true
                             }
                         }
-                        .pickerStyle(.segmented)
-                        .frame(maxWidth: .infinity, alignment: .trailing) 
-                        .padding(.trailing, -30)
-                        .onChange(of: config.weightUnit) {
-                            debugPrint("Selected unit: \(config.weightUnit)")
-                            config.roundSetWeights = true
+                        .frame(width: 300)
+                        NavigationLink(destination: ConnectionsView(viewModel: viewModel)) {
+                            Image(systemName: "square.2.layers.3d.top.filled")
+                            Text("App connections")
                         }
+                        .frame(width: 300)
                     }
-                    .frame(width: 300)
-                    NavigationLink(destination: ConnectionsView(viewModel: viewModel)) {
-                        Image(systemName: "square.2.layers.3d.top.filled")
-                        Text("App connections")
+                    Section(header: HStack {
+                        Text("Graph")
+                    }) {
+                        ZStack {
+                            ContentViewGraph()
+                            RadarLabels()
+                        }
+                        .frame(width: 300, height: 300)
                     }
-                    .frame(width: 300)
+                    .listRowBackground(Color.clear)
+                    .padding(.horizontal)
                 }
-                Section(header: HStack {
-                    Text("Graph")
+                .navigationTitle("My profile")
+                .onAppear() {
+                    if let imagePath = config.userProfileImageURL {
+                        profileImage = viewModel.loadImage(from: imagePath)
+                    }
+                    healthKitManager.fetchHeight { height in self.height = height }
+                    healthKitManager.fetchWeight { weight in self.weight = weight }
+                    healthKitManager.fetchBMI { bmi in
+                        self.bmi = bmi
+                        let (color, status) = getBmiStyle(bmi: bmi ?? 0.0)
+                        self.bmiColor = color
+                        self.bmiStatus = status
+                    }
+                    healthKitManager.fetchAge { age in self.age = age
+                    }
+                }
+                .sheet(isPresented: $editUser, onDismiss: {
+                    if let imagePath = config.userProfileImageURL {
+                        profileImage = viewModel.loadImage(from: imagePath)
+                    }
                 }) {
-                    ZStack {
-                        ContentViewGraph()
-                        RadarLabels()
-                    }
-                    .frame(width: 300, height: 300)
+                    EditUserView(viewModel: viewModel)
                 }
-                .listRowBackground(Color.clear)
-                .padding(.horizontal)
-            }
-            .scrollIndicators(.hidden)
-            .navigationTitle("My profile")
-            .onAppear() {
-                if let imagePath = config.userProfileImageURL {
-                    profileImage = viewModel.loadImage(from: imagePath)
-                }
-                healthKitManager.fetchHeight { height in self.height = height }
-                healthKitManager.fetchWeight { weight in self.weight = weight }
-                healthKitManager.fetchAge { age in self.age = age }
-            }
-            .sheet(isPresented: $editUser, onDismiss: {
-                if let imagePath = config.userProfileImageURL {
-                    profileImage = viewModel.loadImage(from: imagePath)
-                }
-            }) {
-                EditUserView(viewModel: viewModel)
-            }
         }
+    }
+}
+
+func getBmiStyle(bmi: Double) -> (Color, String) {
+    switch bmi {
+    case ..<18.5:
+        return (.orange, "Underweight")
+    case 18.5...24.9:
+        return (.green, "Normal weight")
+    case 25...29.9:
+        return (.orange, "Overweight")
+    default:
+        return (.red, "Obese")
     }
 }

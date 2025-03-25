@@ -51,7 +51,6 @@ struct SignInView: View {
                                     if let email = userCredential.email {
                                         print("User Email: \(email)")
                                         config.userEmail = email
-                                        UserDefaults.standard.set(email, forKey: "userEmail")
                                     } else {
                                         print("Email not available (User has logged in before)")
                                         if let savedEmail = UserDefaults.standard.string(forKey: "userEmail") {
@@ -61,6 +60,7 @@ struct SignInView: View {
                                     }
 
                                     if let fullName = userCredential.fullName {
+                                        config.username = fullName.givenName ?? "User"
                                         print("User Full Name: \(fullName)")
                                     }
                                 }

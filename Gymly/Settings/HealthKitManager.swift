@@ -51,6 +51,20 @@ class HealthKitManager: ObservableObject {
         healthStore.execute(query)
     }
 
+    func saveHeight(_ heightMeters: Double, date: Date = Date()) {
+        guard let type = HKQuantityType.quantityType(forIdentifier: .height) else { return }
+        let quantity = HKQuantity(unit: .meter(), doubleValue: heightMeters)
+        let sample = HKQuantitySample(type: type, quantity: quantity, start: date, end: date)
+
+        healthStore.save(sample) { success, error in
+            if success {
+                print("✅ Height saved to HealthKit")
+            } else {
+                print("❌ Error saving height: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }
+    }
+
     /// Fetch users weight
     func fetchWeight(completion: @escaping (Double?) -> Void) {
         let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
@@ -65,6 +79,21 @@ class HealthKitManager: ObservableObject {
         healthStore.execute(query)
     }
     
+    func saveWeight(_ weightKg: Double, date: Date = Date()) {
+        guard let type = HKQuantityType.quantityType(forIdentifier: .bodyMass) else { return }
+        let quantity = HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: weightKg)
+        let sample = HKQuantitySample(type: type, quantity: quantity, start: date, end: date)
+
+        healthStore.save(sample) { success, error in
+            if success {
+                print("✅ Weight saved to HealthKit")
+            } else {
+                print("❌ Error saving weight: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }
+    }
+    
+    
     /// Fetch users age
     func fetchAge(completion: @escaping (Int?) -> Void) {
         do {
@@ -75,6 +104,29 @@ class HealthKitManager: ObservableObject {
         } catch {
             print("Error retrieving age: \(error.localizedDescription)")
             completion(nil)
+        }
+    }
+    
+    /// Fetch user's BMI (calculated from latest height and weight)
+    func fetchBMI(completion: @escaping (Double?) -> Void) {
+        fetchWeight { weight in
+            guard let weight = weight else {
+                print("❌ Could not fetch weight for BMI")
+                completion(nil)
+                return
+            }
+
+            self.fetchHeight { height in
+                guard let height = height, height > 0 else {
+                    print("❌ Could not fetch height for BMI")
+                    completion(nil)
+                    return
+                }
+
+                let bmi = weight / (height * height)
+                print("✅ BMI: \(String(format: "%.1f", bmi))")
+                completion(bmi)
+            }
         }
     }
 }
