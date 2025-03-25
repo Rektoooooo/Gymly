@@ -23,13 +23,14 @@ class HealthKitManager: ObservableObject {
             return
         }
 
-        let readTypes: Set<HKObjectType> = [
-            HKObjectType.quantityType(forIdentifier: .height)!,
-            HKObjectType.quantityType(forIdentifier: .bodyMass)!,
-            HKObjectType.characteristicType(forIdentifier: .dateOfBirth)! // Needed for age
-        ]
+        let heightType = HKObjectType.quantityType(forIdentifier: .height)!
+        let weightType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
+        let dobType = HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!
 
-        healthStore.requestAuthorization(toShare: nil, read: readTypes) { success, error in
+        let readTypes: Set<HKObjectType> = [heightType, weightType, dobType]
+        let writeTypes: Set<HKSampleType> = [heightType, weightType]
+
+        healthStore.requestAuthorization(toShare: writeTypes, read: readTypes) { success, error in
             if success {
                 print("HealthKit authorization granted!")
             } else {
@@ -37,6 +38,7 @@ class HealthKitManager: ObservableObject {
             }
         }
     }
+    
     /// Fetch users height
     func fetchHeight(completion: @escaping (Double?) -> Void) {
         let heightType = HKQuantityType.quantityType(forIdentifier: .height)!

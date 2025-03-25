@@ -84,7 +84,7 @@ struct SettingsView: View {
                                     metric: config.weightUnit,
                                     headerColor: .accent,
                                     additionalInfo: "Body weight",
-                                    icon: "figure.run"
+                                    icon: "figure.mixed.cardio"
                                 )
                                 SettingUserInfoCell(
                                     value: String(format: "%.1f", bmi),
@@ -168,15 +168,15 @@ struct SettingsView: View {
                         self.bmiColor = color
                         self.bmiStatus = status
                     }
-                    healthKitManager.fetchAge { age in self.age = age
-                    }
+                    healthKitManager.fetchAge { age in self.age = age}
                 }
                 .sheet(isPresented: $editUser, onDismiss: {
                     if let imagePath = config.userProfileImageURL {
                         profileImage = viewModel.loadImage(from: imagePath)
                     }
+                    healthKitManager.fetchWeight { weight in self.weight = weight }
                 }) {
-                    EditUserView(viewModel: viewModel)
+                    EditUserView(viewModel: viewModel, bodyWeight: String(weight ?? 0.0))
                 }
         }
     }

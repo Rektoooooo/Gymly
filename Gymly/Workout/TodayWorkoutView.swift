@@ -138,7 +138,7 @@ struct TodayWorkoutView: View {
         /// Refresh on every appear
         .task {
             await refreshView()
-            if WhatsNewManager.shouldShowWhatsNew {
+            if WhatsNewManager.shouldShowWhatsNew && config.isUserLoggedIn {
                 showWhatsNew = true
             }
         }
