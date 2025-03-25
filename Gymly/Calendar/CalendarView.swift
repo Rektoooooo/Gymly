@@ -74,8 +74,9 @@ struct CalendarView: View {
                                     .padding(.horizontal, 3)
                                     .padding(.vertical, 2)
                                     .background(Color.red)
+                                    .cornerRadius(25)
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 5)
+                                        RoundedRectangle(cornerRadius: 25)
                                             .stroke(.red, lineWidth: 4)
                                     )
                                     .fontWeight(.bold)
@@ -88,9 +89,7 @@ struct CalendarView: View {
                                         .frame(width: UIScreen.main.bounds.width * 0.085, height: UIScreen.main.bounds.height * 0.04)
                                         .font(.system(size: 22))
                                         .foregroundColor(Color.white)
-                                        .fontWeight(.bold)
                                         .padding(3)
-                                        
                                         if config.daysRecorded.contains(viewModel.formattedDateString(from: day.date)) {
                                             Circle()
                                                 .frame(width: 10, height: 10)

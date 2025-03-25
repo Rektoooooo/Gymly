@@ -19,6 +19,7 @@ struct TodayWorkoutView: View {
     @State var muscleGroups:[MuscleGroup] = []
     @State var selectedDay: Day = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
     @State var allSplitDays: [Day] = []
+    @State private var showWhatsNew = false
     
     var body: some View {
         NavigationView{
@@ -137,6 +138,9 @@ struct TodayWorkoutView: View {
         /// Refresh on every appear
         .task {
             await refreshView()
+            if WhatsNewManager.shouldShowWhatsNew {
+                showWhatsNew = true
+            }
         }
         /// Sheet for showing splits view
         .sheet(isPresented: $viewModel.editPlan, onDismiss: {
@@ -172,6 +176,9 @@ struct TodayWorkoutView: View {
                 .presentationDetents([.fraction(0.5)])
             
         })
+        .sheet(isPresented: $showWhatsNew) {
+            WhatsNewView(isPresented: $showWhatsNew)
+        }
     }
     
     // TODO: When adding exercise, adding new exercise into new muscle group works fine with animation and everything, but when adding second exercise to already existing muscle group there is no animation Sadge

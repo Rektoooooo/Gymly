@@ -32,7 +32,7 @@ struct SettingsView: View {
                     }) {
                         ZStack {
                             LinearGradient(
-                                gradient: Gradient(colors: [.red, .pink]),
+                                gradient: Gradient(colors: [.accent, .accent]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -49,10 +49,21 @@ struct SettingsView: View {
                                                 .padding(2)
                                         }
                                         HStack {
-                                            Text(config.userEmail)
+                                            HStack {
+                                                Image(systemName: "flame")
+                                                Text("100 streaks")
+                                            }
+                                            .font(.footnote)
+                                            .bold()
+                                            HStack {
+                                                Image(systemName: "clock")
+                                                Text("1357 h")
+                                            }
+                                            .font(.footnote)
+                                            .bold()
                                         }
                                     }
-                                    .foregroundStyle(Color.white)
+                                    .foregroundStyle(Color.black)
                                     Spacer()
                                 }
                             }
@@ -62,40 +73,45 @@ struct SettingsView: View {
                     .frame(width: 340, height: 120)
                     .listRowSeparator(.hidden)
                 if let weight = weight,
+                   let height = height,
+                   let age = age,
                    let bmi = bmi {
                     HStack {
+                        ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 16) {
                                 SettingUserInfoCell(
                                     value: String(format: "%.1f", weight),
                                     metric: config.weightUnit,
-                                    headerColor: .gray,
+                                    headerColor: .accent,
                                     additionalInfo: "Body weight",
                                     icon: "figure.run"
                                 )
                                 SettingUserInfoCell(
                                     value: String(format: "%.1f", bmi),
                                     metric: "BMI",
-                                    headerColor: bmiColor.opacity(0.9),
+                                    headerColor: bmiColor,
                                     additionalInfo: bmiStatus,
-                                    icon: "figure.run"
+                                    icon: "dumbbell.fill"
                                 )
-//                                SettingUserInfoCell(
-//                                    value: String(format: "%.2f", height),
-//                                    metric: "M",
-//                                    headerColor: .green,
-//                                    additionalInfo: "Height",
-//                                    icon: "figure.wave"
-//                                )
-//                                SettingUserInfoCell(
-//                                    value: String(format: "%.0f", Double(age)),
-//                                    metric: "YO",
-//                                    headerColor: .green,
-//                                    additionalInfo: "Age",
-//                                    icon: "person.text.rectangle"
-//                                )
+                                SettingUserInfoCell(
+                                    value: String(format: "%.2f", height),
+                                    metric: "m",
+                                    headerColor: .accent,
+                                    additionalInfo: "Height",
+                                    icon: "figure.wave"
+                                )
+                                SettingUserInfoCell(
+                                    value: String(format: "%.0f", Double(age)),
+                                    metric: "yo",
+                                    headerColor: .accent,
+                                    additionalInfo: "Age",
+                                    icon: "person.text.rectangle"
+                                )
                             }
-                        
+                        }
                     }
+                    .frame(width: 370)
+                    .padding(.horizontal, 4)
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                 }
@@ -139,7 +155,7 @@ struct SettingsView: View {
                     .listRowBackground(Color.clear)
                     .padding(.horizontal)
                 }
-                .navigationTitle("My profile")
+                .navigationTitle("\(config.username)'s profile")
                 .onAppear() {
                     if let imagePath = config.userProfileImageURL {
                         profileImage = viewModel.loadImage(from: imagePath)
