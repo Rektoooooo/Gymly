@@ -108,27 +108,4 @@ class HealthKitManager: ObservableObject {
             completion(nil)
         }
     }
-    
-    /// Fetch user's BMI (calculated from latest height and weight)
-    func fetchBMI(completion: @escaping (Double?) -> Void) {
-        fetchWeight { weight in
-            guard let weight = weight else {
-                print("❌ Could not fetch weight for BMI")
-                completion(nil)
-                return
-            }
-
-            self.fetchHeight { height in
-                guard let height = height, height > 0 else {
-                    print("❌ Could not fetch height for BMI")
-                    completion(nil)
-                    return
-                }
-
-                let bmi = weight / (height * height)
-                print("✅ BMI: \(String(format: "%.1f", bmi))")
-                completion(bmi)
-            }
-        }
-    }
 }

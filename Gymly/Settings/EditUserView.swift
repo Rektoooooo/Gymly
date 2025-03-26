@@ -15,7 +15,7 @@ struct EditUserView: View {
     @EnvironmentObject var config: Config
     @Environment(\.dismiss) var dismiss
     @State private var profileImage: UIImage?
-    @State var bodyWeight: String
+    @State var bodyWeight: String = ""
     @StateObject var healthKitManager = HealthKitManager()
     
     var body: some View {
@@ -77,6 +77,7 @@ struct EditUserView: View {
                             debugPrint(config.userProfileImageURL!)
                         }
                         healthKitManager.saveWeight(Double(bodyWeight) ?? 0.0)
+                        config.userWeight = (Double(bodyWeight) ?? 0.0)
                         dismiss()
                     }
                 }

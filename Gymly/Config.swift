@@ -133,7 +133,31 @@ class Config:ObservableObject {
         }
     }
     
-    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String, allowdateOfBirth: Bool, allowHeight: Bool, allowWeight: Bool, isHealthEnabled: Bool, roundSetWeights: Bool, firstSplitEdit:Bool, activeExercise: Int, graphDataValues: [Double], graphMaxValue: Double, graphUpdatedExercisesIDs: Set<UUID>) {
+    @Published var userWeight: Double {
+        didSet {
+            UserDefaults.standard.set(userWeight, forKey: "userWeight")
+        }
+    }
+    
+    @Published var userBMI: Double {
+        didSet {
+            UserDefaults.standard.set(userBMI, forKey: "userBMI")
+        }
+    }
+    
+    @Published var userHeight: Double {
+        didSet {
+            UserDefaults.standard.set(userHeight, forKey: "userHeight")
+        }
+    }
+    
+    @Published var userAge: Int {
+        didSet {
+            UserDefaults.standard.set(userAge, forKey: "userAge")
+        }
+    }
+    
+    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String, allowdateOfBirth: Bool, allowHeight: Bool, allowWeight: Bool, isHealthEnabled: Bool, roundSetWeights: Bool, firstSplitEdit:Bool, activeExercise: Int, graphDataValues: [Double], graphMaxValue: Double, graphUpdatedExercisesIDs: Set<UUID>, userWeight: Double, userBMI: Double, userHeight: Double, userAge: Int) {
         self.weightUnit = UserDefaults.standard.object(forKey: "weightUnit") as? String ?? "Kg"
         self.splitStarted = UserDefaults.standard.object(forKey: "splitStarted") as? Bool ?? false
         self.daysRecorded = UserDefaults.standard.object(forKey: "daysRecorded") as? [String] ?? []
@@ -154,6 +178,10 @@ class Config:ObservableObject {
         self.graphDataValues = UserDefaults.standard.object(forKey: "graphDataValues") as? [Double] ?? []
         self.graphMaxValue = UserDefaults.standard.object(forKey: "graphMaxValue") as? Double ?? 1.0
         self.graphUpdatedExerciseIDs = UserDefaults.standard.object(forKey: "graphUpdatedExerciseIDs") as? Set<UUID> ?? []
+        self.userWeight = UserDefaults.standard.object(forKey: "userWeight") as? Double ?? 0.0
+        self.userBMI = UserDefaults.standard.object(forKey: "userBMI") as? Double ?? 0.0
+        self.userHeight = UserDefaults.standard.object(forKey: "userHeight") as? Double ?? 0.0
+        self.userAge = UserDefaults.standard.object(forKey: "userAge") as? Int ?? 0
     }
 }
 
