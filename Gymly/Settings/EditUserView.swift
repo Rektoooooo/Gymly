@@ -15,7 +15,6 @@ struct EditUserView: View {
     @EnvironmentObject var config: Config
     @Environment(\.dismiss) var dismiss
     @State private var profileImage: UIImage?
-    @State var bodyWeight: String = ""
     @StateObject var healthKitManager = HealthKitManager()
     
     var body: some View {
@@ -59,16 +58,7 @@ struct EditUserView: View {
                             .padding(.horizontal)
                     }
                 }
-                Section("Body weight") {
-                    HStack {
-                        Text("Body weight")
-                            .foregroundStyle(.white.opacity(0.6))
-                        TextField("70 \(config.weightUnit)", text: $bodyWeight)
-                            .cornerRadius(10)
-                            .padding(.horizontal)
-                            .keyboardType(.numbersAndPunctuation)
-                    }
-                }
+
                 Section("") {
                     Button("Save changes") {
                         if let image = avatarImage {
@@ -76,8 +66,6 @@ struct EditUserView: View {
                             config.userProfileImageURL = savedPath // Update the config
                             debugPrint(config.userProfileImageURL!)
                         }
-                        healthKitManager.saveWeight(Double(bodyWeight) ?? 0.0)
-                        config.userWeight = (Double(bodyWeight) ?? 0.0)
                         dismiss()
                     }
                 }
@@ -86,11 +74,6 @@ struct EditUserView: View {
             .onAppear() {
                 if let imagePath = config.userProfileImageURL {
                     profileImage = viewModel.loadImage(from: imagePath)
-                }
-                healthKitManager.fetchWeight { weight in
-                    if let weight = weight {
-                        self.bodyWeight = String(format: "%.1f", weight)
-                    }
                 }
             }
         }

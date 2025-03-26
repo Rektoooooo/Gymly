@@ -20,6 +20,8 @@ struct SettingsView: View {
     @State var bmiColor: Color = .green
     @State private var age: Int?
     @State private var editUser: Bool = false
+    @State private var showBmiDetail: Bool = false
+    @State private var showWeightDetail: Bool = false
     @State private var profileImage: UIImage?
     @State var selectedUnit:String = ""
     let units: [String] = ["Kg","Lbs"]
@@ -75,20 +77,34 @@ struct SettingsView: View {
                 HStack {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 16) {
-                            SettingUserInfoCell(
-                                value: String(format: "%.1f", config.userWeight),
-                                metric: config.weightUnit,
-                                headerColor: .accent,
-                                additionalInfo: "Body weight",
-                                icon: "figure.mixed.cardio"
-                            )
-                            SettingUserInfoCell(
-                                value: String(format: "%.1f", config.userBMI),
-                                metric: "BMI",
-                                headerColor: bmiColor,
-                                additionalInfo: bmiStatus,
-                                icon: "dumbbell.fill"
-                            )
+                            Button(action: {
+                                showWeightDetail = true
+                            }) {
+                                SettingUserInfoCell(
+                                    value: String(format: "%.1f", config.userWeight),
+                                    metric: config.weightUnit,
+                                    headerColor: .accent,
+                                    additionalInfo: "Body weight",
+                                    icon: "figure.mixed.cardio"
+                                )
+                            }
+                            .foregroundStyle(Color.white)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            Button(action: {
+                                showBmiDetail = true
+                            }) {
+                                SettingUserInfoCell(
+                                    value: String(format: "%.1f", config.userBMI),
+                                    metric: "BMI",
+                                    headerColor: bmiColor,
+                                    additionalInfo: bmiStatus,
+                                    icon: "dumbbell.fill"
+                                )
+                            }
+                            .foregroundStyle(Color.white)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                             SettingUserInfoCell(
                                 value: String(format: "%.2f", config.userHeight),
                                 metric: "m",
@@ -193,6 +209,19 @@ struct SettingsView: View {
                 }                }) {
                     EditUserView(viewModel: viewModel)
                 }
+                .sheet(isPresented: $showBmiDetail, onDismiss: {
+                }) {
+                        let (color, status) = getBmiStyle(bmi: config.userBMI)
+                        BmiDetailView(viewModel: viewModel, bmiColor: color, bmiText: status)
+                    }
+                    .sheet(isPresented: $showWeightDetail, onDismiss: {
+                        healthKitManager.fetchWeight { weight in
+                            DispatchQueue.main.async {
+                                config.userWeight = weight ?? 0.0
+                            }
+                        }                }) {
+                            WeightDetailView(viewModel: viewModel)
+                        }
         }
     }
 }
