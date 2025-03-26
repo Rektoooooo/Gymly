@@ -24,6 +24,7 @@ struct SettingsView: View {
     @State private var showWeightDetail: Bool = false
     @State private var profileImage: UIImage?
     @State var selectedUnit:String = ""
+    @State private var weightUpdatedTrigger = false
     let units: [String] = ["Kg","Lbs"]
     
     var body: some View {
@@ -126,6 +127,7 @@ struct SettingsView: View {
                 .padding(.horizontal, 4)
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
+                .id(weightUpdatedTrigger) // This forces view refresh on change
                 Section("Preferences") {
                     HStack {
                         HStack {
@@ -217,7 +219,9 @@ struct SettingsView: View {
                     .sheet(isPresented: $showWeightDetail, onDismiss: {
                         healthKitManager.fetchWeight { weight in
                             DispatchQueue.main.async {
-                                config.userWeight = weight ?? 0.0
+                                config.userWeight = weight ?? config.userWeight
+                                config.userBMI = config.userWeight / (config.userHeight * config.userHeight)
+                                weightUpdatedTrigger.toggle() // Trigger UI update
                             }
                         }                }) {
                             WeightDetailView(viewModel: viewModel)

@@ -68,7 +68,7 @@ struct BmiDetailView: View {
             }
             .onAppear() {
                 config.userBMI = config.userWeight / (config.userHeight * config.userHeight)
-                bmi = config.userBMI
+                bmi = config.userWeight / (config.userHeight * config.userHeight)
                 bodyWeight = String(format: "%.1f", config.userWeight)
             }
             .navigationTitle("My BMI")
