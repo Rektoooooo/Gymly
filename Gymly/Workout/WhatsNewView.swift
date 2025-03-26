@@ -14,11 +14,12 @@ struct WhatsNewView: View {
         NavigationView {
             List {
                 Section("New features") {
-                    Label("Updated UI for the settings", systemImage: "arrow.clockwise")
-                    Label("Added age and height labes in settings", systemImage: "arrow.clockwise")
+                    Label("New graph from displaying body weight history, just click on the weight label in setting", systemImage: "arrow.clockwise")
+                    Label("New graph and labels for bmi calculation, just click on the bmi label in settings", systemImage: "arrow.clockwise")
                 }
                 Section("Fixes") {
-                    Label("No new bug fixes", systemImage: "hammer.fill")
+                    Label("Fixed UI refreshing bugs", systemImage: "hammer.fill")
+                    Label("Fixed writing data into Apple HealtKit", systemImage: "hammer.fill")
                 }
                 Section("") {
                     Button("Got it!") {
