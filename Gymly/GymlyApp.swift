@@ -19,7 +19,7 @@ struct GymlyApp: App {
                     handleIncomingFile(url, config: config)
                 }
         }
-        .modelContainer(for: [Exercise.self, Day.self, DayStorage.self])
+        .modelContainer(for: [Exercise.self, Day.self, DayStorage.self, WeightPoint.self])
     }
     
     private func handleIncomingFile(_ url: URL, config: Config) {

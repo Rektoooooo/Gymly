@@ -12,7 +12,6 @@ import AuthenticationServices
 import HealthKit
 
 final class WorkoutViewModel: ObservableObject {
-    
     @Published var days: [Day] = []
     @Published var exercises:[Exercise] = []
     @Published var day:Day = Day(name: "", dayOfSplit: 0, exercises: [],date: "")
@@ -674,5 +673,6 @@ final class WorkoutViewModel: ObservableObject {
             return nil
         }
     }
+
 }
     

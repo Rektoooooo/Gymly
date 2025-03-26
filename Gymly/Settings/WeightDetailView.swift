@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct WeightDetailView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
     @Environment(\.dismiss) var dismiss
     @StateObject var healthKitManager = HealthKitManager()
+    @Environment(\.modelContext) var context: ModelContext
     @State var bodyWeight: String = ""
     var body: some View {
         NavigationView {
@@ -24,10 +26,24 @@ struct WeightDetailView: View {
                             .cornerRadius(10)
                             .padding(.horizontal)
                             .keyboardType(.numbersAndPunctuation)
+                            .onSubmit {
+                                healthKitManager.saveWeight(Double(bodyWeight) ?? 0.0)
+                                config.userWeight = (Double(bodyWeight) ?? 0.0)
+                                healthKitManager.updateFromWeightChart(context: context)
+                            }
                     }
                 }
+                Section("Weight progress") {
+                    HStack {
+                        Spacer()
+                        WeightChart()
+                        Spacer()
+                    }
+                }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
                 Section("") {
-                    Button("Save changes") {
+                    Button("Back") {
                         healthKitManager.saveWeight(Double(bodyWeight) ?? 0.0)
                         config.userWeight = (Double(bodyWeight) ?? 0.0)
                         dismiss()

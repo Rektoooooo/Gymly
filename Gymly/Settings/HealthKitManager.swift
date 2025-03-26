@@ -7,6 +7,7 @@
 
 
 import HealthKit
+import SwiftData
 
 class HealthKitManager: ObservableObject {
     let healthStore = HKHealthStore()
@@ -106,6 +107,88 @@ class HealthKitManager: ObservableObject {
         } catch {
             print("Error retrieving age: \(error.localizedDescription)")
             completion(nil)
+        }
+    }
+    
+    func fetchDailyLatestWeightLastMonth(completion: @escaping ([(date: Date, weight: Double)]) -> Void) {
+        guard let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass) else {
+            print("Unable to get weight type")
+            completion([])
+            return
+        }
+
+        let endDate = Date()
+        let startDate = Calendar.current.date(byAdding: .day, value: -30, to: endDate)!
+
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+
+        let query = HKSampleQuery(sampleType: weightType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: [sortDescriptor]) { (_, results, error) in
+            guard let samples = results as? [HKQuantitySample] else {
+                completion([])
+                return
+            }
+
+            let calendar = Calendar.current
+            var dailyLatest: [Date: HKQuantitySample] = [:]
+
+            for sample in samples {
+                let day = calendar.startOfDay(for: sample.startDate)
+                if let existing = dailyLatest[day] {
+                    // Replace only if sample is newer
+                    if sample.startDate > existing.startDate {
+                        dailyLatest[day] = sample
+                    }
+                } else {
+                    dailyLatest[day] = sample
+                }
+            }
+
+            // Transform to (Date, Weight)
+            let dailyWeights = dailyLatest.map { (day, sample) -> (date: Date, weight: Double) in
+                let weightInKg = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
+                return (date: day, weight: weightInKg)
+            }.sorted { $0.date < $1.date }
+
+            DispatchQueue.main.async {
+                completion(dailyWeights)
+            }
+        }
+
+        HKHealthStore().execute(query)
+    }
+    
+    @MainActor
+    func updateFromWeightChart(context: ModelContext) {
+        Task { @MainActor in
+            do {
+                // Clear existing points
+                let fetchDescriptor = FetchDescriptor<WeightPoint>()
+                let existing = try context.fetch(fetchDescriptor)
+                for point in existing {
+                    context.delete(point)
+                }
+
+                // Fetch from HealthKit
+                fetchDailyLatestWeightLastMonth { result in
+                    Task { @MainActor in
+                        for item in result {
+                            context.insert(WeightPoint(date: item.date, weight: item.weight))
+                            debugPrint("Inserted into context: \(WeightPoint(date: item.date, weight: item.weight))")
+                        }
+
+                        do {
+                            try context.save()
+                            debugPrint("Saved context after inserting weight points")
+                        } catch {
+                            print("❌ Failed to save new weight data: \(error)")
+                        }
+                    }
+                }
+
+            } catch {
+                print("❌ Failed to clear old weight data: \(error)")
+            }
         }
     }
 }

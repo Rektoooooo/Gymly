@@ -61,7 +61,7 @@ struct BmiDetailView: View {
                     }
                 }
                 Section("") {
-                    Button("Close") {
+                    Button("Back") {
                         dismiss()
                     }
                 }

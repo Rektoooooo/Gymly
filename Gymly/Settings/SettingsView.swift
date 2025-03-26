@@ -13,6 +13,7 @@ struct SettingsView: View {
     @EnvironmentObject var config: Config
     @Environment(\.dismiss) var dismiss
     @StateObject var healthKitManager = HealthKitManager()
+    @Environment(\.modelContext) var context: ModelContext
     @State private var height: Double?
     @State private var weight: Double?
     @State private var bmi: Double?
@@ -127,7 +128,7 @@ struct SettingsView: View {
                 .padding(.horizontal, 4)
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                .id(weightUpdatedTrigger) // This forces view refresh on change
+                .id(weightUpdatedTrigger)
                 Section("Preferences") {
                     HStack {
                         HStack {
@@ -183,22 +184,18 @@ struct SettingsView: View {
                         config.userWeight = weight ?? 0.0
                     }
                 }
-                
-                config.userBMI = config.userWeight / (config.userHeight * config.userHeight)
-                let (color, status) = getBmiStyle(bmi: config.userBMI)
-                bmiColor = color
-                bmiStatus = status
-                debugPrint("status \(bmiStatus), color \(bmiColor)")
-                
                 healthKitManager.fetchAge { age in
                     DispatchQueue.main.async {
                         config.userAge = age ?? 0
                     }
                 }
-                debugPrint("User height is: \(config.userHeight)")
-                debugPrint("User Weight is: \(config.userWeight)")
-                debugPrint("User BMI is: \(config.userBMI)")
-                debugPrint("User Age is: \(config.userAge)")
+                
+                config.userBMI = config.userWeight / (config.userHeight * config.userHeight)
+                let (color, status) = getBmiStyle(bmi: config.userBMI)
+                bmiColor = color
+                bmiStatus = status
+
+                healthKitManager.updateFromWeightChart(context: context)
             }
             .sheet(isPresented: $editUser, onDismiss: {
                 if let imagePath = config.userProfileImageURL {
@@ -213,19 +210,20 @@ struct SettingsView: View {
                 }
                 .sheet(isPresented: $showBmiDetail, onDismiss: {
                 }) {
-                        let (color, status) = getBmiStyle(bmi: config.userBMI)
-                        BmiDetailView(viewModel: viewModel, bmiColor: color, bmiText: status)
-                    }
-                    .sheet(isPresented: $showWeightDetail, onDismiss: {
-                        healthKitManager.fetchWeight { weight in
-                            DispatchQueue.main.async {
-                                config.userWeight = weight ?? config.userWeight
-                                config.userBMI = config.userWeight / (config.userHeight * config.userHeight)
-                                weightUpdatedTrigger.toggle() // Trigger UI update
-                            }
-                        }                }) {
-                            WeightDetailView(viewModel: viewModel)
+                    let (color, status) = getBmiStyle(bmi: config.userBMI)
+                    BmiDetailView(viewModel: viewModel, bmiColor: color, bmiText: status)
+                }
+                .sheet(isPresented: $showWeightDetail, onDismiss: {
+                    healthKitManager.fetchWeight { weight in
+                        DispatchQueue.main.async {
+                            healthKitManager.updateFromWeightChart(context: context)
+                            config.userWeight = weight ?? config.userWeight
+                            config.userBMI = config.userWeight / (config.userHeight * config.userHeight)
+                            weightUpdatedTrigger.toggle() // Trigger UI update
                         }
+                    }                }) {
+                        WeightDetailView(viewModel: viewModel)
+                    }
         }
     }
 }
@@ -242,3 +240,5 @@ func getBmiStyle(bmi: Double) -> (Color, String) {
         return (.red, "Obese")
     }
 }
+
+
