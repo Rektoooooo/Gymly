@@ -14,8 +14,11 @@ struct BmiDetailView: View {
     @StateObject var healthKitManager = HealthKitManager()
     @State var bodyWeight: String = ""
     @State var bmi: Double = 0.0
-    let bmiColor: Color
-    let bmiText: String
+    @State var bmiRangeLow:Double = 0.0
+    @State var bmiRangeHigh:Double = 0.0
+    @State var bmiColor: Color = .green
+    @State var bmiText: String = "Normal weight"
+    
     var body: some View {
         NavigationView {
             List {
@@ -32,14 +35,44 @@ struct BmiDetailView: View {
                 Section("Category range") {
                     VStack {
                         HStack {
-                            Text("Body weight \(bodyWeight) \(config.weightUnit)")
+                            HStack {
+                                Text("Body weight :")
+                                    .foregroundStyle(.white.opacity(0.6))
+                                    .frame(width: 110)
+                                TextField("70 \(config.weightUnit)", text: $bodyWeight)
+                                    .cornerRadius(10)
+                                    .padding(.horizontal)
+                                    .keyboardType(.numbersAndPunctuation)
+                                    .offset(x: -10)
+                                    .onSubmit {
+                                        if let weight = Double(bodyWeight) {
+                                            let heightSquared = config.userHeight * config.userHeight
+                                            bmi = weight / heightSquared
+                                            let (color, status) = getBmiStyle(bmi: bmi)
+                                            bmiColor = color
+                                            bmiText = status
+                                            changeRange()
+                                        } else {
+                                            // Handle invalid input
+                                            bmi = 0.0
+                                        }
+                                    }
+                            }
                             Spacer()
-                            let minWeight = config.userHeight * config.userHeight * 18.5
-                            let maxWeight = config.userHeight * config.userHeight * 24.9
-                            let formattedMin = String(format: "%.1f", minWeight)
-                            let formattedMax = String(format: "%.1f", maxWeight)
-                            Text("\(formattedMin) - \(formattedMax) \(config.weightUnit)")
-                                .foregroundStyle(bmiColor)
+                            HStack {
+                                let minWeight = config.userHeight * config.userHeight * bmiRangeLow
+                                let maxWeight = config.userHeight * config.userHeight * bmiRangeHigh
+                                let formattedMin = String(format: "%.1f", minWeight)
+                                let formattedMax = String(format: "%.1f", maxWeight)
+                                if Double(formattedMax) ?? 0.0 > 102.7 {
+                                    Text("\(formattedMin)+ \(config.weightUnit)")
+                                        .foregroundStyle(bmiColor)
+                                } else {
+                                    Text("\(formattedMin) - \(formattedMax) \(config.weightUnit)")
+                                        .foregroundStyle(bmiColor)
+                                }
+                                
+                            }
                         }
                     }
                 }
@@ -70,8 +103,29 @@ struct BmiDetailView: View {
                 config.userBMI = config.userWeight / (config.userHeight * config.userHeight)
                 bmi = config.userWeight / (config.userHeight * config.userHeight)
                 bodyWeight = String(format: "%.1f", config.userWeight)
+                changeRange()
             }
-            .navigationTitle("My BMI")
+            .navigationTitle("BMI Calculator")
+        }
+    }
+    
+    func changeRange() {
+        switch bmiText {
+            case "Underweight":
+            bmiRangeLow = 0.0
+            bmiRangeHigh = 18.5
+        case "Normal weight":
+            bmiRangeLow = 18.5
+            bmiRangeHigh = 24.9
+        case "Overweight":
+            bmiRangeLow = 25.0
+            bmiRangeHigh = 29.9
+        case "Obese":
+            bmiRangeLow = 30.0
+            bmiRangeHigh = 100.0
+        default:
+            bmiRangeLow = 0.0
+            bmiRangeHigh = 0.0
         }
     }
 }
