@@ -40,7 +40,6 @@ struct BmiDetailView: View {
                                     .foregroundStyle(.white.opacity(0.6))
                                     .frame(width: 110)
                                 TextField("70 \(config.weightUnit)", text: $bodyWeight)
-                                    .cornerRadius(10)
                                     .padding(.horizontal)
                                     .keyboardType(.numbersAndPunctuation)
                                     .offset(x: -10)

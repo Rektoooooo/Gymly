@@ -23,7 +23,6 @@ struct WeightDetailView: View {
                         Text("Body weight")
                             .foregroundStyle(.white.opacity(0.6))
                         TextField("70 \(config.weightUnit)", text: $bodyWeight)
-                            .cornerRadius(10)
                             .padding(.horizontal)
                             .keyboardType(.numbersAndPunctuation)
                             .onSubmit {
