@@ -14,12 +14,10 @@ struct WhatsNewView: View {
         NavigationView {
             List {
                 Section("New features") {
-                    Label("New graph from displaying body weight history, just click on the weight label in setting", systemImage: "arrow.clockwise")
-                    Label("New graph and labels for bmi calculation, just click on the bmi label in settings", systemImage: "arrow.clockwise")
+                    Label("Calculate your bmi with the bmi view", systemImage: "arrow.clockwise")
                 }
                 Section("Fixes") {
-                    Label("Fixed UI refreshing bugs", systemImage: "hammer.fill")
-                    Label("Fixed writing data into Apple HealtKit", systemImage: "hammer.fill")
+                    Label("Fixed some smaller bugs", systemImage: "hammer.fill")
                 }
                 Section("") {
                     Button("Got it!") {
