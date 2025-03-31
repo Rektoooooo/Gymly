@@ -12,7 +12,7 @@ struct SetCell: View {
     @ObservedObject var viewModel: WorkoutViewModel
     var index: Int
     var set: Exercise.Set
-    var config: Config // Assuming this is a global config object
+    var config: Config
     var loadSetData: (Exercise.Set, Bool) -> Void
     var exercise: Exercise
     var setForCalendar: Bool
