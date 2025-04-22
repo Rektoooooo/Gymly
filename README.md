@@ -20,6 +20,15 @@
 - iOS 16+ / Xcode 15+
 - Swift Package Manager (SPM)
 
+## Testing
+- If you want an test flight access just reach out to me with your email
+
+## 📬 Get in Touch
+### Feel free to reach out on :
+- 💬 [Discord](rektoooooo)  
+- 📧 [Email](mailto:sebastian.kucera@icloud.com)  
+- 📸 [Instagram](https://www.instagram.com/seb.kuc/)
+
 ### Setup:
 ```sh
 git clone https://github.com/rektoooooo/gymly.git
