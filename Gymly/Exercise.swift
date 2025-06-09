@@ -19,10 +19,11 @@ class Exercise: Codable {
     var createdAt: Date = Date()
     var animationId = UUID()
     var exerciseOrder: Int
+    var done: Bool
 
     @Relationship(deleteRule: .nullify, inverse: \Day.exercises) var day: Day?
 
-    init(id: UUID = UUID(), name: String, sets: [Set] = [], repGoal: String, muscleGroup: String, createdAt: Date = Date(), animationId: UUID = UUID(), exerciseOrder: Int, day: Day? = nil) {
+    init(id: UUID = UUID(), name: String, sets: [Set] = [], repGoal: String, muscleGroup: String, createdAt: Date = Date(), animationId: UUID = UUID(), exerciseOrder: Int, done: Bool = false, day: Day? = nil) {
         self.id = id
         self.name = name
         self.sets = sets
@@ -31,6 +32,7 @@ class Exercise: Codable {
         self.createdAt = createdAt
         self.animationId = animationId
         self.exerciseOrder = exerciseOrder
+        self.done = done
         self.day = day
     }
     
@@ -42,7 +44,9 @@ class Exercise: Codable {
             repGoal: self.repGoal,
             muscleGroup: self.muscleGroup,
             createdAt: self.createdAt,
-            exerciseOrder: self.exerciseOrder
+            animationId: self.animationId,
+            exerciseOrder: self.exerciseOrder,
+            done: self.done
         )
 
         // **Deep copy each set without duplication**
@@ -53,7 +57,7 @@ class Exercise: Codable {
     
     // MARK: - Codable Compliance
     enum CodingKeys: String, CodingKey {
-        case id, name, sets, repGoal, muscleGroup, createdAt, exerciseOrder
+        case id, name, sets, repGoal, muscleGroup, createdAt, exerciseOrder, done
     }
 
     required init(from decoder: Decoder) throws {
@@ -65,6 +69,7 @@ class Exercise: Codable {
         self.muscleGroup = try container.decode(String.self, forKey: .muscleGroup)
         self.createdAt = try container.decode(Date.self, forKey: .createdAt)
         self.exerciseOrder = try container.decode(Int.self, forKey: .exerciseOrder)
+        self.done = try container.decode(Bool.self, forKey: .done)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -76,6 +81,7 @@ class Exercise: Codable {
         try container.encode(muscleGroup, forKey: .muscleGroup)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(exerciseOrder, forKey: .exerciseOrder)
+        try container.encode(done, forKey: .done)
     }
     
     @Model

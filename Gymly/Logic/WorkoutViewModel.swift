@@ -264,7 +264,8 @@ final class WorkoutViewModel: ObservableObject {
         
         let newDay = Day(
             name: today.name,
-            dayOfSplit: today.dayOfSplit, exercises: today.exercises.map { $0.copy() },
+            dayOfSplit: today.dayOfSplit,
+            exercises: today.exercises.filter { $0.done }.map { $0.copy() },
             date: formattedDateString(from: Date())
         )
         
@@ -343,7 +344,7 @@ final class WorkoutViewModel: ObservableObject {
             config.dayInSplit = newDayInSplit
             config.lastUpdateDate = Date()
             config.activeExercise = 1
-
+            
             return config.dayInSplit
         } else {
             return config.dayInSplit
@@ -394,7 +395,7 @@ final class WorkoutViewModel: ObservableObject {
                     repGoal: reps,
                     muscleGroup: muscleGroup,
                     createdAt: Date(),
-                    exerciseOrder: await fetchDay(dayOfSplit: config.dayInSplit).exercises.count + 1
+                    exerciseOrder: await fetchDay(dayOfSplit: config.dayInSplit).exercises.count + 1, done: false
                 )
 
                 await MainActor.run {

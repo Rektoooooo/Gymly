@@ -10,6 +10,7 @@ import Charts
 import SwiftData
 
 struct WeightChart: View {
+    @EnvironmentObject var config: Config
     @Query(sort: \WeightPoint.date, order: .forward) var weightPoints: [WeightPoint]
     var body: some View {
         Chart {
@@ -37,6 +38,7 @@ struct WeightChart: View {
                 }
             }
         }
+        .chartYScale(domain: config.userWeight-10...config.userWeight+10)
         .preferredColorScheme(.dark)
         .frame(width: 300, height: 150)
     }

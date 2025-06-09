@@ -66,11 +66,14 @@ struct TodayWorkoutView: View {
                                         ForEach(group.exercises, id: \.id) { exercise in
                                             NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
                                                 HStack {
-                                                    
-                                                    Text("\(exercise.exerciseOrder)")
-                                                        .foregroundStyle(Color.white.opacity(0.4))
+                                                    if exercise.done {
+                                                        Text("\(exercise.exerciseOrder)")
+                                                            .foregroundStyle(Color.green.opacity(0.8))
+                                                    } else {
+                                                        Text("\(exercise.exerciseOrder)")
+                                                            .foregroundStyle(Color.red.opacity(0.8))
+                                                    }
                                                     Text(exercise.name)
-                                                    
                                                 }
                                             }
                                         }
@@ -83,6 +86,9 @@ struct TodayWorkoutView: View {
                                     viewModel.updateMuscleGroupDataValues(from: selectedDay.exercises)
                                     Task {
                                         await viewModel.insertWorkout()
+                                        for i in selectedDay.exercises.indices {
+                                            selectedDay.exercises[i].done = false
+                                        }
                                     }
                                 }
                                 .foregroundStyle(Color.accentColor)
@@ -220,4 +226,3 @@ struct TodayWorkoutView: View {
         await refreshMuscleGroups()
     }
 }
-
