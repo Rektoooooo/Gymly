@@ -74,8 +74,8 @@ struct SplitsView: View {
                     }
                 }
             }
-            .padding(.vertical)
             .navigationTitle("My Splits")
+            .padding(.vertical)
             .toolbar {
                 /// Button for adding splits
                 ToolbarItem(placement: .topBarTrailing) {

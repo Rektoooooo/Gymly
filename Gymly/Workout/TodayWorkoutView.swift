@@ -109,7 +109,7 @@ struct TodayWorkoutView: View {
                     Button(action: {
                         showProfileView = true
                     }) {
-                        ProfileImageCell(profileImage: profileImage, frameSize: 43)
+                        ProfileImageCell(profileImage: profileImage, frameSize: 34)
                     }
                 }
                 /// Button for showing splits view
