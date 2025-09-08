@@ -89,6 +89,16 @@ struct ShowSplitDayView: View {
                                             Text(exercise.name)
                                         }
                                     }
+                                    .swipeActions(edge: .trailing) {
+                                        Button(role: .destructive) {
+                                            Task {
+                                                viewModel.deleteExercise(exercise)
+                                                day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
+                                            }
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                    }
                                 }
                             }
                         }
