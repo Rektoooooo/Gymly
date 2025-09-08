@@ -84,17 +84,5 @@ struct SetCell: View {
                     .opacity(0.5)
             }
         }
-        .swipeActions(edge: .trailing) {
-            /// Swipe-to-delete action for a set
-            if setForCalendar {
-                
-            } else {
-                Button(role: .destructive) {
-                    viewModel.deleteSet(set, exercise: exercise)
-                } label: {
-                    Label("Delete", systemImage: "trash")
-                }
-            }
-        }
     }
 }

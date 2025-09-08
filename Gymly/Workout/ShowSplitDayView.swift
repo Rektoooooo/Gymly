@@ -17,11 +17,14 @@ struct ShowSplitDayView: View {
     @State private var popup: Bool = false
     @State private var days: [Day] = []
     @State var day: Day
+    // Reorder mode for exercises across the whole day
+    @State private var isReorderingExercises: Bool = false
+    @State private var editModeExercises: EditMode = .inactive
+    @State private var reorderingBufferExercises: [Exercise] = []
     
     /// Environment and observed objects
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
-    @State var muscleGroups: [MuscleGroup] = []
     @ObservedObject var viewModel: WorkoutViewModel
     
     /// Custom initializer
@@ -30,23 +33,61 @@ struct ShowSplitDayView: View {
         self.day = day
     }
     
+    private func orderNumber(for exercise: Exercise) -> Int {
+        if let idx = reorderingBufferExercises.firstIndex(where: { $0.id == exercise.id }) {
+            return idx + 1
+        }
+        return 0
+    }
+    
     var body: some View {
         VStack {
-            List {
-                /// Display muscle groups and their exercises
-                ForEach(muscleGroups) { group in
-                    if !group.exercises.isEmpty {
-                        Section(header: Text(group.name)) {
-                            ForEach(group.exercises, id: \.id) { exercise in
-                                NavigationLink(destination: ShowSplitDayExerciseView(viewModel: viewModel, exercise: exercise)) {
-                                    Text(exercise.name)
-                                }
-                                .swipeActions(edge: .trailing) {
-                                    /// Swipe-to-delete action
-                                    Button(role: .destructive) {
-                                        viewModel.deleteExercise(exercise)
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
+            if isReorderingExercises {
+                // Reorder mode: operate on a buffer to avoid SwiftData/UI conflicts
+                List {
+                    ForEach(reorderingBufferExercises, id: \.id) { exercise in
+                        HStack {
+                            Text("\(orderNumber(for: exercise))")
+                                .foregroundStyle(.accent)
+                                .bold()
+                            Text(exercise.name)
+                            Spacer()
+                            Text(exercise.muscleGroup)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .onMove { indices, newOffset in
+                        reorderingBufferExercises.move(fromOffsets: indices, toOffset: newOffset)
+                    }
+                }
+                .environment(\.editMode, $editModeExercises)
+            } else {
+                let globalOrderMap: [UUID: Int] = Dictionary(uniqueKeysWithValues: day.exercises.map { ($0.id, $0.exerciseOrder) })
+                List {
+                    // Build groups from day.exercises while preserving the order of first appearance
+                    let grouped: [(String, [Exercise])] = {
+                        var order: [String] = []
+                        var dict: [String: [Exercise]] = [:]
+                        for ex in day.exercises.sorted(by: { $0.exerciseOrder < $1.exerciseOrder }) {
+                            if dict[ex.muscleGroup] == nil {
+                                order.append(ex.muscleGroup)
+                                dict[ex.muscleGroup] = []
+                            }
+                            dict[ex.muscleGroup]!.append(ex)
+                        }
+                        return order.map { ($0, dict[$0]!) }
+                    }()
+
+                    ForEach(grouped, id: \.0) { name, exercises in
+                        if !exercises.isEmpty {
+                            Section(header: Text(name)) {
+                                ForEach(exercises, id: \.id) { exercise in
+                                    NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
+                                        HStack {
+                                            Text("\(globalOrderMap[exercise.id] ?? 0)")
+                                                .foregroundStyle(Color.white.opacity(0.4))
+                                            Text(exercise.name)
+                                        }
                                     }
                                 }
                             }
@@ -60,7 +101,7 @@ struct ShowSplitDayView: View {
         .onAppear {
             Task {
                 /// Fetch updated day and refresh muscle groups
-                await day = viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
+                day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
                 await refreshMuscleGroups()
             }
         }
@@ -93,7 +134,6 @@ struct ShowSplitDayView: View {
         }
         .toolbar {
             /// Toolbar menu for editing options
-            Menu {
                 Button(action: {
                     createExercise.toggle()
                 }) {
@@ -109,9 +149,34 @@ struct ShowSplitDayView: View {
                 }) {
                     Label("Copy workout", systemImage: "doc.on.doc")
                 }
-            } label: {
-                Text("Edit")
-            }
+                Button {
+                    if isReorderingExercises {
+                        // Commit: write buffer back to the day's exercises and persist once
+                        day.exercises = reorderingBufferExercises
+                        // Persist explicit order so it survives reloads/fetches
+                        for (idx, ex) in reorderingBufferExercises.enumerated() {
+                            ex.exerciseOrder = idx + 1
+                        }
+                        isReorderingExercises = false
+                        editModeExercises = .inactive
+                        do { try context.save() } catch { debugPrint(error) }
+                        // Refetch to ensure UI reflects persisted order
+                        Task {
+                            day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
+                        }
+                    } else {
+                        // Enter: snapshot into buffer using persisted order
+                        reorderingBufferExercises = day.exercises.sorted { ($0.exerciseOrder) < ($1.exerciseOrder) }
+                        isReorderingExercises = true
+                        editModeExercises = .active
+                    }
+                } label: {
+                    if isReorderingExercises {
+                        Text("Done")
+                    } else {
+                        Label("Reorder", systemImage: "arrow.up.arrow.down.circle")
+                    }
+                }
         }
     }
     
@@ -127,7 +192,6 @@ struct ShowSplitDayView: View {
     
     /// Refreshes muscle groups by fetching updated data
     func refreshMuscleGroups() async {
-        muscleGroups.removeAll() // Clear array to trigger UI update
-        muscleGroups = await viewModel.sortData(dayOfSplit: day.dayOfSplit) // Reassign updated data
+        // Grouping now derives directly from day.exercises in the view; no work needed here.
     }
 }

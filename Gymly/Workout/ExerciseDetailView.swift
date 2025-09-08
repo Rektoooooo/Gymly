@@ -20,7 +20,6 @@ struct ExerciseDetailView: View {
     /// UI State Variables
     @State private var isOn = false
     @State var showSheet = false
-    @State var showEdit = false
     @State var weight: Double = 0.0
     @State var reps: Int = 0
     @State var failure: Bool = false
@@ -66,6 +65,15 @@ struct ExerciseDetailView: View {
                         exercise: exercise,
                         setForCalendar: false
                     )
+                    .swipeActions(edge: .trailing) {
+                        /// Swipe-to-delete action for a set
+                            Button(role: .destructive) {
+                                viewModel.deleteSet(set, exercise: exercise)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                    
+                    }
                 }
                 /// Dismiss button
                 Section("") {
@@ -77,12 +85,6 @@ struct ExerciseDetailView: View {
                 }
             }
             .toolbar {
-                /// Edit exercise button
-                Button {
-                    showEdit.toggle()
-                } label: {
-                    Label("Edit exercise", systemImage: "slider.horizontal.3")
-                }
                 /// Add set button
                 Button {
                     Task {
@@ -117,11 +119,8 @@ struct ExerciseDetailView: View {
                 bodyWeight: $bodyWeight
             )
             .presentationDetents([.large])
-        }
-        .sheet(isPresented: $showEdit) {
-            /// Sheet for editing a set
-            EditExerciseView(viewModel: viewModel, exercise: exercise)
-            .presentationDetents([.large])
+            .onDisappear {
+            }
         }
     }
     

@@ -20,6 +20,7 @@ struct TodayWorkoutView: View {
     @State var selectedDay: Day = Day(name: "", dayOfSplit: 0, exercises: [], date: "")
     @State var allSplitDays: [Day] = []
     @State private var showWhatsNew = false
+    @State var orderExercises: [String] = []
     
     var body: some View {
         NavigationView{
@@ -59,20 +60,16 @@ struct TodayWorkoutView: View {
                             .foregroundStyle(Color.primary)
                         }
                         /// Display exercises in a day
+                        let globalOrderMap: [UUID: Int] = Dictionary(uniqueKeysWithValues: selectedDay.exercises.map { ($0.id, $0.exerciseOrder) })
                         List {
                             ForEach(muscleGroups) { group in
                                 if !group.exercises.isEmpty {
                                     Section(header: Text(group.name)) {
-                                        ForEach(group.exercises, id: \.id) { exercise in
+                                        ForEach(group.exercises.sorted(by: { $0.exerciseOrder < $1.exerciseOrder }), id: \.id) { exercise in
                                             NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
                                                 HStack {
-                                                    if exercise.done {
-                                                        Text("\(exercise.exerciseOrder)")
-                                                            .foregroundStyle(Color.green.opacity(0.8))
-                                                    } else {
-                                                        Text("\(exercise.exerciseOrder)")
-                                                            .foregroundStyle(Color.red.opacity(0.8))
-                                                    }
+                                                    Text("\(globalOrderMap[exercise.id] ?? 0)")
+                                                        .foregroundStyle(exercise.done ? Color.green.opacity(0.8) : Color.red.opacity(0.8))
                                                     Text(exercise.name)
                                                 }
                                             }

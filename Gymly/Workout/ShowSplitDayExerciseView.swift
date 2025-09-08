@@ -30,6 +30,7 @@ struct ShowSplitDayExerciseView: View {
     @State var bodyWeight: Bool = false
     @State var setNumber: Int = 0
     @State var note: String = ""
+    @State var showEdit = false
     
     /// Converts weight to correct unit (Kg/Lbs)
     var convertedWeight: Double {
@@ -156,7 +157,18 @@ struct ShowSplitDayExerciseView: View {
                 )
                 .presentationDetents([.fraction(0.65)])
             }
+            .sheet(isPresented: $showEdit) {
+                /// Sheet for editing a set
+                EditExerciseView(viewModel: viewModel, exercise: exercise)
+                .presentationDetents([.large])
+            }
             .toolbar {
+                /// Edit exercise button
+                Button {
+                    showEdit.toggle()
+                } label: {
+                    Label("Edit exercise", systemImage: "slider.horizontal.3")
+                }
                 /// Add set button
                 Button {
                     Task {

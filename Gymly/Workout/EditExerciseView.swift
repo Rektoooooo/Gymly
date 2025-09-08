@@ -16,6 +16,7 @@ struct EditExerciseView: View {
     @State var exercise: Exercise
     @State private var name: String = ""
     @State private var repetitions: String = ""
+    @State private var order: String = ""
     @State private var muscleGroup: String = ""
     @State private var muscleGroups: [String] = []
     var body: some View {
@@ -26,6 +27,9 @@ struct EditExerciseView: View {
                 }
                 Section("Edit repetitions") {
                     TextField("Repetitions", text: $repetitions)
+                }
+                Section("Edit order") {
+                    TextField("Order", text: $order)
                 }
                 Section("Edit muslce group") {
                     Picker("Muscle Group", selection: $muscleGroup) {
@@ -40,6 +44,7 @@ struct EditExerciseView: View {
                         if !trimmedName.isEmpty { exercise.name = trimmedName }
                         exercise.repGoal = repetitions
                         exercise.muscleGroup = muscleGroup
+                        exercise.exerciseOrder = Int(order) ?? 0
                         try? context.save()
                         dismiss()
                     }
@@ -52,6 +57,7 @@ struct EditExerciseView: View {
             self.repetitions = exercise.repGoal
             self.muscleGroups = viewModel.muscleGroupNames
             self.muscleGroup = exercise.muscleGroup
+            self.order = String(exercise.exerciseOrder)
         }
     }
 }
