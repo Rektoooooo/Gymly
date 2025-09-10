@@ -20,7 +20,7 @@ struct WeightDetailView: View {
             List {
                 Section("Body weight") {
                     HStack {
-                        Text("Body weight")
+                        Text("Body weight (\(config.weightUnit))")
                             .foregroundStyle(.white.opacity(0.6))
                         TextField("70 \(config.weightUnit)", text: $bodyWeight)
                             .padding(.horizontal)
@@ -52,7 +52,7 @@ struct WeightDetailView: View {
             .navigationTitle("My weight")
         }
         .onAppear {
-            bodyWeight = config.userWeight.description
+            bodyWeight = String(Int(round(Double(config.userWeight) * (config.weightUnit == "Kg" ? 1.0 : 2.20462))))
         }
     }
 }

@@ -40,10 +40,10 @@ struct SettingUserInfoCell: View {
                             }
                             if metric == "Kg" || metric == "Lbs" {
                                 HStack(spacing: 4) {
-                                    Text("\(String(format: "%.1f", (Double(value) ?? 0.0) - weightLastWeek))\(config.weightUnit)")
-                                    if Double(value) ?? 0.0 > weightLastWeek {
+                                    Text("\(String(format: "%.1f", (Double(value) ?? 0.0) - weightLastWeek * (config.weightUnit == "Kg" ? 1.0 : 2.20462)))\(config.weightUnit)")
+                                    if Double(value) ?? 0.0 > weightLastWeek * (config.weightUnit == "Kg" ? 1.0 : 2.20462) {
                                        Image(systemName: "arrow.up")
-                                    } else if Double(value) ?? 0.0 < weightLastWeek {
+                                    } else if Double(value) ?? 0.0 < weightLastWeek * (config.weightUnit == "Kg" ? 1.0 : 2.20462) {
                                         Image(systemName: "arrow.down")
                                     } else {
                                         Image(systemName: "arrow.up.arrow.down")

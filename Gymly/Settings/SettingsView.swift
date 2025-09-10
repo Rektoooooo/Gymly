@@ -83,7 +83,9 @@ struct SettingsView: View {
                                 showWeightDetail = true
                             }) {
                                 SettingUserInfoCell(
-                                    value: String(format: "%.1f", config.userWeight),
+                                    value: String(
+                                        format: "%.1f",
+                                        config.userWeight * (config.weightUnit == "Kg" ? 1.0 : 2.20462262)),
                                     metric: config.weightUnit,
                                     headerColor: .accent,
                                     additionalInfo: "Body weight",
@@ -148,6 +150,7 @@ struct SettingsView: View {
                         .onChange(of: config.weightUnit) {
                             debugPrint("Selected unit: \(config.weightUnit)")
                             config.roundSetWeights = true
+                            weightUpdatedTrigger.toggle()
                         }
                     }
                     .frame(width: 300)
