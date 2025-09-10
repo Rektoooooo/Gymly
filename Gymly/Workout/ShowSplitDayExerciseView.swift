@@ -155,7 +155,8 @@ struct ShowSplitDayExerciseView: View {
                     dropSet: $dropSet,
                     bodyWeight: $bodyWeight
                 )
-                .presentationDetents([.fraction(0.65)])
+                .presentationSizing(.fitted)     // ← fits to content height
+                .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showEdit) {
                 /// Sheet for editing a set

@@ -13,6 +13,7 @@ struct TodayWorkoutView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
     @Environment(\.modelContext) var context: ModelContext
+    @Environment(\.colorScheme) var scheme
     @State var showProfileView: Bool = false
     @State private var profileImage: UIImage?
     @State private var navigationTitle: String = ""
@@ -23,164 +24,177 @@ struct TodayWorkoutView: View {
     @State var orderExercises: [String] = []
     
     var body: some View {
-        NavigationView{
-            VStack {
-                if !selectedDay.name.isEmpty {
-                    VStack {
-                        /// Display the navigation title with menu day selection
-                        Menu {
-                            ForEach(allSplitDays.sorted(by: { $0.dayOfSplit < $1.dayOfSplit }), id: \.self) { day in
-                                Button(action: {
-                                    selectedDay = day
-                                    viewModel.day = selectedDay
-                                    config.dayInSplit = day.dayOfSplit
-                                    Task {
-                                        await refreshView()
-                                    }
-                                }) {
-                                    HStack {
-                                        Text("\(day.dayOfSplit) - \(day.name)")
-                                        if day == selectedDay {
-                                            Image(systemName: "checkmark")
+        NavigationView {
+            ZStack {
+                FloatingClouds(theme: CloudsTheme.graphite(scheme))
+                    .ignoresSafeArea()
+                VStack {
+                    if !selectedDay.name.isEmpty {
+                        VStack {
+                            /// Display the navigation title with menu day selection
+                            Menu {
+                                ForEach(allSplitDays.sorted(by: { $0.dayOfSplit < $1.dayOfSplit }), id: \.self) { day in
+                                    Button(action: {
+                                        selectedDay = day
+                                        viewModel.day = selectedDay
+                                        config.dayInSplit = day.dayOfSplit
+                                        Task {
+                                            await refreshView()
+                                        }
+                                    }) {
+                                        HStack {
+                                            Text("\(day.dayOfSplit) - \(day.name)")
+                                            if day == selectedDay {
+                                                Image(systemName: "checkmark")
+                                            }
                                         }
                                     }
                                 }
+                            } label: {
+                                HStack {
+                                    Text("\(selectedDay.name)")
+                                        .font(.largeTitle)
+                                        .bold()
+                                        .padding(.leading)
+                                    Text(Image(systemName: "chevron.down"))
+                                        .font(.title2)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 16)
+                                .foregroundStyle(Color.primary)
                             }
-                        } label: {
-                            HStack {
-                                Text("\(selectedDay.name)")
-                                    .font(.largeTitle)
-                                    .bold()
-                                    .padding(.leading)
-                                Text(Image(systemName: "chevron.down"))
-                                    .font(.title2)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.top, 16)
-                            .foregroundStyle(Color.primary)
-                        }
-                        /// Display exercises in a day
-                        let globalOrderMap: [UUID: Int] = Dictionary(uniqueKeysWithValues: selectedDay.exercises.map { ($0.id, $0.exerciseOrder) })
-                        List {
-                            ForEach(muscleGroups) { group in
-                                if !group.exercises.isEmpty {
-                                    Section(header: Text(group.name)) {
-                                        ForEach(group.exercises.sorted(by: { $0.exerciseOrder < $1.exerciseOrder }), id: \.id) { exercise in
-                                            NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
-                                                HStack {
-                                                    Text("\(globalOrderMap[exercise.id] ?? 0)")
-                                                        .foregroundStyle(exercise.done ? Color.green.opacity(0.8) : Color.red.opacity(0.8))
-                                                    Text(exercise.name)
+                            /// Display exercises in a day
+                            let globalOrderMap: [UUID: Int] = Dictionary(uniqueKeysWithValues: selectedDay.exercises.map { ($0.id, $0.exerciseOrder) })
+                            List {
+                                ForEach(muscleGroups) { group in
+                                    if !group.exercises.isEmpty {
+                                        Section(header: Text(group.name)) {
+                                            ForEach(group.exercises.sorted(by: { $0.exerciseOrder < $1.exerciseOrder }), id: \.id) { exercise in
+                                                NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
+                                                    HStack {
+                                                        Text("\(globalOrderMap[exercise.id] ?? 0)")
+                                                            .foregroundStyle(exercise.done ? Color.green.opacity(0.8) : Color.red.opacity(0.8))
+                                                        Text(exercise.name)
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
-                            }
-                            /// Save workout to the calendar button
-                            Section("") {
-                                Button("Workout done") {
-                                    viewModel.updateMuscleGroupDataValues(from: selectedDay.exercises, modelContext: context)
-                                    Task {
-                                        await viewModel.insertWorkout()
-                                        for i in selectedDay.exercises.indices {
-                                            selectedDay.exercises[i].done = false
+                                .scrollContentBackground(.hidden)
+                                .background(Color.clear)
+                                .listRowBackground(Color.black.opacity(0.1))
+                                /// Save workout to the calendar button
+                                Section("") {
+                                    Button("Workout done") {
+                                        viewModel.updateMuscleGroupDataValues(from: selectedDay.exercises, modelContext: context)
+                                        Task {
+                                            await viewModel.insertWorkout()
+                                            for i in selectedDay.exercises.indices {
+                                                selectedDay.exercises[i].done = false
+                                            }
                                         }
                                     }
+                                    .scrollContentBackground(.hidden)
+                                    .background(Color.clear)
+                                    .listRowBackground(Color.black.opacity(0.1))
+                                    .foregroundStyle(Color.accentColor)
                                 }
-                                .foregroundStyle(Color.accentColor)
                             }
+                            .scrollContentBackground(.hidden)
+                            .background(Color.clear)
+                            .listRowBackground(Color.clear)
+                        }
+                    } else {
+                        /// If no split is created show help message
+                        VStack {
+                            Text("Create your split with the \(Image(systemName: "line.2.horizontal.decrease.circle")) icon in the top right corner")
+                                .multilineTextAlignment(.center)
                         }
                     }
-                } else {
-                    /// If no split is created show help message
-                    VStack {
-                        Text("Create your split with the \(Image(systemName: "line.2.horizontal.decrease.circle")) icon in the top right corner")
-                            .multilineTextAlignment(.center)
+                }
+                .toolbar {
+                    /// Display user profile image as a button for getting to setting view
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(action: {
+                            showProfileView = true
+                        }) {
+                            ProfileImageCell(profileImage: profileImage, frameSize: 34)
+                        }
+                    }
+                    /// Button for showing splits view
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            viewModel.editPlan = true
+                        } label: {
+                            Label("", systemImage: "line.2.horizontal.decrease.circle")
+                        }
+                    }
+                    /// Button for adding exercise
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            viewModel.addExercise = true
+                        } label: {
+                            Label("", systemImage: "plus.circle")
+                        }
+                    }
+                }
+                /// On change of adding exercise refresh the exercises
+                .onChange(of: viewModel.exerciseAddedTrigger) {
+                    Task {
+                        await refreshMuscleGroups()
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name.importSplit)) { notification in
+                    Task {
+                        await refreshView()
                     }
                 }
             }
-            .toolbar {
-                /// Display user profile image as a button for getting to setting view
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(action: {
-                        showProfileView = true
-                    }) {
-                        ProfileImageCell(profileImage: profileImage, frameSize: 34)
-                    }
-                }
-                /// Button for showing splits view
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        viewModel.editPlan = true
-                    } label: {
-                        Label("", systemImage: "line.2.horizontal.decrease.circle")
-                    }
-                }
-                /// Button for adding exercise
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        viewModel.addExercise = true
-                    } label: {
-                        Label("", systemImage: "plus.circle")
-                    }
+            /// Refresh on every appear
+            .task {
+                await refreshView()
+                if WhatsNewManager.shouldShowWhatsNew && config.isUserLoggedIn {
+                    showWhatsNew = true
                 }
             }
-            /// On change of adding exercise refresh the exercises
-            .onChange(of: viewModel.exerciseAddedTrigger) {
+            /// Sheet for showing splits view
+            .sheet(isPresented: $viewModel.editPlan, onDismiss: {
+                Task {
+                    await refreshView()
+                    navigationTitle = viewModel.day.name
+                }
+            }) {
+                SplitsView(viewModel: viewModel)
+            }
+            /// Sheet for showing setting and profile view
+            .sheet(isPresented: $showProfileView, onDismiss: {
+                if let imagePath = config.userProfileImageURL {
+                    profileImage = viewModel.loadImage(from: imagePath)
+                }
                 Task {
                     await refreshMuscleGroups()
                 }
+            }) {
+                SettingsView(viewModel: viewModel)
             }
-            .onReceive(NotificationCenter.default.publisher(for: Notification.Name.importSplit)) { notification in
+            /// Sheet for adding exercises
+            .sheet(isPresented: $viewModel.addExercise, onDismiss: {
                 Task {
                     await refreshView()
                 }
+                viewModel.name = ""
+                viewModel.sets = ""
+                viewModel.reps = ""
+            } ,content: {
+                CreateExerciseView(viewModel: viewModel, day: selectedDay)
+                    .navigationTitle("Create Exercise")
+                    .presentationDetents([.medium])
+                
+            })
+            .sheet(isPresented: $showWhatsNew) {
+                WhatsNewView(isPresented: $showWhatsNew)
             }
-        }
-        /// Refresh on every appear
-        .task {
-            await refreshView()
-            if WhatsNewManager.shouldShowWhatsNew && config.isUserLoggedIn {
-                showWhatsNew = true
-            }
-        }
-        /// Sheet for showing splits view
-        .sheet(isPresented: $viewModel.editPlan, onDismiss: {
-            Task {
-                await refreshView()
-                navigationTitle = viewModel.day.name
-            }
-        }) {
-            SplitsView(viewModel: viewModel)
-        }
-        /// Sheet for showing setting and profile view
-        .sheet(isPresented: $showProfileView, onDismiss: {
-            if let imagePath = config.userProfileImageURL {
-                profileImage = viewModel.loadImage(from: imagePath)
-            }
-            Task {
-                await refreshMuscleGroups()
-            }
-        }) {
-            SettingsView(viewModel: viewModel)
-        }
-        /// Sheet for adding exercises
-        .sheet(isPresented: $viewModel.addExercise, onDismiss: {
-            Task {
-                await refreshView()
-            }
-            viewModel.name = ""
-            viewModel.sets = ""
-            viewModel.reps = ""
-        } ,content: {
-            CreateExerciseView(viewModel: viewModel, day: selectedDay)
-                .navigationTitle("Create Exercise")
-                .presentationDetents([.fraction(0.5)])
-            
-        })
-        .sheet(isPresented: $showWhatsNew) {
-            WhatsNewView(isPresented: $showWhatsNew)
         }
     }
     

@@ -26,6 +26,7 @@ struct ShowSplitDayView: View {
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
     @ObservedObject var viewModel: WorkoutViewModel
+    @Environment(\.colorScheme) var scheme
     
     /// Custom initializer
     init(viewModel: WorkoutViewModel, day: Day) {
@@ -41,63 +42,73 @@ struct ShowSplitDayView: View {
     }
     
     var body: some View {
-        VStack {
-            if isReorderingExercises {
-                // Reorder mode: operate on a buffer to avoid SwiftData/UI conflicts
-                List {
-                    ForEach(reorderingBufferExercises, id: \.id) { exercise in
-                        HStack {
-                            Text("\(orderNumber(for: exercise))")
-                                .foregroundStyle(.accent)
-                                .bold()
-                            Text(exercise.name)
-                            Spacer()
-                            Text(exercise.muscleGroup)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .onMove { indices, newOffset in
-                        reorderingBufferExercises.move(fromOffsets: indices, toOffset: newOffset)
-                    }
-                }
-                .environment(\.editMode, $editModeExercises)
-            } else {
-                let globalOrderMap: [UUID: Int] = Dictionary(uniqueKeysWithValues: day.exercises.map { ($0.id, $0.exerciseOrder) })
-                List {
-                    // Build groups from day.exercises while preserving the order of first appearance
-                    let grouped: [(String, [Exercise])] = {
-                        var order: [String] = []
-                        var dict: [String: [Exercise]] = [:]
-                        for ex in day.exercises.sorted(by: { $0.exerciseOrder < $1.exerciseOrder }) {
-                            if dict[ex.muscleGroup] == nil {
-                                order.append(ex.muscleGroup)
-                                dict[ex.muscleGroup] = []
+        ZStack {
+            FloatingClouds(theme: CloudsTheme.graphite(scheme))
+                .ignoresSafeArea()
+            VStack {
+                if isReorderingExercises {
+                    // Reorder mode: operate on a buffer to avoid SwiftData/UI conflicts
+                    List {
+                        ForEach(reorderingBufferExercises, id: \.id) { exercise in
+                            HStack {
+                                Text("\(orderNumber(for: exercise))")
+                                    .foregroundStyle(.accent)
+                                    .bold()
+                                Text(exercise.name)
+                                Spacer()
+                                Text(exercise.muscleGroup)
+                                    .foregroundStyle(.secondary)
                             }
-                            dict[ex.muscleGroup]!.append(ex)
+                            .scrollContentBackground(.hidden)
+                            .background(Color.clear)
+                            .listRowBackground(Color.black.opacity(0.1))
                         }
-                        return order.map { ($0, dict[$0]!) }
-                    }()
-
-                    ForEach(grouped, id: \.0) { name, exercises in
-                        if !exercises.isEmpty {
-                            Section(header: Text(name)) {
-                                ForEach(exercises, id: \.id) { exercise in
-                                    NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
-                                        HStack {
-                                            Text("\(globalOrderMap[exercise.id] ?? 0)")
-                                                .foregroundStyle(Color.white.opacity(0.4))
-                                            Text(exercise.name)
-                                        }
-                                    }
-                                    .swipeActions(edge: .trailing) {
-                                        Button(role: .destructive) {
-                                            Task {
-                                                viewModel.deleteExercise(exercise)
-                                                day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
+                        .onMove { indices, newOffset in
+                            reorderingBufferExercises.move(fromOffsets: indices, toOffset: newOffset)
+                        }
+                    }
+                    .environment(\.editMode, $editModeExercises)
+                } else {
+                    let globalOrderMap: [UUID: Int] = Dictionary(uniqueKeysWithValues: day.exercises.map { ($0.id, $0.exerciseOrder) })
+                    List {
+                        // Build groups from day.exercises while preserving the order of first appearance
+                        let grouped: [(String, [Exercise])] = {
+                            var order: [String] = []
+                            var dict: [String: [Exercise]] = [:]
+                            for ex in day.exercises.sorted(by: { $0.exerciseOrder < $1.exerciseOrder }) {
+                                if dict[ex.muscleGroup] == nil {
+                                    order.append(ex.muscleGroup)
+                                    dict[ex.muscleGroup] = []
+                                }
+                                dict[ex.muscleGroup]!.append(ex)
+                            }
+                            return order.map { ($0, dict[$0]!) }
+                        }()
+                        
+                        ForEach(grouped, id: \.0) { name, exercises in
+                            if !exercises.isEmpty {
+                                Section(header: Text(name)) {
+                                    ForEach(exercises, id: \.id) { exercise in
+                                        NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
+                                            HStack {
+                                                Text("\(globalOrderMap[exercise.id] ?? 0)")
+                                                    .foregroundStyle(Color.white.opacity(0.4))
+                                                Text(exercise.name)
                                             }
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
                                         }
+                                        .swipeActions(edge: .trailing) {
+                                            Button(role: .destructive) {
+                                                Task {
+                                                    viewModel.deleteExercise(exercise)
+                                                    day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
+                                                }
+                                            } label: {
+                                                Label("Delete", systemImage: "trash")
+                                            }
+                                        }
+                                        .scrollContentBackground(.hidden)
+                                        .background(Color.clear)
+                                        .listRowBackground(Color.black.opacity(0.1))
                                     }
                                 }
                             }
@@ -105,45 +116,44 @@ struct ShowSplitDayView: View {
                     }
                 }
             }
-        }
-        .navigationTitle(day.name)
-        .navigationBarTitleDisplayMode(.large)
-        .onAppear {
-            Task {
-                /// Fetch updated day and refresh muscle groups
-                day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
-                await refreshMuscleGroups()
+            .navigationTitle(day.name)
+            .navigationBarTitleDisplayMode(.large)
+            .onAppear {
+                Task {
+                    /// Fetch updated day and refresh muscle groups
+                    day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
+                    await refreshMuscleGroups()
+                }
             }
-        }
-        .alert("Enter workout name", isPresented: $popup) {
-            /// Popup for editing the workout name
-            TextField("Workout name", text: $day.name)
-            Button("OK", action: {})
-        } message: {
-            Text("Enter the name of new section")
-        }
-        .sheet(isPresented: $createExercise, onDismiss: {
-            Task {
-                day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
-                await refreshMuscleGroups()
+            .alert("Enter workout name", isPresented: $popup) {
+                /// Popup for editing the workout name
+                TextField("Workout name", text: $day.name)
+                Button("OK", action: {})
+            } message: {
+                Text("Enter the name of new section")
             }
-        }) {
-            CreateExerciseView(viewModel: viewModel, day: viewModel.day)
-                .navigationTitle("Create Exercise")
-                .presentationDetents([.fraction(0.5)])
-        }
-        .sheet(isPresented: $copyWorkout, onDismiss: {
-            Task {
-                day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
-                await refreshMuscleGroups()
+            .sheet(isPresented: $createExercise, onDismiss: {
+                Task {
+                    day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
+                    await refreshMuscleGroups()
+                }
+            }) {
+                CreateExerciseView(viewModel: viewModel, day: viewModel.day)
+                    .navigationTitle("Create Exercise")
+                    .presentationDetents([.large])
             }
-        }) {
-            CopyWorkoutView(viewModel: viewModel, day: day)
-                .navigationTitle("Create Exercise")
-                .presentationDetents([.fraction(0.25)])
-        }
-        .toolbar {
-            /// Toolbar menu for editing options
+            .sheet(isPresented: $copyWorkout, onDismiss: {
+                Task {
+                    day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
+                    await refreshMuscleGroups()
+                }
+            }) {
+                CopyWorkoutView(viewModel: viewModel, day: day)
+                    .navigationTitle("Create Exercise")
+                    .presentationDetents([.medium])
+            }
+            .toolbar {
+                /// Toolbar menu for editing options
                 Button(action: {
                     createExercise.toggle()
                 }) {
@@ -187,6 +197,10 @@ struct ShowSplitDayView: View {
                         Label("Reorder", systemImage: "arrow.up.arrow.down.circle")
                     }
                 }
+            }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .listRowBackground(Color.clear)
         }
     }
     

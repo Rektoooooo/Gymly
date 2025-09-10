@@ -47,7 +47,7 @@ struct EditExerciseSetView: View {
 
     var body: some View {
         NavigationView {
-            List {
+            Form {
                 /// Section for setting a note
                 Section("Set note") {
                     SetNoteCell(
@@ -56,6 +56,9 @@ struct EditExerciseSetView: View {
                         exercise: exercise
                     )
                 }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .listRowBackground(Color.black.opacity(0.1))
                 /// Section for selecting set type
                 Section(header: Text("Set Type")) {
                     SetTypeCell(
@@ -67,6 +70,9 @@ struct EditExerciseSetView: View {
                         exercise: exercise
                     )
                 }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .listRowBackground(Color.black.opacity(0.1))
                 /// Section for adjusting weight
                 Section("Weight (\(unit))") {
                     SetWeightCell(
@@ -79,6 +85,9 @@ struct EditExerciseSetView: View {
                         saveWeight: saveWeight
                     )
                 }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .listRowBackground(Color.black.opacity(0.1))
                 /// Section for adjusting repetitions
                 Section("Repetitions") {
                     HStack {
@@ -88,6 +97,9 @@ struct EditExerciseSetView: View {
                         )
                     }
                 }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .listRowBackground(Color.black.opacity(0.1))
             }
             .scrollDisabled(true)
             .toolbar {
@@ -120,9 +132,11 @@ struct EditExerciseSetView: View {
                     }
                 }
             }
-            .offset(y : -20)
             .navigationTitle("Record set")
             .navigationBarTitleDisplayMode(.inline)
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .listRowBackground(Color.clear)
         }
     }
     
@@ -170,5 +184,24 @@ struct EditExerciseSetView: View {
         } catch {
             debugPrint(error)
         }
+    }
+}
+
+// 1) Tiny helper to read view height
+struct SheetHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+extension View {
+    func readHeight(_ height: Binding<CGFloat>) -> some View {
+        background(
+            GeometryReader { proxy in
+                Color.clear.preference(key: SheetHeightKey.self, value: proxy.size.height)
+            }
+        )
+        .onPreferenceChange(SheetHeightKey.self) { height.wrappedValue = $0 }
     }
 }

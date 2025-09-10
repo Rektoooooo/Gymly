@@ -16,6 +16,7 @@ struct ExerciseDetailView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var viewModel: WorkoutViewModel
     @State var exercise: Exercise
+    @Environment(\.colorScheme) var scheme
     
     /// UI State Variables
     @State private var isOn = false
@@ -29,6 +30,7 @@ struct ExerciseDetailView: View {
     @State var setNumber: Int = 0
     @State var bodyWeight: Bool = false
     @State var note: String = ""
+    @State private var sheetHeight: CGFloat = 300
     
     /// Converts weight to correct unit (Kg/Lbs)
     var convertedWeight: Double {
@@ -39,87 +41,100 @@ struct ExerciseDetailView: View {
         }
     }
     
+
+    
     var body: some View {
-        VStack {
-            /// Displays set and rep count
-            HStack {
-                Text("\(exercise.sets.count) Sets")
-                    .foregroundStyle(.accent)
-                    .padding()
-                    .bold()
-                Spacer()
-                Text("\(exercise.repGoal) Reps")
-                    .foregroundStyle(.accent)
-                    .padding()
-                    .bold()
-            }
-            Form {
-                /// List of exercise sets
-                ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
-                    SetCell(
-                        viewModel: viewModel,
-                        index: index,
-                        set: set,
-                        config: config,
-                        loadSetData: loadSetData,
-                        exercise: exercise,
-                        setForCalendar: false
-                    )
-                    .swipeActions(edge: .trailing) {
-                        /// Swipe-to-delete action for a set
+        ZStack {
+            FloatingClouds(theme: CloudsTheme.graphite(scheme))
+                .ignoresSafeArea()
+            VStack {
+                /// Displays set and rep count
+                HStack {
+                    Text("\(exercise.sets.count) Sets")
+                        .foregroundStyle(.accent)
+                        .padding()
+                        .bold()
+                    Spacer()
+                    Text("\(exercise.repGoal) Reps")
+                        .foregroundStyle(.accent)
+                        .padding()
+                        .bold()
+                }
+                Form {
+                    /// List of exercise sets
+                    ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
+                        SetCell(
+                            viewModel: viewModel,
+                            index: index,
+                            set: set,
+                            config: config,
+                            loadSetData: loadSetData,
+                            exercise: exercise,
+                            setForCalendar: false
+                        )
+                        .scrollContentBackground(.hidden)
+                        .background(Color.clear)
+                        .listRowBackground(Color.black.opacity(0.1))
+                        .swipeActions(edge: .trailing) {
+                            /// Swipe-to-delete action for a set
                             Button(role: .destructive) {
                                 viewModel.deleteSet(set, exercise: exercise)
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
-                    
+                            
+                        }
+                    }
+                    /// Dismiss button
+                    Section("") {
+                        Button("Done") {
+                            config.activeExercise = exercise.exerciseOrder + 1
+                            exercise.done = true
+                            dismiss()
+                        }
+                        .scrollContentBackground(.hidden)
+                        .background(Color.clear)
+                        .listRowBackground(Color.black.opacity(0.1))
                     }
                 }
-                /// Dismiss button
-                Section("") {
-                    Button("Done") {
-                        config.activeExercise = exercise.exerciseOrder + 1
-                        exercise.done = true
-                        dismiss()
+                .toolbar {
+                    /// Add set button
+                    Button {
+                        Task {
+                            await viewModel.addSet(exercise: exercise)
+                        }
+                    } label: {
+                        Label("Add set", systemImage: "plus.circle")
                     }
                 }
             }
-            .toolbar {
-                /// Add set button
-                Button {
-                    Task {
-                        await viewModel.addSet(exercise: exercise)
-                    }
-                } label: {
-                    Label("Add set", systemImage: "plus.circle")
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .listRowBackground(Color.clear)
+            .onAppear {
+                /// Load set data when view appears
+                for index in exercise.sets.indices {
+                    loadSetData(set: exercise.sets[index], shouldOpenSheet: false)
                 }
             }
-        }
-        .onAppear {
-            /// Load set data when view appears
-            for index in exercise.sets.indices {
-                loadSetData(set: exercise.sets[index], shouldOpenSheet: false)
-            }
-        }
-        .navigationTitle("\(exercise.name)")
-        .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showSheet) {
-            /// Sheet for editing a set
-            EditExerciseSetView(
-                weight: $weight,
-                reps: $reps,
-                unit: $config.weightUnit,
-                setNumber: $setNumber,
-                note: $note,
-                exercise: exercise,
-                failure: $failure,
-                warmup: $warmUp,
-                restPause: $restPause,
-                dropSet: $dropSet,
-                bodyWeight: $bodyWeight
-            )
-            .presentationDetents([.large])
-            .onDisappear {
+            .navigationTitle("\(exercise.name)")
+            .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showSheet) {
+                /// Sheet for editing a set
+                EditExerciseSetView(
+                    weight: $weight,
+                    reps: $reps,
+                    unit: $config.weightUnit,
+                    setNumber: $setNumber,
+                    note: $note,
+                    exercise: exercise,
+                    failure: $failure,
+                    warmup: $warmUp,
+                    restPause: $restPause,
+                    dropSet: $dropSet,
+                    bodyWeight: $bodyWeight
+                )
+                .presentationDetents([.fraction(0.68)])
             }
         }
     }
