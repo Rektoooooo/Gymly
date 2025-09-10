@@ -88,7 +88,7 @@ final class WorkoutViewModel: ObservableObject {
     func getActiveSplitDays() -> [Day] {
         guard let activeSplit = getActiveSplit() else {
             print("No active split found.")
-            return []   
+            return []
         }
         return activeSplit.days
     }
@@ -637,9 +637,14 @@ final class WorkoutViewModel: ObservableObject {
         }
     }
     
-    // MARK: Update mmuscle group for chart
+
+    // MARK: Update muscle group for chart + persist to SwiftData
     @MainActor
-    func updateMuscleGroupDataValues(from exercises: [Exercise]) {
+    func updateMuscleGroupDataValues(
+        from exercises: [Exercise],
+        modelContext: ModelContext,
+        referenceDate: Date = Date()   // allows backfilling other dates if needed
+    ) {
         var muscleCounts: [MuscleGroupEnum: Double] = [:]
 
         // Start from existing values
@@ -650,7 +655,7 @@ final class WorkoutViewModel: ObservableObject {
         }
 
         // Filter out already-used exercises
-        let newExercises = exercises.filter { !config.graphUpdatedExerciseIDs.contains($0.id) }
+        let newExercises = exercises.filter { $0.done && !config.graphUpdatedExerciseIDs.contains($0.id) }
 
         // Add new exercise contributions
         for exercise in newExercises {
@@ -667,13 +672,44 @@ final class WorkoutViewModel: ObservableObject {
 
         let rawValues = orderedGroups.map { max(dynamicMin, muscleCounts[$0] ?? 0) }
 
+        // Update in-memory config for immediate UI update
         config.graphDataValues = rawValues
         config.graphMaxValue = safeMax
 
         // Record these exercise IDs as "used"
         config.graphUpdatedExerciseIDs.formUnion(newExercises.map { $0.id })
 
-        debugPrint("Updated graphDataValues: \(rawValues)")
+        // ---- Persist to SwiftData: one entry per day ----
+        let cal = Calendar.current
+        let dayStart = cal.startOfDay(for: referenceDate)
+        guard let nextDay = cal.date(byAdding: .day, value: 1, to: dayStart) else {
+            debugPrint("[Graph] Failed to compute nextDay")
+            return
+        }
+
+        do {
+            // Find an existing GraphEntry for this day
+            let predicate = #Predicate<GraphEntry> { entry in
+                entry.date >= dayStart && entry.date < nextDay
+            }
+            var descriptor = FetchDescriptor<GraphEntry>(predicate: predicate,
+                                                         sortBy: [SortDescriptor(\.date)])
+            descriptor.fetchLimit = 1
+
+            if let existing = try modelContext.fetch(descriptor).first {
+                // Update the day's data
+                existing.data = rawValues
+            } else {
+                // Insert a new day entry normalized to start-of-day
+                let entry = GraphEntry(date: dayStart, data: rawValues)
+                modelContext.insert(entry)
+            }
+
+            try modelContext.save()
+            debugPrint("[Graph] Saved GraphEntry for \(dayStart): \(rawValues)")
+        } catch {
+            debugPrint("[Graph] Failed to save GraphEntry: \(error)")
+        }
     }
 
 }

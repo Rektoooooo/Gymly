@@ -26,7 +26,20 @@ struct SettingsView: View {
     @State private var profileImage: UIImage?
     @State var selectedUnit:String = ""
     @State private var weightUpdatedTrigger = false
+
     let units: [String] = ["Kg","Lbs"]
+
+    @State var graphSorting: [String] = ["Today","Week","Month","All Time"]
+    @State var graphSortingSelected: String = "Today"
+    private var selectedTimeRange: ContentViewGraph.TimeRange {
+        switch graphSortingSelected {
+        case "Today": return .day
+        case "Week": return .week
+        case "Month": return .month
+        case "All Time": return .all
+        default: return .month
+        }
+    }
     
     var body: some View {
         NavigationView {
@@ -159,15 +172,45 @@ struct SettingsView: View {
                         Text("App connections")
                     }
                     .frame(width: 300)
+                    Section {
+                        Button(role: .destructive) {
+                            // Reset in-memory config
+                            config.graphDataValues = []
+                            config.graphMaxValue = 1.0
+                            config.graphUpdatedExerciseIDs.removeAll()
+                            
+                            // Reset persisted SwiftData
+                            do {
+                                let all = try context.fetch(FetchDescriptor<GraphEntry>())
+                                for entry in all {
+                                    context.delete(entry)
+                                }
+                                try context.save()
+                            } catch {
+                                debugPrint("Failed to reset graph data: \(error)")
+                            }
+                        } label: {
+                            Label("Reset Graph Data", systemImage: "trash")
+                        }
+                    }
                 }
                 Section(header: HStack {
                     Text("Graph")
                 }) {
-                    ZStack {
-                        ContentViewGraph()
-                        RadarLabels()
+                    VStack(spacing: 8) {
+                        Picker(selection: $graphSortingSelected, label: Text("")) {
+                            ForEach(graphSorting, id: \.self) { option in
+                                Text(option).tag(option)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+
+                        ZStack {
+                            ContentViewGraph(range: selectedTimeRange)
+                            RadarLabels()
+                        }
+                        .frame(width: 300, height: 300)
                     }
-                    .frame(width: 300, height: 300)
                 }
                 .listRowBackground(Color.clear)
                 .padding(.horizontal)

@@ -80,7 +80,7 @@ struct TodayWorkoutView: View {
                             /// Save workout to the calendar button
                             Section("") {
                                 Button("Workout done") {
-                                    viewModel.updateMuscleGroupDataValues(from: selectedDay.exercises)
+                                    viewModel.updateMuscleGroupDataValues(from: selectedDay.exercises, modelContext: context)
                                     Task {
                                         await viewModel.insertWorkout()
                                         for i in selectedDay.exercises.indices {
