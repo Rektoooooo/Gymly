@@ -87,8 +87,16 @@ struct TodayWorkoutView: View {
                                 /// Save workout to the calendar button
                                 Section("") {
                                     Button("Workout done") {
-                                        viewModel.updateMuscleGroupDataValues(from: selectedDay.exercises, modelContext: context)
                                         Task {
+                                            // Set completion time for all done exercises
+                                            let now = Date()
+                                            for i in selectedDay.exercises.indices {
+                                                if selectedDay.exercises[i].done {
+                                                    selectedDay.exercises[i].completedAt = now
+                                                }
+                                            }
+
+                                            await viewModel.updateMuscleGroupDataValues(from: selectedDay.exercises, modelContext: context)
                                             await viewModel.insertWorkout()
                                             for i in selectedDay.exercises.indices {
                                                 selectedDay.exercises[i].done = false

@@ -90,6 +90,16 @@ struct ExerciseDetailView: View {
                         Button("Done") {
                             config.activeExercise = exercise.exerciseOrder + 1
                             exercise.done = true
+                            exercise.completedAt = Date() // Set completion time to now
+
+                            // Update muscle group chart data when exercise is completed
+                            Task {
+                                await viewModel.updateMuscleGroupDataValues(
+                                    from: [exercise],
+                                    modelContext: context
+                                )
+                            }
+
                             dismiss()
                         }
                         .scrollContentBackground(.hidden)

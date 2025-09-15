@@ -17,19 +17,21 @@ class Exercise: Codable {
     var repGoal: String
     var muscleGroup: String
     var createdAt: Date = Date()
+    var completedAt: Date?
     var animationId = UUID()
     var exerciseOrder: Int
     var done: Bool
 
     @Relationship(deleteRule: .nullify, inverse: \Day.exercises) var day: Day?
 
-    init(id: UUID = UUID(), name: String, sets: [Set] = [], repGoal: String, muscleGroup: String, createdAt: Date = Date(), animationId: UUID = UUID(), exerciseOrder: Int, done: Bool = false, day: Day? = nil) {
+    init(id: UUID = UUID(), name: String, sets: [Set] = [], repGoal: String, muscleGroup: String, createdAt: Date = Date(), completedAt: Date? = nil, animationId: UUID = UUID(), exerciseOrder: Int, done: Bool = false, day: Day? = nil) {
         self.id = id
         self.name = name
         self.sets = sets
         self.repGoal = repGoal
         self.muscleGroup = muscleGroup
         self.createdAt = createdAt
+        self.completedAt = completedAt
         self.animationId = animationId
         self.exerciseOrder = exerciseOrder
         self.done = done
@@ -44,6 +46,7 @@ class Exercise: Codable {
             repGoal: self.repGoal,
             muscleGroup: self.muscleGroup,
             createdAt: self.createdAt,
+            completedAt: self.completedAt,
             animationId: self.animationId,
             exerciseOrder: self.exerciseOrder,
             done: self.done
@@ -57,7 +60,7 @@ class Exercise: Codable {
     
     // MARK: - Codable Compliance
     enum CodingKeys: String, CodingKey {
-        case id, name, sets, repGoal, muscleGroup, createdAt, exerciseOrder, done
+        case id, name, sets, repGoal, muscleGroup, createdAt, completedAt, exerciseOrder, done
     }
 
     required init(from decoder: Decoder) throws {
@@ -68,6 +71,7 @@ class Exercise: Codable {
         self.repGoal = try container.decode(String.self, forKey: .repGoal)
         self.muscleGroup = try container.decode(String.self, forKey: .muscleGroup)
         self.createdAt = try container.decode(Date.self, forKey: .createdAt)
+        self.completedAt = try container.decodeIfPresent(Date.self, forKey: .completedAt)
         self.exerciseOrder = try container.decode(Int.self, forKey: .exerciseOrder)
         self.done = try container.decode(Bool.self, forKey: .done)
     }
@@ -80,6 +84,7 @@ class Exercise: Codable {
         try container.encode(repGoal, forKey: .repGoal)
         try container.encode(muscleGroup, forKey: .muscleGroup)
         try container.encode(createdAt, forKey: .createdAt)
+        try container.encodeIfPresent(completedAt, forKey: .completedAt)
         try container.encode(exerciseOrder, forKey: .exerciseOrder)
         try container.encode(done, forKey: .done)
     }

@@ -177,27 +177,6 @@ struct SettingsView: View {
                             Text("App connections")
                         }
                         .frame(width: 300)
-                        Section {
-                            Button(role: .destructive) {
-                                // Reset in-memory config
-                                config.graphDataValues = []
-                                config.graphMaxValue = 1.0
-                                config.graphUpdatedExerciseIDs.removeAll()
-                                
-                                // Reset persisted SwiftData
-                                do {
-                                    let all = try context.fetch(FetchDescriptor<GraphEntry>())
-                                    for entry in all {
-                                        context.delete(entry)
-                                    }
-                                    try context.save()
-                                } catch {
-                                    debugPrint("Failed to reset graph data: \(error)")
-                                }
-                            } label: {
-                                Label("Reset Graph Data", systemImage: "trash")
-                            }
-                        }
                     }
                     .listRowBackground(Color.black.opacity(0.05))
                     Section(header: HStack {

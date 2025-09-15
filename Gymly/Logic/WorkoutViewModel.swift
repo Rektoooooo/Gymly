@@ -645,6 +645,7 @@ final class WorkoutViewModel: ObservableObject {
         modelContext: ModelContext,
         referenceDate: Date = Date()   // allows backfilling other dates if needed
     ) {
+        debugPrint("[Graph] updateMuscleGroupDataValues called with \(exercises.count) exercises")
         var muscleCounts: [MuscleGroupEnum: Double] = [:]
 
         // Start from existing values
