@@ -17,6 +17,10 @@ struct WeightDetailView: View {
     @Environment(\.colorScheme) private var scheme
 
     @State var bodyWeight: String = ""
+    @State private var showingSaveSuccess = false
+    @State private var saveMessage = ""
+
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -31,14 +35,21 @@ struct WeightDetailView: View {
                                 .padding(.horizontal)
                                 .keyboardType(.numbersAndPunctuation)
                                 .onSubmit {
-                                    healthKitManager.saveWeight(Double(bodyWeight) ?? 0.0)
-                                    config.userWeight = (Double(bodyWeight) ?? 0.0)
-                                    healthKitManager.updateFromWeightChart(context: context)
+                                    saveWeight()
                                 }
                         }
                         .scrollContentBackground(.hidden)
                         .background(Color.clear)
                         .listRowBackground(Color.black.opacity(0.1))
+
+                        if showingSaveSuccess {
+                            Text(saveMessage)
+                                .foregroundColor(.green)
+                                .font(.caption)
+                                .scrollContentBackground(.hidden)
+                                .background(Color.clear)
+                                .listRowBackground(Color.black.opacity(0.1))
+                        }
                     }
                     Section("Weight progress") {
                         HStack {
@@ -52,8 +63,7 @@ struct WeightDetailView: View {
                     .listRowBackground(Color.black.opacity(0.1))
                     Section("") {
                         Button("Back") {
-                            healthKitManager.saveWeight(Double(bodyWeight) ?? 0.0)
-                            config.userWeight = (Double(bodyWeight) ?? 0.0)
+                            saveWeight()
                             dismiss()
                         }
                         .scrollContentBackground(.hidden)
@@ -69,7 +79,50 @@ struct WeightDetailView: View {
         }
         .onAppear {
             bodyWeight = String(Int(round(Double(config.userWeight) * (config.weightUnit == "Kg" ? 1.0 : 2.20462))))
+
+            // Request HealthKit authorization when view appears
+            if healthKitManager.isHealthKitAvailable() {
+                healthKitManager.requestAuthorization()
+            }
         }
     }
+    
+    private func saveWeight() {
+        guard let inputWeight = Double(bodyWeight), inputWeight > 0 else {
+            print("❌ Invalid weight input: \(bodyWeight)")
+            return
+        }
+
+        // Convert input weight to kg (HealthKit always stores in kg)
+        let weightInKg: Double
+        if config.weightUnit == "Kg" {
+            weightInKg = inputWeight
+        } else {
+            // Convert from lbs to kg
+            weightInKg = inputWeight / 2.20462262
+        }
+
+        print("💾 Saving weight: \(inputWeight) \(config.weightUnit) = \(weightInKg) kg")
+
+        // Save to HealthKit (always in kg)
+        healthKitManager.saveWeight(weightInKg)
+
+        // Update app config (always store in kg internally)
+        config.userWeight = weightInKg
+
+        // Show success message
+        saveMessage = "Weight saved: \(inputWeight) \(config.weightUnit)"
+        showingSaveSuccess = true
+
+        // Hide success message after 2 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            showingSaveSuccess = false
+        }
+
+        // Refresh weight chart data
+        healthKitManager.updateFromWeightChart(context: context)
+    }
 }
+
+
 

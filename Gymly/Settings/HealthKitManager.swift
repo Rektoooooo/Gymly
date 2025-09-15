@@ -83,15 +83,48 @@ class HealthKitManager: ObservableObject {
     }
     
     func saveWeight(_ weightKg: Double, date: Date = Date()) {
-        guard let type = HKQuantityType.quantityType(forIdentifier: .bodyMass) else { return }
+        guard let type = HKQuantityType.quantityType(forIdentifier: .bodyMass) else {
+            print("❌ Unable to create bodyMass quantity type")
+            return
+        }
+
+        // Check authorization status before saving
+        let authStatus = healthStore.authorizationStatus(for: type)
+        switch authStatus {
+        case .notDetermined:
+            print("⚠️ HealthKit authorization not determined. Requesting authorization...")
+            requestAuthorization()
+            return
+        case .sharingDenied:
+            print("❌ HealthKit sharing denied. Please enable in Settings > Privacy & Security > Health > Gymly")
+            return
+        case .sharingAuthorized:
+            print("✅ HealthKit sharing authorized, proceeding to save weight")
+        @unknown default:
+            print("❌ Unknown HealthKit authorization status")
+            return
+        }
+
         let quantity = HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: weightKg)
         let sample = HKQuantitySample(type: type, quantity: quantity, start: date, end: date)
 
         healthStore.save(sample) { success, error in
-            if success {
-                print("✅ Weight saved to HealthKit")
-            } else {
-                print("❌ Error saving weight: \(error?.localizedDescription ?? "Unknown error")")
+            DispatchQueue.main.async {
+                if success {
+                    print("✅ Weight saved to HealthKit: \(weightKg) kg")
+                } else {
+                    print("❌ Error saving weight: \(error?.localizedDescription ?? "Unknown error")")
+                    if let error = error as? HKError {
+                        switch error.code {
+                        case .errorAuthorizationDenied:
+                            print("❌ Authorization denied - check HealthKit permissions")
+                        case .errorAuthorizationNotDetermined:
+                            print("❌ Authorization not determined - requesting authorization")
+                        default:
+                            print("❌ HealthKit error code: \(error.code)")
+                        }
+                    }
+                }
             }
         }
     }
