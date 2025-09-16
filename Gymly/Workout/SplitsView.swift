@@ -116,7 +116,7 @@ struct SplitsView: View {
             
         }) {
             SetupSplitView(viewModel: viewModel)
-                .presentationDetents([.large])
+                .presentationDetents([.medium])
         }
     }
     /// Toggles set type and saves changes

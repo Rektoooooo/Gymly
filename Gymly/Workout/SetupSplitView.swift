@@ -20,34 +20,58 @@ struct SetupSplitView: View {
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
     @ObservedObject var viewModel: WorkoutViewModel
+    @Environment(\.colorScheme) var scheme
 
     var body: some View {
-        Form {
-            /// Section for naming the workout split
-            Section("Name your split") {
-                TextField("Push, Pull, Legs", text: $name)
+        NavigationView {
+            Form {
+                /// Section for naming the workout split
+                Section("Name your split") {
+                    TextField("Push, Pull, Legs", text: $name)
+                }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .listRowBackground(Color.black.opacity(0.1))
+                /// Section for selecting split duration
+                Section("How many days is your split ?") {
+                    TextField("7", text: $splitLength)
+                        .keyboardType(.numbersAndPunctuation)
+                }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .listRowBackground(Color.black.opacity(0.1))
+                /// Section for selecting the starting day in the split
+                Section("What is your current day in the split") {
+                    TextField("1", text: $splitDay)
+                        .keyboardType(.numbersAndPunctuation)
+                }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .listRowBackground(Color.black.opacity(0.1))
             }
-            /// Section for selecting split duration
-            Section("How many days is your split ?") {
-                TextField("7", text: $splitLength)
-                    .keyboardType(.numbersAndPunctuation)
+            .toolbar {
+                /// Toolbar button to save changes
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        viewModel.createNewSplit(name: name, numberOfDays: Int(splitLength)!, startDate: Date(), context: context)
+                        config.dayInSplit = Int(splitDay)!
+                        dismiss()
+                    } label: {
+                        Text("Start")
+                            .foregroundStyle(Color.accentColor)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.white.opacity(0.1))
+                            .bold()
+                            .cornerRadius(10)
+                    }
+                }
             }
-            /// Section for selecting the starting day in the split
-            Section("What is your current day in the split") {
-                TextField("1", text: $splitDay)
-                    .keyboardType(.numbersAndPunctuation)
-            }
+            .navigationTitle("Create Split")
+            .navigationBarTitleDisplayMode(.inline)
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .listRowBackground(Color.clear)
         }
-        
-        /// Button to start the workout split
-        Button("Start your split") {
-            viewModel.createNewSplit(name: name, numberOfDays: Int(splitLength)!, startDate: Date(), context: context)
-            config.dayInSplit = Int(splitDay)!
-            dismiss()
-        }
-        .padding()
-        .background(Color.graytint)
-        .cornerRadius(20)
-        .padding()
     }
 }
