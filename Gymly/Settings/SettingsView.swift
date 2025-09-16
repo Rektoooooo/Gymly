@@ -43,6 +43,11 @@ struct SettingsView: View {
         }
     }
     
+    /// Computed property for formatted workout hours
+    private var formattedWorkoutHours: Int {
+        return config.totalWorkoutTimeMinutes / 60
+    }
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -79,7 +84,7 @@ struct SettingsView: View {
                                             .bold()
                                             HStack {
                                                 Image(systemName: "clock")
-                                                Text("1357 h")
+                                                Text("\(formattedWorkoutHours) h")
                                             }
                                             .font(.footnote)
                                             .bold()

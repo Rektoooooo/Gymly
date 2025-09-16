@@ -9,6 +9,13 @@ import SwiftUI
 import Foundation
 import SwiftData
 
+struct WorkoutSummaryData {
+    let completedExercises: [Exercise]
+    let workoutDurationMinutes: Int
+    let startTime: String
+    let endTime: String
+}
+
 struct TodayWorkoutView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
@@ -22,6 +29,8 @@ struct TodayWorkoutView: View {
     @State var allSplitDays: [Day] = []
     @State private var showWhatsNew = false
     @State var orderExercises: [String] = []
+    @State private var showWorkoutSummary = false
+    @State private var workoutSummaryData: WorkoutSummaryData?
     
     var body: some View {
         NavigationView {
@@ -87,6 +96,14 @@ struct TodayWorkoutView: View {
                                 /// Save workout to the calendar button
                                 Section("") {
                                     Button("Workout done") {
+                                        // Calculate workout summary before clearing exercises
+                                        if let summaryData = calculateWorkoutDuration() {
+                                            workoutSummaryData = summaryData
+                                            // Add workout duration to total time
+                                            config.totalWorkoutTimeMinutes += summaryData.workoutDurationMinutes
+                                            showWorkoutSummary = true
+                                        }
+
                                         Task {
                                             // Set completion time for all done exercises
                                             let now = Date()
@@ -203,6 +220,16 @@ struct TodayWorkoutView: View {
             .sheet(isPresented: $showWhatsNew) {
                 WhatsNewView(isPresented: $showWhatsNew)
             }
+            .sheet(isPresented: $showWorkoutSummary) {
+                if let summaryData = workoutSummaryData {
+                    WorkoutSummaryView(
+                        completedExercises: summaryData.completedExercises,
+                        workoutDurationMinutes: summaryData.workoutDurationMinutes,
+                        startTime: summaryData.startTime,
+                        endTime: summaryData.endTime
+                    )
+                }
+            }
         }
     }
     
@@ -243,5 +270,57 @@ struct TodayWorkoutView: View {
             profileImage = viewModel.loadImage(from: imagePath)
         }
         await refreshMuscleGroups()
+    }
+
+    /// Calculates workout duration from first completed set to last completed set
+    private func calculateWorkoutDuration() -> WorkoutSummaryData? {
+        let completedExercises = selectedDay.exercises.filter { $0.done }
+
+        guard !completedExercises.isEmpty else { return nil }
+
+        var allCompletedSets: [(time: String, date: Date)] = []
+
+        // Collect all sets from completed exercises with their times
+        for exercise in completedExercises {
+            for set in exercise.sets {
+                if !set.time.isEmpty {
+                    // Parse time string "H:mm" and create date for today
+                    let timeComponents = set.time.split(separator: ":").map(String.init)
+                    if timeComponents.count == 2,
+                       let hour = Int(timeComponents[0]),
+                       let minute = Int(timeComponents[1]) {
+
+                        var calendar = Calendar.current
+                        var dateComponents = calendar.dateComponents([.year, .month, .day], from: Date())
+                        dateComponents.hour = hour
+                        dateComponents.minute = minute
+
+                        if let setDate = calendar.date(from: dateComponents) {
+                            allCompletedSets.append((time: set.time, date: setDate))
+                        }
+                    }
+                }
+            }
+        }
+
+        guard !allCompletedSets.isEmpty else { return nil }
+
+        // Sort by date to find first and last
+        allCompletedSets.sort { $0.date < $1.date }
+
+        let startTime = allCompletedSets.first!.time
+        let endTime = allCompletedSets.last!.time
+        let startDate = allCompletedSets.first!.date
+        let endDate = allCompletedSets.last!.date
+
+        // Calculate duration in minutes
+        let durationMinutes = Int(endDate.timeIntervalSince(startDate) / 60)
+
+        return WorkoutSummaryData(
+            completedExercises: completedExercises,
+            workoutDurationMinutes: max(durationMinutes, 1), // At least 1 minute
+            startTime: startTime,
+            endTime: endTime
+        )
     }
 }

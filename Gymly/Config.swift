@@ -156,8 +156,14 @@ class Config:ObservableObject {
             UserDefaults.standard.set(userAge, forKey: "userAge")
         }
     }
+
+    @Published var totalWorkoutTimeMinutes: Int {
+        didSet {
+            UserDefaults.standard.set(totalWorkoutTimeMinutes, forKey: "totalWorkoutTimeMinutes")
+        }
+    }
     
-    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String, allowdateOfBirth: Bool, allowHeight: Bool, allowWeight: Bool, isHealthEnabled: Bool, roundSetWeights: Bool, firstSplitEdit:Bool, activeExercise: Int, graphDataValues: [Double], graphMaxValue: Double, graphUpdatedExercisesIDs: Set<UUID>, userWeight: Double, userBMI: Double, userHeight: Double, userAge: Int) {
+    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String, allowdateOfBirth: Bool, allowHeight: Bool, allowWeight: Bool, isHealthEnabled: Bool, roundSetWeights: Bool, firstSplitEdit:Bool, activeExercise: Int, graphDataValues: [Double], graphMaxValue: Double, graphUpdatedExercisesIDs: Set<UUID>, userWeight: Double, userBMI: Double, userHeight: Double, userAge: Int, totalWorkoutTimeMinutes: Int) {
         self.weightUnit = UserDefaults.standard.object(forKey: "weightUnit") as? String ?? "Kg"
         self.splitStarted = UserDefaults.standard.object(forKey: "splitStarted") as? Bool ?? false
         self.daysRecorded = UserDefaults.standard.object(forKey: "daysRecorded") as? [String] ?? []
@@ -182,6 +188,7 @@ class Config:ObservableObject {
         self.userBMI = UserDefaults.standard.object(forKey: "userBMI") as? Double ?? 0.0
         self.userHeight = UserDefaults.standard.object(forKey: "userHeight") as? Double ?? 0.0
         self.userAge = UserDefaults.standard.object(forKey: "userAge") as? Int ?? 0
+        self.totalWorkoutTimeMinutes = UserDefaults.standard.object(forKey: "totalWorkoutTimeMinutes") as? Int ?? 0
     }
 }
 
