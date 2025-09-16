@@ -13,20 +13,42 @@ struct EditExerciseSetView: View {
     @Environment(\.modelContext) private var context
     @EnvironmentObject var config: Config
     @Environment(\.dismiss) var dismiss
+    @Environment(\.colorScheme) var scheme
 
-    /// Bindings for exercise set data
-    @Binding var weight: Double
-    @Binding var reps: Int
+    /// The specific set being edited
+    @State var targetSet: Exercise.Set
+    @State var exercise: Exercise
+
+    /// Local state for editing
+    @State private var weight: Double
+    @State private var reps: Int
+    @State private var note: String
+    @State private var failure: Bool
+    @State private var warmup: Bool
+    @State private var restPause: Bool
+    @State private var dropSet: Bool
+    @State private var bodyWeight: Bool
+
+    /// Unit binding from config
     @Binding var unit: String
-    @Binding var setNumber: Int
-    @Binding var note: String
-    @State var exercise:Exercise
-    @Binding var failure:Bool
-    @Binding var warmup:Bool
-    @Binding var restPause:Bool
-    @Binding var dropSet:Bool
-    @Binding var bodyWeight:Bool
-    
+
+    /// Initialize the view with the target set data
+    init(targetSet: Exercise.Set, exercise: Exercise, unit: Binding<String>) {
+        self._targetSet = State(initialValue: targetSet)
+        self._exercise = State(initialValue: exercise)
+        self._unit = unit
+
+        // Initialize local state with target set data
+        self._weight = State(initialValue: targetSet.weight)
+        self._reps = State(initialValue: targetSet.reps)
+        self._note = State(initialValue: targetSet.note)
+        self._failure = State(initialValue: targetSet.failure)
+        self._warmup = State(initialValue: targetSet.warmUp)
+        self._restPause = State(initialValue: targetSet.restPause)
+        self._dropSet = State(initialValue: targetSet.dropSet)
+        self._bodyWeight = State(initialValue: targetSet.bodyWeight)
+    }
+
     /// Returns a list of selected set types
     var selectedSetTypes: [String] {
         var selected = [String]()
@@ -45,6 +67,15 @@ struct EditExerciseSetView: View {
     }
 
 
+    /// Calculate the display number for this set
+    private var setDisplayNumber: Int {
+        if let index = exercise.sets.firstIndex(where: { $0.id == targetSet.id }) {
+            return index + 1
+        }
+        return 1
+    }
+
+    
     var body: some View {
         NavigationView {
             Form {
@@ -52,7 +83,7 @@ struct EditExerciseSetView: View {
                 Section("Set note") {
                     SetNoteCell(
                         note: $note,
-                        setNumber: setNumber,
+                        setNumber: setDisplayNumber,
                         exercise: exercise
                     )
                 }
@@ -66,7 +97,7 @@ struct EditExerciseSetView: View {
                         warmup: $warmup,
                         restPause: $restPause,
                         dropSet: $dropSet,
-                        setNumber: setNumber,
+                        setNumber: setDisplayNumber,
                         exercise: exercise
                     )
                 }
@@ -78,7 +109,7 @@ struct EditExerciseSetView: View {
                     SetWeightCell(
                         bodyWeight: $bodyWeight,
                         displayedWeight: displayedWeight,
-                        setNumber: setNumber,
+                        setNumber: setDisplayNumber,
                         exercise: exercise,
                         increaseWeight: increaseWeight,
                         decreaseWeight: decreaseWeight,
@@ -106,21 +137,7 @@ struct EditExerciseSetView: View {
                 /// Toolbar button to save changes
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        exercise.sets[setNumber].weight = weight
-                        exercise.sets[setNumber].reps = reps
-                        exercise.sets[setNumber].failure = failure
-                        exercise.sets[setNumber].warmUp = warmup
-                        exercise.sets[setNumber].restPause = restPause
-                        exercise.sets[setNumber].dropSet = dropSet
-                        exercise.sets[setNumber].time = getCurrentTime()
-                        exercise.sets[setNumber].note = note
-                        exercise.sets[setNumber].bodyWeight = bodyWeight
-                        do {
-                            try context.save()
-                        } catch {
-                            debugPrint(error)
-                        }
-                        dismiss()
+                        saveAllChanges()
                     } label: {
                         Text("Done")
                             .foregroundStyle(Color.accentColor)
@@ -166,42 +183,87 @@ struct EditExerciseSetView: View {
         }
     }
 
-    /// Save weight to context
+    /// Save all changes to the target set
+    private func saveAllChanges() {
+        debugPrint("💾 Saving changes to set ID: \(targetSet.id)")
+
+        // Validate that the target set still exists in the exercise
+        guard let setIndex = exercise.sets.firstIndex(where: { $0.id == targetSet.id }) else {
+            debugPrint("❌ Error: Target set no longer exists in exercise")
+            dismiss()
+            return
+        }
+
+        // Validate input data
+        guard weight >= 0, reps >= 0 else {
+            debugPrint("❌ Error: Invalid weight (\(weight)) or reps (\(reps))")
+            return
+        }
+
+        debugPrint("✅ Set validation passed - found at index \(setIndex)")
+
+        // Update the target set directly
+        targetSet.weight = weight
+        targetSet.reps = reps
+        targetSet.failure = failure
+        targetSet.warmUp = warmup
+        targetSet.restPause = restPause
+        targetSet.dropSet = dropSet
+        targetSet.time = getCurrentTime()
+        targetSet.note = note
+        targetSet.bodyWeight = bodyWeight
+
+        do {
+            try context.save()
+            debugPrint("✅ Successfully saved set changes - Weight: \(weight), Reps: \(reps)")
+        } catch {
+            debugPrint("❌ Error saving set changes: \(error)")
+        }
+
+        dismiss()
+    }
+
+    /// Save weight to context (for incremental updates)
     private func saveWeight() {
-        exercise.sets[setNumber].weight = weight
+        // Validate that the target set still exists
+        guard exercise.sets.contains(where: { $0.id == targetSet.id }) else {
+            debugPrint("❌ Error: Cannot save weight - target set no longer exists")
+            return
+        }
+
+        guard weight >= 0 else {
+            debugPrint("❌ Error: Invalid weight value: \(weight)")
+            return
+        }
+
+        targetSet.weight = weight
         do {
             try context.save()
+            debugPrint("💾 Weight saved: \(weight) kg")
         } catch {
-            debugPrint(error)
+            debugPrint("❌ Error saving weight: \(error)")
         }
     }
 
-    /// Save reps to context
+    /// Save reps to context (for incremental updates)
     private func saveReps() {
-        exercise.sets[setNumber].reps = reps
+        // Validate that the target set still exists
+        guard exercise.sets.contains(where: { $0.id == targetSet.id }) else {
+            debugPrint("❌ Error: Cannot save reps - target set no longer exists")
+            return
+        }
+
+        guard reps >= 0 else {
+            debugPrint("❌ Error: Invalid reps value: \(reps)")
+            return
+        }
+
+        targetSet.reps = reps
         do {
             try context.save()
+            debugPrint("💾 Reps saved: \(reps)")
         } catch {
-            debugPrint(error)
+            debugPrint("❌ Error saving reps: \(error)")
         }
-    }
-}
-
-// 1) Tiny helper to read view height
-struct SheetHeightKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
-    }
-}
-
-extension View {
-    func readHeight(_ height: Binding<CGFloat>) -> some View {
-        background(
-            GeometryReader { proxy in
-                Color.clear.preference(key: SheetHeightKey.self, value: proxy.size.height)
-            }
-        )
-        .onPreferenceChange(SheetHeightKey.self) { height.wrappedValue = $0 }
     }
 }

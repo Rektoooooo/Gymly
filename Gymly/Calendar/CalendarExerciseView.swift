@@ -57,7 +57,6 @@ struct CalendarExerciseView: View {
                         index: index,
                         set: set,
                         config: config,
-                        loadSetData: loadSetData,
                         exercise: exercise,
                         setForCalendar: true
                     )

@@ -13,15 +13,26 @@ struct SetCell: View {
     var index: Int
     var set: Exercise.Set
     var config: Config
-    var loadSetData: (Exercise.Set, Bool) -> Void
     var exercise: Exercise
     var setForCalendar: Bool
+    var onSetTap: ((Exercise.Set) -> Void)? = nil
+    @State private var showEditSheet = false
 
     var body: some View {
         Section("Set \(index + 1)") {
             Button {
                 if setForCalendar == false {
-                    loadSetData(set, true)
+                    print("📱 Tapping set \(index + 1) (ID: \(set.id))")
+                    if let onSetTap = onSetTap {
+                        // Use callback for external sheet management
+                        print("📱 Using callback for set tap")
+                        onSetTap(set)
+                    } else {
+                        // Use internal sheet management
+                        print("📱 Using internal sheet - showEditSheet: \(showEditSheet)")
+                        showEditSheet = true
+                        print("📱 Set showEditSheet to: \(showEditSheet)")
+                    }
                 }
             } label: {
                 HStack {
@@ -84,5 +95,28 @@ struct SetCell: View {
                     .opacity(0.5)
             }
         }
+        .sheet(isPresented: onSetTap == nil ? $showEditSheet : .constant(false)) {
+            if onSetTap == nil {
+                EditExerciseSetView(
+                    targetSet: set,
+                    exercise: exercise,
+                    unit: .constant(config.weightUnit)
+                )
+                .onAppear {
+                    print("📱 EditExerciseSetView appeared for set \(index + 1)")
+                }
+                .onDisappear {
+                    print("📱 EditExerciseSetView disappeared for set \(index + 1)")
+                }
+            }
+        }
+        .onChange(of: showEditSheet) { newValue in
+            if onSetTap == nil {
+                print("📱 showEditSheet changed to: \(newValue) for set \(index + 1)")
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .background(Color.clear)
+        .listRowBackground(Color.black.opacity(0.1))
     }
 }

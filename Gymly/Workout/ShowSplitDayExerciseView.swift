@@ -17,31 +17,22 @@ struct ShowSplitDayExerciseView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var viewModel: WorkoutViewModel
     @State var exercise: Exercise
-    
+    @Environment(\.colorScheme) var scheme
+
     /// UI State Variables
-    @State private var isOn = false
     @State var showSheet = false
-    @State var weight: Double = 0.0
-    @State var reps: Int = 0
-    @State var failure: Bool = false
-    @State var warmUp: Bool = false
-    @State var restPause: Bool = false
-    @State var dropSet: Bool = false
-    @State var bodyWeight: Bool = false
-    @State var setNumber: Int = 0
-    @State var note: String = ""
-    @State var showEdit = false
-    
-    /// Converts weight to correct unit (Kg/Lbs)
-    var convertedWeight: Double {
-        if config.weightUnit == "Kg" {
-            return weight
-        } else {
-            return weight * 2.20462
-        }
+    @State var sheetType: SheetType?
+    @State var selectedSet: Exercise.Set?
+
+    enum SheetType {
+        case editExercise
+        case editSet(Exercise.Set)
     }
     
     var body: some View {
+        ZStack {
+            FloatingClouds(theme: CloudsTheme.graphite(scheme))
+                .ignoresSafeArea()
         VStack {
             /// Displays set and rep count
             HStack {
@@ -59,69 +50,20 @@ struct ShowSplitDayExerciseView: View {
             Form {
                 /// List of exercise sets
                 ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
-                    Section("Set \(index + 1)") {
-                        Button {
-                            loadSetData(set: set)
-                        } label: {
-                            HStack {
-                                /// Display set details (weight, reps, notes)
-                                HStack {
-                                    if set.bodyWeight {
-                                        Text("BW  +")
-                                            .foregroundStyle(.accent)
-                                            .bold()
-                                    }
-                                    Text("\(Int(round(Double(set.weight) * (config.weightUnit == "Kg" ? 1.0 : 2.20462))))")
-                                        .foregroundStyle(.accent)
-                                        .bold()
-                                    Text("\(config.weightUnit)")
-                                        .foregroundStyle(.accent)
-                                        .opacity(0.6)
-                                        .offset(x: -5)
-                                }
-                                HStack {
-                                    Text("\(set.reps)")
-                                        .foregroundStyle(Color.green)
-                                        .bold()
-                                    Text("Reps")
-                                        .foregroundStyle(Color.green)
-                                        .opacity(0.6)
-                                        .offset(x: -5)
-                                }
-                                HStack {
-                                    if set.failure {
-                                        Text("F")
-                                            .foregroundStyle(Color.red)
-                                            .offset(x: -5)
-                                    }
-                                    if set.warmUp {
-                                        Text("W")
-                                            .foregroundStyle(Color.orange)
-                                            .offset(x: -5)
-                                    }
-                                    if set.restPause {
-                                        Text("RP")
-                                            .foregroundStyle(Color.green)
-                                            .offset(x: -5)
-                                    }
-                                    if set.dropSet {
-                                        Text("DS")
-                                            .foregroundStyle(Color.blue)
-                                            .offset(x: -5)
-                                    }
-                                }
-                                Spacer()
-                                Text("\(set.time)")
-                                    .foregroundStyle(Color.white)
-                                    .opacity(set.time.isEmpty ? 0 : 0.3)
-                            }
+                    SetCell(
+                        viewModel: viewModel,
+                        index: index,
+                        set: set,
+                        config: config,
+                        exercise: exercise,
+                        setForCalendar: false,  // Enable editing
+                        onSetTap: { tappedSet in
+                            print("📱 ShowSplitDayExerciseView received set tap for set ID: \(tappedSet.id)")
+                            selectedSet = tappedSet
+                            sheetType = .editSet(tappedSet)
+                            showSheet = true
                         }
-                        if !set.note.isEmpty {
-                            Text(set.note)
-                                .foregroundStyle(Color.white)
-                                .opacity(0.5)
-                        }
-                    }
+                    )
                     .swipeActions(edge: .trailing) {
                         /// Swipe-to-delete action for a set
                         Button(role: .destructive) {
@@ -141,32 +83,31 @@ struct ShowSplitDayExerciseView: View {
                 }
             }
             .sheet(isPresented: $showSheet) {
-                /// Sheet for editing a set
-                EditExerciseSetView(
-                    weight: $weight,
-                    reps: $reps,
-                    unit: $config.weightUnit,
-                    setNumber: $setNumber,
-                    note: $note,
-                    exercise: exercise,
-                    failure: $failure,
-                    warmup: $warmUp,
-                    restPause: $restPause,
-                    dropSet: $dropSet,
-                    bodyWeight: $bodyWeight
-                )
-                .presentationSizing(.fitted)     // ← fits to content height
-                .presentationDragIndicator(.visible)
-            }
-            .sheet(isPresented: $showEdit) {
-                /// Sheet for editing a set
-                EditExerciseView(viewModel: viewModel, exercise: exercise)
-                .presentationDetents([.large])
+                switch sheetType {
+                case .editExercise:
+                    EditExerciseView(viewModel: viewModel, exercise: exercise)
+                        .presentationDetents([.large])
+                case .editSet(let set):
+                    EditExerciseSetView(
+                        targetSet: set,
+                        exercise: exercise,
+                        unit: .constant(config.weightUnit)
+                    )
+                    .onAppear {
+                        print("📱 EditExerciseSetView appeared for set ID: \(set.id)")
+                    }
+                    .onDisappear {
+                        print("📱 EditExerciseSetView disappeared for set ID: \(set.id)")
+                    }
+                case .none:
+                    EmptyView()
+                }
             }
             .toolbar {
                 /// Edit exercise button
                 Button {
-                    showEdit.toggle()
+                    sheetType = .editExercise
+                    showSheet = true
                 } label: {
                     Label("Edit exercise", systemImage: "slider.horizontal.3")
                 }
@@ -179,28 +120,13 @@ struct ShowSplitDayExerciseView: View {
                     Label("Add set", systemImage: "plus.circle")
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .listRowBackground(Color.clear)
+        }
         }
         .navigationTitle("\(exercise.name)")
         .navigationBarTitleDisplayMode(.inline)
-    }
-    
-    /// Loads set data into state variables for editing
-    func loadSetData(set: Exercise.Set, shouldOpenSheet: Bool = true) {
-        weight = set.weight
-        reps = set.reps
-        failure = set.failure
-        warmUp = set.warmUp
-        restPause = set.restPause
-        dropSet = set.dropSet
-        bodyWeight = set.bodyWeight
-        note = set.note
-        setNumber = exercise.sets.firstIndex(where: { $0.id == set.id }) ?? 0
-        
-        if shouldOpenSheet {
-            Task { @MainActor in
-                showSheet = true
-            }
-        }
     }
 
     /// Refreshes the exercise data

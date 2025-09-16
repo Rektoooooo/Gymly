@@ -17,32 +17,11 @@ struct ExerciseDetailView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @State var exercise: Exercise
     @Environment(\.colorScheme) var scheme
-    
-    /// UI State Variables
-    @State private var isOn = false
-    @State var showSheet = false
-    @State var weight: Double = 0.0
-    @State var reps: Int = 0
-    @State var failure: Bool = false
-    @State var warmUp: Bool = false
-    @State var restPause: Bool = false
-    @State var dropSet: Bool = false
-    @State var setNumber: Int = 0
-    @State var bodyWeight: Bool = false
-    @State var note: String = ""
-    @State private var sheetHeight: CGFloat = 300
-    
-    /// Converts weight to correct unit (Kg/Lbs)
-    var convertedWeight: Double {
-        if config.weightUnit == "Kg" {
-            return weight
-        } else {
-            return weight * 2.20462
-        }
-    }
-    
 
-    
+    /// Sheet management for set editing
+    @State private var showSetEditSheet = false
+    @State private var selectedSet: Exercise.Set?
+
     var body: some View {
         ZStack {
             FloatingClouds(theme: CloudsTheme.graphite(scheme))
@@ -68,9 +47,13 @@ struct ExerciseDetailView: View {
                             index: index,
                             set: set,
                             config: config,
-                            loadSetData: loadSetData,
                             exercise: exercise,
-                            setForCalendar: false
+                            setForCalendar: false,
+                            onSetTap: { tappedSet in
+                                print("📱 ExerciseDetailView received set tap for set ID: \(tappedSet.id)")
+                                selectedSet = tappedSet
+                                showSetEditSheet = true
+                            }
                         )
                         .scrollContentBackground(.hidden)
                         .background(Color.clear)
@@ -121,53 +104,26 @@ struct ExerciseDetailView: View {
             .scrollContentBackground(.hidden)
             .background(Color.clear)
             .listRowBackground(Color.clear)
-            .onAppear {
-                /// Load set data when view appears
-                for index in exercise.sets.indices {
-                    loadSetData(set: exercise.sets[index], shouldOpenSheet: false)
-                }
-            }
             .navigationTitle("\(exercise.name)")
             .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $showSheet) {
-                /// Sheet for editing a set
-                EditExerciseSetView(
-                    weight: $weight,
-                    reps: $reps,
-                    unit: $config.weightUnit,
-                    setNumber: $setNumber,
-                    note: $note,
-                    exercise: exercise,
-                    failure: $failure,
-                    warmup: $warmUp,
-                    restPause: $restPause,
-                    dropSet: $dropSet,
-                    bodyWeight: $bodyWeight
-                )
-                .presentationDetents([.fraction(0.68)])
+            .sheet(isPresented: $showSetEditSheet) {
+                if let selectedSet = selectedSet {
+                    EditExerciseSetView(
+                        targetSet: selectedSet,
+                        exercise: exercise,
+                        unit: .constant(config.weightUnit)
+                    )
+                    .presentationDetents([.fraction(0.68)])
+                    .onAppear {
+                        print("📱 EditExerciseSetView appeared for set ID: \(selectedSet.id)")
+                    }
+                    .onDisappear {
+                        print("📱 EditExerciseSetView disappeared for set ID: \(selectedSet.id)")
+                    }
+                }
             }
         }
     }
-    
-    /// Loads set data into state variables for editing
-    func loadSetData(set: Exercise.Set, shouldOpenSheet: Bool = true) {
-        weight = set.weight
-        reps = set.reps
-        failure = set.failure
-        warmUp = set.warmUp
-        restPause = set.restPause
-        dropSet = set.dropSet
-        bodyWeight = set.bodyWeight
-        note = set.note
-        setNumber = exercise.sets.firstIndex(where: { $0.id == set.id }) ?? 0
-        
-        if shouldOpenSheet {
-            Task { @MainActor in
-                showSheet = true
-            }
-        }
-    }
-    
     
     /// Refreshes the exercise data
     func refreshExercise() {
