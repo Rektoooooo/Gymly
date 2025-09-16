@@ -12,10 +12,14 @@ struct ConnectionsView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @StateObject var healthKitManager = HealthKitManager()
     @EnvironmentObject var config: Config
+    @Environment(\.colorScheme) var scheme
     private let healthStore = HKHealthStore()
-    
+
     var body: some View {
-        Form {
+        ZStack {
+            FloatingClouds(theme: CloudsTheme.graphite(scheme))
+                .ignoresSafeArea()
+            Form {
             Section(header: Text("Apple Health")) {
                 Toggle("Enable Apple Health", isOn: $config.isHealthEnabled)
                     .onChange(of: config.isHealthEnabled) {
@@ -33,6 +37,10 @@ struct ConnectionsView: View {
                    // Toggle("Allow Weight", isOn: $config.allowWeight)
                 }
             }
+            .listRowBackground(Color.black.opacity(0.05))
+            }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
         }
         .navigationTitle("Connected Apps")
         .onAppear {

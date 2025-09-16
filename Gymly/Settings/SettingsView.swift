@@ -252,6 +252,9 @@ struct SettingsView: View {
                                 healthKitManager.updateFromWeightChart(context: context)
                                 config.userWeight = weight ?? config.userWeight
                                 config.userBMI = config.userWeight / (config.userHeight * config.userHeight)
+                                let (color, status) = getBmiStyle(bmi: config.userBMI)
+                                bmiColor = color
+                                bmiStatus = status
                                 weightUpdatedTrigger.toggle() // Trigger UI update
                             }
                         }                }) {
