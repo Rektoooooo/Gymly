@@ -29,13 +29,12 @@ struct ConnectionsView: View {
                             disableHealthKitAccess()
                         }
                     }
+
+                Text("To fully revoke permissions, disable HealthKit access in Settings > Privacy & Security > Health > Gymly")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
                 
-                // TODO: Toggles does not sinc with the healt kit so there are doing nothing
-                if config.isHealthEnabled {
-                   // Toggle("Allow Date of Birth", isOn: $config.allowDateOfBirth)
-                   // Toggle("Allow Height", isOn: $config.allowHeight)
-                   // Toggle("Allow Weight", isOn: $config.allowWeight)
-                }
             }
             .listRowBackground(Color.black.opacity(0.05))
             }
@@ -58,32 +57,35 @@ struct ConnectionsView: View {
             HKObjectType.quantityType(forIdentifier: .height)!,
             HKObjectType.quantityType(forIdentifier: .bodyMass)!
         ]
-        
+
         healthStore.requestAuthorization(toShare: nil, read: healthDataToRead) { success, error in
             DispatchQueue.main.async {
                 self.updateHealthPermissions() // ✅ Ensure UI updates right after auth
             }
         }
     }
+
     
     /// Syncs UI toggles with HealthKit permissions
     private func updateHealthPermissions() {
         let dateOfBirthType = HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!
         let heightType = HKObjectType.quantityType(forIdentifier: .height)!
         let weightType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
-        
+
         DispatchQueue.global(qos: .userInitiated).async {
             let dateOfBirthStatus = self.healthStore.authorizationStatus(for: dateOfBirthType)
             let heightStatus = self.healthStore.authorizationStatus(for: heightType)
             let weightStatus = self.healthStore.authorizationStatus(for: weightType)
-            
+
             DispatchQueue.main.async {
+                // For date of birth, check if it's authorized OR not determined (can still be requested)
                 self.config.allowDateOfBirth = (dateOfBirthStatus == .sharingAuthorized)
                 self.config.allowHeight = (heightStatus == .sharingAuthorized)
                 self.config.allowWeight = (weightStatus == .sharingAuthorized)
             }
         }
     }
+
     
     /// Resets permissions when HealthKit is disabled
     private func disableHealthKitAccess() {
