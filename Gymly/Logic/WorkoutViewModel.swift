@@ -336,15 +336,18 @@ final class WorkoutViewModel: ObservableObject {
             let daysPassed = numberOfDaysBetween(start: config.lastUpdateDate, end: Date())
 
             let totalDays = config.dayInSplit + daysPassed
-            
-            let activeSplit = getActiveSplit()
-            
-            let newDayInSplit = (totalDays - 1) % activeSplit!.days.count + 1
+
+            guard let activeSplit = getActiveSplit() else {
+                print("No active split found, returning current day in split")
+                return config.dayInSplit
+            }
+
+            let newDayInSplit = (totalDays - 1) % activeSplit.days.count + 1
 
             config.dayInSplit = newDayInSplit
             config.lastUpdateDate = Date()
             config.activeExercise = 1
-            
+
             return config.dayInSplit
         } else {
             return config.dayInSplit
