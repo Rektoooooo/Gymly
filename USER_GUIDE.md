@@ -33,7 +33,7 @@ A workout split is your complete workout routine - a collection of workout days 
 
 ### Creating a New Split
 
-1. **Open the Routine Tab** at the bottom of the screen
+1. **Open the Routine Tab** at the top of the screen
 2. **Tap "Create New Split"** or the "+" button
 3. **Enter Split Details:**
    - **Split Name:** Give your routine a memorable name (e.g., "Push Pull Legs", "Summer Cut")
@@ -207,7 +207,7 @@ Access your complete workout history:
 ### Common Issues
 
 **Q: My workout didn't save to the calendar**
-- A: Make sure you marked at least one exercise as complete before leaving the workout
+- A: Make sure you marked at least one exercise as complete and press **Workout done** button before leaving the workout
 
 **Q: HealthKit isn't syncing**
 - A: Go to Settings → Connections and re-enable HealthKit permissions
