@@ -14,6 +14,7 @@ struct EditExerciseSetView: View {
     @EnvironmentObject var config: Config
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var scheme
+    @EnvironmentObject var userProfileManager: UserProfileManager
 
     /// The specific set being edited
     @State var targetSet: Exercise.Set
@@ -63,13 +64,13 @@ struct EditExerciseSetView: View {
     /// Formats displayed weight based on the unit
     var displayedWeight: String {
         let weightInLbs = weight * 2.20462
-        return config.weightUnit == "Kg" ? "\(Int(round(weight))) kg" : "\(Int(round(weightInLbs))) lbs"
+        return userProfileManager.currentProfile?.weightUnit ?? "Kg" == "Kg" ? "\(Int(round(weight))) kg" : "\(Int(round(weightInLbs))) lbs"
     }
 
 
     /// Calculate the display number for this set
     private var setDisplayNumber: Int {
-        if let index = exercise.sets.firstIndex(where: { $0.id == targetSet.id }) {
+        if let index = (exercise.sets ?? []).firstIndex(where: { $0.id == targetSet.id }) {
             return index + 1
         }
         return 1
@@ -167,7 +168,7 @@ struct EditExerciseSetView: View {
     
     /// Increase the weight
     func increaseWeight(by value: Int) {
-        if config.weightUnit == "Kg" {
+        if userProfileManager.currentProfile?.weightUnit ?? "Kg" == "Kg" {
             weight += Double(value)
         } else {
             weight += Double(value) / 2.20462 // Convert lbs to kg before adding
@@ -176,7 +177,7 @@ struct EditExerciseSetView: View {
 
     /// Decrease the weight
     func decreaseWeight(by value: Int) {
-        if config.weightUnit == "Kg" {
+        if userProfileManager.currentProfile?.weightUnit ?? "Kg" == "Kg" {
             weight -= Double(value)
         } else {
             weight -= Double(value) / 2.20462 // Convert lbs to kg before subtracting
@@ -188,7 +189,7 @@ struct EditExerciseSetView: View {
         debugPrint("💾 Saving changes to set ID: \(targetSet.id)")
 
         // Validate that the target set still exists in the exercise
-        guard let setIndex = exercise.sets.firstIndex(where: { $0.id == targetSet.id }) else {
+        guard let setIndex = (exercise.sets ?? []).firstIndex(where: { $0.id == targetSet.id }) else {
             debugPrint("❌ Error: Target set no longer exists in exercise")
             dismiss()
             return
@@ -226,7 +227,7 @@ struct EditExerciseSetView: View {
     /// Save weight to context (for incremental updates)
     private func saveWeight() {
         // Validate that the target set still exists
-        guard exercise.sets.contains(where: { $0.id == targetSet.id }) else {
+        guard (exercise.sets ?? []).contains(where: { $0.id == targetSet.id }) else {
             debugPrint("❌ Error: Cannot save weight - target set no longer exists")
             return
         }
@@ -248,7 +249,7 @@ struct EditExerciseSetView: View {
     /// Save reps to context (for incremental updates)
     private func saveReps() {
         // Validate that the target set still exists
-        guard exercise.sets.contains(where: { $0.id == targetSet.id }) else {
+        guard (exercise.sets ?? []).contains(where: { $0.id == targetSet.id }) else {
             debugPrint("❌ Error: Cannot save reps - target set no longer exists")
             return
         }

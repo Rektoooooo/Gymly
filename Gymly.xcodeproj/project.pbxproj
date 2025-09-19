@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EC06F15F2E7BC4FE00E42CCF /* CloudKitSyncStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC06F15D2E7BC4FE00E42CCF /* CloudKitSyncStatus.swift */; };
+		EC06F1602E7BC4FE00E42CCF /* CloudKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC06F15C2E7BC4FE00E42CCF /* CloudKitManager.swift */; };
+		EC06F1622E7BCCC900E42CCF /* ExerciseExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC06F1612E7BCCC900E42CCF /* ExerciseExtensions.swift */; };
+		EC06F1672E7CA3C100E42CCF /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC06F1652E7CA3C100E42CCF /* UserProfile.swift */; };
+		EC06F16A2E7CA3DA00E42CCF /* UserProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC06F1682E7CA3DA00E42CCF /* UserProfileManager.swift */; };
 		EC3BEC3D2C76624600C9DF0B /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3BEC3C2C76624600C9DF0B /* Config.swift */; };
 		EC4FD1532C4ED88300D1A4A6 /* Day.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1522C4ED88300D1A4A6 /* Day.swift */; };
 		EC4FD1572C4EE0A600D1A4A6 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4FD1552C4EE0A600D1A4A6 /* Color.swift */; };
@@ -56,6 +61,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		EC06F15C2E7BC4FE00E42CCF /* CloudKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitManager.swift; sourceTree = "<group>"; };
+		EC06F15D2E7BC4FE00E42CCF /* CloudKitSyncStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitSyncStatus.swift; sourceTree = "<group>"; };
+		EC06F1612E7BCCC900E42CCF /* ExerciseExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseExtensions.swift; sourceTree = "<group>"; };
+		EC06F1652E7CA3C100E42CCF /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
+		EC06F1682E7CA3DA00E42CCF /* UserProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileManager.swift; sourceTree = "<group>"; };
 		EC3BEC3C2C76624600C9DF0B /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		EC4FD1522C4ED88300D1A4A6 /* Day.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Day.swift; sourceTree = "<group>"; };
 		EC4FD1542C4EE0A600D1A4A6 /* onFirstAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = onFirstAppear.swift; sourceTree = "<group>"; };
@@ -125,12 +135,45 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		EC06F15E2E7BC4FE00E42CCF /* CloudKit */ = {
+			isa = PBXGroup;
+			children = (
+				EC06F15C2E7BC4FE00E42CCF /* CloudKitManager.swift */,
+				EC06F15D2E7BC4FE00E42CCF /* CloudKitSyncStatus.swift */,
+			);
+			path = CloudKit;
+			sourceTree = "<group>";
+		};
+		EC06F1662E7CA3C100E42CCF /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				EC06F1652E7CA3C100E42CCF /* UserProfile.swift */,
+				ECA5D1752BF22C2000DCC9F8 /* Exercise.swift */,
+				EC66F6A62D949DBB0086D625 /* WeightPoint.swift */,
+				EC9A6A5F2E716FC20081E390 /* GraphEntry.swift */,
+				EC4FD1522C4ED88300D1A4A6 /* Day.swift */,
+				EC71CA892D705986003EAB09 /* Split.swift */,
+				EC8C15102C80A94D008E4152 /* DayStorage.swift */,
+				EC629C652C9CAE2300009902 /* MuscleGroup.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		EC06F1692E7CA3DA00E42CCF /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				EC06F1682E7CA3DA00E42CCF /* UserProfileManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
 		EC4FD1562C4EE0A600D1A4A6 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
 				EC5922412D79A81000EB39B2 /* ImageExtension.swift */,
 				EC4FD1542C4EE0A600D1A4A6 /* onFirstAppear.swift */,
 				EC4FD1552C4EE0A600D1A4A6 /* Color.swift */,
+				EC06F1612E7BCCC900E42CCF /* ExerciseExtensions.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -176,6 +219,7 @@
 			children = (
 				ECF621932D497912007B4C2E /* Info.plist */,
 				ECDE63122D48D85A00C2DA94 /* Gymly.entitlements */,
+				EC06F15E2E7BC4FE00E42CCF /* CloudKit */,
 				EC5922482D7A3BD500EB39B2 /* Cells */,
 				ECA863152CC9760C00FFB675 /* Logic */,
 				ECA863112CC9754600FFB675 /* Home */,
@@ -183,17 +227,12 @@
 				ECA863132CC9758E00FFB675 /* Calendar */,
 				ECA863142CC9759500FFB675 /* Settings */,
 				ECA5D1432BF20CF100DCC9F8 /* GymlyApp.swift */,
+				EC06F1662E7CA3C100E42CCF /* Models */,
 				EC66F69A2D92FD750086D625 /* WhatsNewManager.swift */,
 				ECDE63102D48D27B00C2DA94 /* SignInView.swift */,
 				ECA5D16D2BF20D0F00DCC9F8 /* ToolBar.swift */,
-				ECA5D1752BF22C2000DCC9F8 /* Exercise.swift */,
-				EC66F6A62D949DBB0086D625 /* WeightPoint.swift */,
-				EC9A6A5F2E716FC20081E390 /* GraphEntry.swift */,
-				EC4FD1522C4ED88300D1A4A6 /* Day.swift */,
-				EC71CA892D705986003EAB09 /* Split.swift */,
-				EC8C15102C80A94D008E4152 /* DayStorage.swift */,
+				EC06F1692E7CA3DA00E42CCF /* Managers */,
 				EC3BEC3C2C76624600C9DF0B /* Config.swift */,
-				EC629C652C9CAE2300009902 /* MuscleGroup.swift */,
 				ECA5D1472BF20CF500DCC9F8 /* Assets.xcassets */,
 				EC4FD1562C4EE0A600D1A4A6 /* Extensions */,
 				ECA5D1492BF20CF500DCC9F8 /* Preview Content */,
@@ -364,6 +403,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ECA5D16E2BF20D0F00DCC9F8 /* ToolBar.swift in Sources */,
+				EC06F1622E7BCCC900E42CCF /* ExerciseExtensions.swift in Sources */,
 				EC3BEC3D2C76624600C9DF0B /* Config.swift in Sources */,
 				EC4FD1532C4ED88300D1A4A6 /* Day.swift in Sources */,
 				EC629C662C9CAE2300009902 /* MuscleGroup.swift in Sources */,
@@ -372,11 +412,14 @@
 				EC71CA8A2D705986003EAB09 /* Split.swift in Sources */,
 				EC66F6992D92CF380086D625 /* SettingUserInfoCell.swift in Sources */,
 				EC66F6A72D949DBB0086D625 /* WeightPoint.swift in Sources */,
+				EC06F16A2E7CA3DA00E42CCF /* UserProfileManager.swift in Sources */,
 				EC66F6A52D949D410086D625 /* WeightChart.swift in Sources */,
 				EC4FD1582C4EE0A600D1A4A6 /* onFirstAppear.swift in Sources */,
 				EC59224E2D7A407C00EB39B2 /* SetTypeCell.swift in Sources */,
 				EC5922462D79A81000EB39B2 /* ImageExtension.swift in Sources */,
 				EC5922542D7B1BE100EB39B2 /* ProfileImageCell.swift in Sources */,
+				EC06F15F2E7BC4FE00E42CCF /* CloudKitSyncStatus.swift in Sources */,
+				EC06F1602E7BC4FE00E42CCF /* CloudKitManager.swift in Sources */,
 				EC5922522D7B0A6200EB39B2 /* SetCell.swift in Sources */,
 				EC59224C2D7A3D6500EB39B2 /* SetWeightCell.swift in Sources */,
 				ECA5D1442BF20CF100DCC9F8 /* GymlyApp.swift in Sources */,
@@ -387,6 +430,7 @@
 				EC9A6A602E716FC20081E390 /* GraphEntry.swift in Sources */,
 				EC66F69B2D92FD750086D625 /* WhatsNewManager.swift in Sources */,
 				ECDE63112D48D27B00C2DA94 /* SignInView.swift in Sources */,
+				EC06F1672E7CA3C100E42CCF /* UserProfile.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -17,6 +17,8 @@ struct ExerciseDetailView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @State var exercise: Exercise
     @Environment(\.colorScheme) var scheme
+    @EnvironmentObject var userProfileManager: UserProfileManager
+
 
     /// Sheet management for set editing
     @State private var showSetEditSheet = false
@@ -29,7 +31,7 @@ struct ExerciseDetailView: View {
             VStack {
                 /// Displays set and rep count
                 HStack {
-                    Text("\(exercise.sets.count) Sets")
+                    Text("\(exercise.sets?.count ?? 0) Sets")
                         .foregroundStyle(.accent)
                         .padding()
                         .bold()
@@ -41,7 +43,7 @@ struct ExerciseDetailView: View {
                 }
                 Form {
                     /// List of exercise sets
-                    ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
+                    ForEach(Array((exercise.sets ?? []).sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
                         SetCell(
                             viewModel: viewModel,
                             index: index,
@@ -111,7 +113,7 @@ struct ExerciseDetailView: View {
                     EditExerciseSetView(
                         targetSet: selectedSet,
                         exercise: exercise,
-                        unit: .constant(config.weightUnit)
+                        unit: .constant(userProfileManager.currentProfile?.weightUnit ?? "Kg")
                     )
                     .presentationDetents([.fraction(0.68)])
                     .onAppear {

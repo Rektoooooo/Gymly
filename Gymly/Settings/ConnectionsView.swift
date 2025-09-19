@@ -7,12 +7,26 @@
 
 import SwiftUI
 import HealthKit
+import CloudKit
+import Foundation
+
+extension DateFormatter {
+    static let shortDateTime: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        return formatter
+    }()
+}
 
 struct ConnectionsView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @StateObject var healthKitManager = HealthKitManager()
+    @StateObject var cloudKitManager = CloudKitManager.shared
+    @EnvironmentObject var userProfileManager: UserProfileManager
     @EnvironmentObject var config: Config
     @Environment(\.colorScheme) var scheme
+    @State private var isCloudKitAvailable = false
     private let healthStore = HKHealthStore()
 
     var body: some View {
@@ -21,12 +35,13 @@ struct ConnectionsView: View {
                 .ignoresSafeArea()
             Form {
             Section(header: Text("Apple Health")) {
-                Toggle("Enable Apple Health", isOn: $config.isHealthEnabled)
-                    .onChange(of: config.isHealthEnabled) {
-                        if config.isHealthEnabled {
+                Toggle("Enable Apple Health", isOn: Binding(
+                    get: { userProfileManager.currentProfile?.isHealthEnabled ?? false },
+                    set: { userProfileManager.updateHealthPermissions(healthEnabled: $0) }
+                ))
+                    .onChange(of: userProfileManager.currentProfile?.isHealthEnabled ?? false) {
+                        if userProfileManager.currentProfile?.isHealthEnabled ?? false {
                             requestHealthKitAuthorization()
-                        } else {
-                            disableHealthKitAccess()
                         }
                     }
 
@@ -34,7 +49,65 @@ struct ConnectionsView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.leading)
-                
+
+            }
+            .listRowBackground(Color.black.opacity(0.05))
+
+            Section(header: Text("iCloud Sync")) {
+                Toggle("Enable iCloud Sync", isOn: Binding(
+                    get: { config.isCloudKitEnabled },
+                    set: { newValue in
+                        Task {
+                            if newValue && isCloudKitAvailable {
+                                cloudKitManager.setCloudKitEnabled(true)
+                                config.isCloudKitEnabled = true
+                                viewModel.performFullCloudKitSync()
+                            } else if !newValue {
+                                cloudKitManager.setCloudKitEnabled(false)
+                                config.isCloudKitEnabled = false
+                            } else {
+                                // CloudKit not available but user wants to enable it
+                                print("❌ CloudKit not available, cannot enable sync")
+                            }
+                        }
+                    }
+                ))
+                    .disabled(!isCloudKitAvailable)
+
+                if cloudKitManager.isSyncing {
+                    HStack {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Syncing...")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                if let error = cloudKitManager.syncError {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.leading)
+                }
+
+                if let lastSync = cloudKitManager.lastSyncDate {
+                    Text("Last synced: \(lastSync, formatter: DateFormatter.shortDateTime)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                if config.isCloudKitEnabled && cloudKitManager.isCloudKitEnabled {
+                    Button("Sync Now") {
+                        viewModel.performFullCloudKitSync()
+                    }
+                    .disabled(cloudKitManager.isSyncing)
+                }
+
+                Text("Sync your splits, workout history, and settings across all your devices. Requires iCloud to be enabled.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
             }
             .listRowBackground(Color.black.opacity(0.05))
             }
@@ -42,9 +115,15 @@ struct ConnectionsView: View {
             .background(Color.clear)
         }
         .navigationTitle("Connected Apps")
-        .onAppear {
-            if config.isHealthEnabled {
+        .task {
+            if userProfileManager.currentProfile?.isHealthEnabled ?? false  {
                 updateHealthPermissions() // ✅ Ensure toggles sync with user settings
+            }
+            await cloudKitManager.checkCloudKitStatus()
+            isCloudKitAvailable = await cloudKitManager.isCloudKitAvailable()
+            // Sync the config state with CloudKit manager state
+            if cloudKitManager.isCloudKitEnabled && !config.isCloudKitEnabled {
+                config.isCloudKitEnabled = true
             }
         }
     }
@@ -76,21 +155,8 @@ struct ConnectionsView: View {
             let dateOfBirthStatus = self.healthStore.authorizationStatus(for: dateOfBirthType)
             let heightStatus = self.healthStore.authorizationStatus(for: heightType)
             let weightStatus = self.healthStore.authorizationStatus(for: weightType)
-
-            DispatchQueue.main.async {
-                // For date of birth, check if it's authorized OR not determined (can still be requested)
-                self.config.allowDateOfBirth = (dateOfBirthStatus == .sharingAuthorized)
-                self.config.allowHeight = (heightStatus == .sharingAuthorized)
-                self.config.allowWeight = (weightStatus == .sharingAuthorized)
-            }
         }
     }
 
-    
-    /// Resets permissions when HealthKit is disabled
-    private func disableHealthKitAccess() {
-        config.allowDateOfBirth = false
-        config.allowHeight = false
-        config.allowWeight = false
-    }
+
 }

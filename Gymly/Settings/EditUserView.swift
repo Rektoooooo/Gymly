@@ -7,12 +7,14 @@
 
 import SwiftUI
 import PhotosUI
+import Foundation
 
 struct EditUserView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @State private var avatarItem: PhotosPickerItem?
     @State private var avatarImage: UIImage?
     @EnvironmentObject var config: Config
+    @EnvironmentObject var userProfileManager: UserProfileManager
     @Environment(\.dismiss) var dismiss
     @State private var profileImage: UIImage?
     @StateObject var healthKitManager = HealthKitManager()
@@ -58,21 +60,41 @@ struct EditUserView: View {
                         HStack {
                             Text("Username")
                                 .foregroundStyle(.white.opacity(0.6))
-                            TextField("Username", text: $config.username)
+                            TextField("Username", text: Binding(
+                                get: { userProfileManager.currentProfile?.username ?? "User" },
+                                set: { userProfileManager.updateUsername($0) }
+                            ))
                                 .cornerRadius(10)
                                 .padding(.horizontal)
                         }
                     }
                     .listRowBackground(Color.black.opacity(0.1))
-                    
                     Section("") {
                         Button("Save changes") {
-                            if let image = avatarImage {
-                                let savedPath = viewModel.saveImageToDocuments(image: image)
-                                config.userProfileImageURL = savedPath // Update the config
-                                debugPrint(config.userProfileImageURL!)
+                            Task {
+                                do {
+                                    print("🔥 SAVE CHANGES PRESSED")
+                                    print("🔥 CURRENT USERNAME: \(userProfileManager.currentProfile?.username ?? "none")")
+                                    print("🔥 HAS AVATAR IMAGE: \(avatarImage != nil)")
+
+                                    // Save profile image using new UserProfile system
+                                    if let image = avatarImage {
+                                        print("🔥 SAVING PROFILE IMAGE TO USERPROFILE")
+                                        userProfileManager.updateProfileImage(image)
+                                    }
+
+                                    print("✅ Profile changes saved to SwiftData + CloudKit")
+
+                                    await MainActor.run {
+                                        dismiss()
+                                    }
+                                } catch {
+                                    print("❌ Failed to sync profile changes to CloudKit: \(error)")
+                                    await MainActor.run {
+                                        dismiss()
+                                    }
+                                }
                             }
-                            dismiss()
                         }
                     }
                     .listRowBackground(Color.black.opacity(0.1))
@@ -81,11 +103,18 @@ struct EditUserView: View {
                 .background(Color.clear)
                 .navigationTitle("Edit profile")
                 .onAppear() {
-                    if let imagePath = config.userProfileImageURL {
-                        profileImage = viewModel.loadImage(from: imagePath)
+                    Task {
+                        await loadProfileImage()
                     }
                 }
             }
+        }
+    }
+
+    /// Load profile image from UserProfile
+    private func loadProfileImage() async {
+        await MainActor.run {
+            profileImage = userProfileManager.currentProfile?.profileImage
         }
     }
 }

@@ -10,18 +10,22 @@ import SwiftData
 
 @Model
 class Split: ObservableObject, Codable {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var days: [Day]
-    var isActive: Bool
-    var startDate: Date
+    var id: UUID = UUID()
+    var name: String = ""
+    var days: [Day]?
+    var isActive: Bool = false
+    var startDate: Date = Date()
 
     init(id: UUID = UUID(), name: String, days: [Day] = [], isActive: Bool = false, startDate: Date) {
         self.id = id
         self.name = name
-        self.days = days
         self.isActive = isActive
         self.startDate = startDate
+
+        // Set up relationships after initialization
+        for day in days {
+            day.split = self
+        }
     }
 
     // MARK: - Codable Compliance
@@ -33,9 +37,14 @@ class Split: ObservableObject, Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(UUID.self, forKey: .id)
         self.name = try container.decode(String.self, forKey: .name)
-        self.days = try container.decode([Day].self, forKey: .days)
         self.isActive = try container.decode(Bool.self, forKey: .isActive)
         self.startDate = try container.decode(Date.self, forKey: .startDate)
+
+        // Handle days relationship separately
+        let decodedDays = try container.decode([Day].self, forKey: .days)
+        for day in decodedDays {
+            day.split = self
+        }
     }
 
     func encode(to encoder: Encoder) throws {

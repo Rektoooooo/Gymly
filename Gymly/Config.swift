@@ -11,12 +11,8 @@ import SwiftUI
 
 
 class Config:ObservableObject {
-    
-    @Published var weightUnit: String {
-        didSet {
-            UserDefaults.standard.set(weightUnit, forKey: "weightUnit")
-        }
-    }
+
+    // MARK: - App Configuration Properties (not user-specific)
     
     @Published var daysRecorded: [String] {
         didSet {
@@ -54,53 +50,6 @@ class Config:ObservableObject {
         }
     }
     
-    @Published var userProfileImageURL: String? {
-        didSet {
-            UserDefaults.standard.set(userProfileImageURL, forKey: "userProfileImageURL")
-        }
-    }
-    
-    @Published var username: String {
-        didSet {
-            UserDefaults.standard.set(username, forKey: "username")
-        }
-    }
-    
-    @Published var userEmail: String {
-        didSet {
-            UserDefaults.standard.set(userEmail, forKey: "userEmail")
-        }
-    }
-   
-    @Published var allowDateOfBirth: Bool {
-        didSet {
-            UserDefaults.standard.set(allowDateOfBirth, forKey: "allowDateOfBirth")
-        }
-    }
-    
-    @Published var allowHeight: Bool {
-        didSet {
-            UserDefaults.standard.set(allowHeight, forKey: "allowHeight")
-        }
-    }
-    
-    @Published var allowWeight: Bool {
-        didSet {
-            UserDefaults.standard.set(allowWeight, forKey: "allowWeight")
-        }
-    }
-    
-    @Published var isHealthEnabled: Bool {
-        didSet {
-            UserDefaults.standard.set(isHealthEnabled, forKey: "isHealthEnabled")
-        }
-    }
-    
-    @Published var roundSetWeights: Bool {
-        didSet {
-            UserDefaults.standard.set(roundSetWeights, forKey: "roundSetWeights")
-        }
-    }
     
     @Published var firstSplitEdit: Bool {
         didSet {
@@ -133,63 +82,42 @@ class Config:ObservableObject {
         }
     }
     
-    @Published var userWeight: Double {
-        didSet {
-            UserDefaults.standard.set(userWeight, forKey: "userWeight")
-        }
-    }
-    
-    @Published var userBMI: Double {
-        didSet {
-            UserDefaults.standard.set(userBMI, forKey: "userBMI")
-        }
-    }
-    
-    @Published var userHeight: Double {
-        didSet {
-            UserDefaults.standard.set(userHeight, forKey: "userHeight")
-        }
-    }
-    
-    @Published var userAge: Int {
-        didSet {
-            UserDefaults.standard.set(userAge, forKey: "userAge")
-        }
-    }
 
     @Published var totalWorkoutTimeMinutes: Int {
         didSet {
             UserDefaults.standard.set(totalWorkoutTimeMinutes, forKey: "totalWorkoutTimeMinutes")
         }
     }
-    
-    init(weightUnit: String, splitStarted: Bool, daysRecorded: [String], dayInSplit: Int, lastUpdateDate: Date, splitLenght: Int, isUserLoggedIn: Bool,userProfileImageURL: String?,username: String, userEmail: String, allowdateOfBirth: Bool, allowHeight: Bool, allowWeight: Bool, isHealthEnabled: Bool, roundSetWeights: Bool, firstSplitEdit:Bool, activeExercise: Int, graphDataValues: [Double], graphMaxValue: Double, graphUpdatedExercisesIDs: Set<UUID>, userWeight: Double, userBMI: Double, userHeight: Double, userAge: Int, totalWorkoutTimeMinutes: Int) {
-        self.weightUnit = UserDefaults.standard.object(forKey: "weightUnit") as? String ?? "Kg"
-        self.splitStarted = UserDefaults.standard.object(forKey: "splitStarted") as? Bool ?? false
+
+    @Published var isCloudKitEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(isCloudKitEnabled, forKey: "isCloudKitEnabled")
+        }
+    }
+
+    @Published var cloudKitSyncDate: Date? {
+        didSet {
+            UserDefaults.standard.set(cloudKitSyncDate, forKey: "cloudKitSyncDate")
+        }
+    }
+
+    init() {
         self.daysRecorded = UserDefaults.standard.object(forKey: "daysRecorded") as? [String] ?? []
+        self.splitStarted = UserDefaults.standard.object(forKey: "splitStarted") as? Bool ?? false
         self.dayInSplit = UserDefaults.standard.object(forKey: "dayInSplit") as? Int ?? 1
         self.splitLenght = UserDefaults.standard.object(forKey: "splitLenght") as? Int ?? 1
         self.lastUpdateDate = UserDefaults.standard.object(forKey: "lastUpdateDate")  as? Date ?? Date()
         self.isUserLoggedIn = UserDefaults.standard.object(forKey: "isUserLoggedIn") as? Bool ?? false
-        self.userProfileImageURL = UserDefaults.standard.object(forKey: "userProfileImageURL") as? String ?? "defaultProfileImage"
-        self.username = UserDefaults.standard.object(forKey: "username") as? String ?? "User"
-        self.userEmail = UserDefaults.standard.object(forKey: "userEmail") as? String ?? "user@example.com"
-        self.allowDateOfBirth = UserDefaults.standard.object(forKey: "allowDateOfBirth") as? Bool ?? false
-        self.allowHeight = UserDefaults.standard.object(forKey: "allowHeight") as? Bool ?? false
-        self.allowWeight = UserDefaults.standard.object(forKey: "allowWeight") as? Bool ?? false
-        self.isHealthEnabled = UserDefaults.standard.object(forKey: "isHealthEnabled") as? Bool ?? false
-        self.roundSetWeights = UserDefaults.standard.object(forKey: "roundSetWeights") as? Bool ?? false
         self.firstSplitEdit = UserDefaults.standard.object(forKey: "firstSplitEdit") as? Bool ?? true
         self.activeExercise = UserDefaults.standard.object(forKey: "activeExercise") as? Int ?? 1
         self.graphDataValues = UserDefaults.standard.object(forKey: "graphDataValues") as? [Double] ?? []
         self.graphMaxValue = UserDefaults.standard.object(forKey: "graphMaxValue") as? Double ?? 1.0
         self.graphUpdatedExerciseIDs = UserDefaults.standard.object(forKey: "graphUpdatedExerciseIDs") as? Set<UUID> ?? []
-        self.userWeight = UserDefaults.standard.object(forKey: "userWeight") as? Double ?? 0.0
-        self.userBMI = UserDefaults.standard.object(forKey: "userBMI") as? Double ?? 0.0
-        self.userHeight = UserDefaults.standard.object(forKey: "userHeight") as? Double ?? 0.0
-        self.userAge = UserDefaults.standard.object(forKey: "userAge") as? Int ?? 0
         self.totalWorkoutTimeMinutes = UserDefaults.standard.object(forKey: "totalWorkoutTimeMinutes") as? Int ?? 0
+        self.isCloudKitEnabled = UserDefaults.standard.object(forKey: "isCloudKitEnabled") as? Bool ?? false
+        self.cloudKitSyncDate = UserDefaults.standard.object(forKey: "cloudKitSyncDate") as? Date
     }
+
 }
 
 extension Double {

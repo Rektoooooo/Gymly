@@ -11,6 +11,7 @@ import SwiftData
 struct WeightDetailView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
+    @EnvironmentObject var userProfileManager: UserProfileManager
     @Environment(\.dismiss) var dismiss
     @StateObject var healthKitManager = HealthKitManager()
     @Environment(\.modelContext) var context: ModelContext
@@ -29,9 +30,9 @@ struct WeightDetailView: View {
                 List {
                     Section("Body weight") {
                         HStack {
-                            Text("Body weight (\(config.weightUnit))")
+                            Text("Body weight (\(userProfileManager.currentProfile?.weightUnit ?? "Kg"))")
                                 .foregroundStyle(.white.opacity(0.6))
-                            TextField("70 \(config.weightUnit)", text: $bodyWeight)
+                            TextField("70 \(userProfileManager.currentProfile?.weightUnit ?? "Kg")", text: $bodyWeight)
                                 .padding(.horizontal)
                                 .keyboardType(.numbersAndPunctuation)
                                 .onSubmit {
@@ -78,12 +79,8 @@ struct WeightDetailView: View {
             }
         }
         .onAppear {
-            bodyWeight = String(Int(round(Double(config.userWeight) * (config.weightUnit == "Kg" ? 1.0 : 2.20462))))
-
-            // Request HealthKit authorization when view appears
-            if healthKitManager.isHealthKitAvailable() {
-                healthKitManager.requestAuthorization()
-            }
+            let currentWeight = userProfileManager.currentProfile?.weight ?? 0.0
+            bodyWeight = String(Int(round(currentWeight * (userProfileManager.currentProfile?.weightUnit ?? "Kg" == "Kg" ? 1.0 : 2.20462))))
         }
     }
     
@@ -95,23 +92,23 @@ struct WeightDetailView: View {
 
         // Convert input weight to kg (HealthKit always stores in kg)
         let weightInKg: Double
-        if config.weightUnit == "Kg" {
+        if userProfileManager.currentProfile?.weightUnit ?? "Kg" == "Kg" {
             weightInKg = inputWeight
         } else {
             // Convert from lbs to kg
             weightInKg = inputWeight / 2.20462262
         }
 
-        print("💾 Saving weight: \(inputWeight) \(config.weightUnit) = \(weightInKg) kg")
+        print("💾 Saving weight: \(inputWeight) \(userProfileManager.currentProfile?.weightUnit ?? "Kg") = \(weightInKg) kg")
 
         // Save to HealthKit (always in kg)
         healthKitManager.saveWeight(weightInKg)
 
-        // Update app config (always store in kg internally)
-        config.userWeight = weightInKg
+        // Update user profile (always store in kg internally)
+        userProfileManager.updatePhysicalStats(weight: weightInKg)
 
         // Show success message
-        saveMessage = "Weight saved: \(inputWeight) \(config.weightUnit)"
+        saveMessage = "Weight saved: \(inputWeight) \(userProfileManager.currentProfile?.weightUnit ?? "Kg")"
         showingSaveSuccess = true
 
         // Hide success message after 2 seconds

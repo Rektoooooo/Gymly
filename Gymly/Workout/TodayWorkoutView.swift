@@ -19,9 +19,11 @@ struct WorkoutSummaryData {
 struct TodayWorkoutView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
+    @EnvironmentObject var userProfileManager: UserProfileManager
     @Environment(\.modelContext) var context: ModelContext
     @Environment(\.colorScheme) var scheme
     @State var showProfileView: Bool = false
+    let loginRefreshTrigger: Bool
     @State private var profileImage: UIImage?
     @State private var navigationTitle: String = ""
     @State var muscleGroups:[MuscleGroup] = []
@@ -73,7 +75,7 @@ struct TodayWorkoutView: View {
                                 .foregroundStyle(Color.primary)
                             }
                             /// Display exercises in a day
-                            let globalOrderMap: [UUID: Int] = Dictionary(uniqueKeysWithValues: selectedDay.exercises.map { ($0.id, $0.exerciseOrder) })
+                            let globalOrderMap: [UUID: Int] = Dictionary(uniqueKeysWithValues: (selectedDay.exercises ?? []).map { ($0.id, $0.exerciseOrder) })
                             List {
                                 ForEach(muscleGroups) { group in
                                     if !group.exercises.isEmpty {
@@ -107,16 +109,20 @@ struct TodayWorkoutView: View {
                                         Task {
                                             // Set completion time for all done exercises
                                             let now = Date()
-                                            for i in selectedDay.exercises.indices {
-                                                if selectedDay.exercises[i].done {
-                                                    selectedDay.exercises[i].completedAt = now
+                                            if let exercises = selectedDay.exercises {
+                                                for i in exercises.indices {
+                                                    if exercises[i].done {
+                                                        exercises[i].completedAt = now
+                                                    }
                                                 }
                                             }
 
-                                            await viewModel.updateMuscleGroupDataValues(from: selectedDay.exercises, modelContext: context)
+                                            viewModel.updateMuscleGroupDataValues(from: selectedDay.exercises ?? [], modelContext: context)
                                             await viewModel.insertWorkout()
-                                            for i in selectedDay.exercises.indices {
-                                                selectedDay.exercises[i].done = false
+                                            if let exercises = selectedDay.exercises {
+                                                for i in exercises.indices {
+                                                    exercises[i].done = false
+                                                }
                                             }
                                         }
                                     }
@@ -178,9 +184,16 @@ struct TodayWorkoutView: View {
             }
             /// Refresh on every appear
             .task {
+                userProfileManager.loadOrCreateProfile()
                 await refreshView()
                 if WhatsNewManager.shouldShowWhatsNew && config.isUserLoggedIn {
                     showWhatsNew = true
+                }
+            }
+            /// Refresh when user logs in
+            .onChange(of: loginRefreshTrigger) {
+                Task {
+                    await refreshView()
                 }
             }
             /// Sheet for showing splits view
@@ -194,10 +207,8 @@ struct TodayWorkoutView: View {
             }
             /// Sheet for showing setting and profile view
             .sheet(isPresented: $showProfileView, onDismiss: {
-                if let imagePath = config.userProfileImageURL {
-                    profileImage = viewModel.loadImage(from: imagePath)
-                }
                 Task {
+                    await loadProfileImage()
                     await refreshMuscleGroups()
                 }
             }) {
@@ -266,15 +277,13 @@ struct TodayWorkoutView: View {
             viewModel.day = updatedDay
             selectedDay = updatedDay
         }
-        if let imagePath = config.userProfileImageURL {
-            profileImage = viewModel.loadImage(from: imagePath)
-        }
+        await loadProfileImage()
         await refreshMuscleGroups()
     }
 
     /// Calculates workout duration from first completed set to last completed set
     private func calculateWorkoutDuration() -> WorkoutSummaryData? {
-        let completedExercises = selectedDay.exercises.filter { $0.done }
+        let completedExercises = (selectedDay.exercises ?? []).filter { $0.done }
 
         guard !completedExercises.isEmpty else { return nil }
 
@@ -282,7 +291,7 @@ struct TodayWorkoutView: View {
 
         // Collect all sets from completed exercises with their times
         for exercise in completedExercises {
-            for set in exercise.sets {
+            for set in exercise.sets ?? [] {
                 if !set.time.isEmpty {
                     // Parse time string "H:mm" and create date for today
                     let timeComponents = set.time.split(separator: ":").map(String.init)
@@ -322,5 +331,11 @@ struct TodayWorkoutView: View {
             startTime: startTime,
             endTime: endTime
         )
+    }
+
+    /// Load profile image from UserProfile
+    @MainActor
+    private func loadProfileImage() async {
+        profileImage = userProfileManager.currentProfile?.profileImage
     }
 }

@@ -12,6 +12,7 @@ import HealthKit
 struct SettingUserInfoCell: View {
     let healthStore = HKHealthStore()
     @EnvironmentObject var config: Config
+    @EnvironmentObject var userProfileManager: UserProfileManager
 
     @State var value: String = "20"
     @State var metric: String = "Kg"
@@ -40,10 +41,10 @@ struct SettingUserInfoCell: View {
                             }
                             if metric == "Kg" || metric == "Lbs" {
                                 HStack(spacing: 4) {
-                                    Text("\(String(format: "%.1f", (Double(value) ?? 0.0) - weightLastWeek * (config.weightUnit == "Kg" ? 1.0 : 2.20462)))\(config.weightUnit)")
-                                    if Double(value) ?? 0.0 > weightLastWeek * (config.weightUnit == "Kg" ? 1.0 : 2.20462) {
+                                    Text("\(String(format: "%.1f", (Double(value) ?? 0.0) - weightLastWeek * (userProfileManager.currentProfile?.weightUnit ?? "Kg" == "Kg" ? 1.0 : 2.20462)))\(userProfileManager.currentProfile?.weightUnit ?? "Kg")")
+                                    if Double(value) ?? 0.0 > weightLastWeek * (userProfileManager.currentProfile?.weightUnit ?? "Kg" == "Kg" ? 1.0 : 2.20462) {
                                        Image(systemName: "arrow.up")
-                                    } else if Double(value) ?? 0.0 < weightLastWeek * (config.weightUnit == "Kg" ? 1.0 : 2.20462) {
+                                    } else if Double(value) ?? 0.0 < weightLastWeek * (userProfileManager.currentProfile?.weightUnit ?? "Kg" == "Kg" ? 1.0 : 2.20462) {
                                         Image(systemName: "arrow.down")
                                     } else {
                                         Image(systemName: "arrow.up.arrow.down")

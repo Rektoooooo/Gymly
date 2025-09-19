@@ -21,7 +21,8 @@ struct SetNoteCell: View {
     }
 
     private func saveNote(_ newValue: String) {
-        exercise.sets[setNumber].note = newValue
+        guard let sets = exercise.sets, setNumber < sets.count else { return }
+        exercise.sets?[setNumber].note = newValue
         do {
             try context.save()
         } catch {

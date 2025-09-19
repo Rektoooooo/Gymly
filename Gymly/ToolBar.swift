@@ -10,10 +10,12 @@ import SwiftUI
 struct ToolBar: View {
     @EnvironmentObject var config: Config
     @Environment(\.modelContext) private var context
-    
+    @State private var loginRefreshTrigger = false
+    @StateObject private var userProfileManager = UserProfileManager.shared
+
     var body: some View {
         TabView {
-            TodayWorkoutView(viewModel: WorkoutViewModel(config: config, context: context))
+            TodayWorkoutView(viewModel: WorkoutViewModel(config: config, context: context), loginRefreshTrigger: loginRefreshTrigger)
                 .tabItem {
                     Label("Routine", systemImage: "dumbbell")
                 }
@@ -33,8 +35,22 @@ struct ToolBar: View {
             set: { newValue in config.isUserLoggedIn = !newValue }
         )) {
             SignInView(viewModel: WorkoutViewModel(config: config, context: context))
+            
+        }
+        .onChange(of: config.isUserLoggedIn) { oldValue, newValue in
+            if newValue == true {
+                // User just logged in, trigger refresh
+                loginRefreshTrigger.toggle()
+                userProfileManager.loadOrCreateProfile()
+            }
         }
         .environmentObject(config)
+        .environmentObject(userProfileManager)
+        .onAppear {
+            // Initialize UserProfileManager with SwiftData context
+            userProfileManager.setup(modelContext: context)
+
+        }
     }
     
 }
