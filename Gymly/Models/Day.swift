@@ -14,11 +14,11 @@ protocol DeepCopyable {
 
 @Model
 class Day: Codable {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var dayOfSplit: Int 
-    var exercises: [Exercise]
-    var date: String
+    var id: UUID = UUID()
+    var name: String = ""
+    var dayOfSplit: Int = 0
+    var exercises: [Exercise]?
+    var date: String = ""
 
     @Relationship(deleteRule: .cascade, inverse: \Split.days) var split: Split?
 
@@ -26,7 +26,7 @@ class Day: Codable {
         self.id = id
         self.name = name
         self.dayOfSplit = dayOfSplit
-        self.exercises = exercises
+        self.exercises = exercises.isEmpty ? nil : exercises
         self.date = date
         self.split = split
     }

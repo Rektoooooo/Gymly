@@ -12,6 +12,7 @@ struct BmiDetailView: View {
     @EnvironmentObject var config: Config
     @Environment(\.dismiss) var dismiss
     @StateObject var healthKitManager = HealthKitManager()
+    @EnvironmentObject var userProfileManager: UserProfileManager
     @Environment(\.colorScheme) private var scheme
     @State var bodyWeight: String = ""
     @State var bmi: Double = 0.0
@@ -19,7 +20,32 @@ struct BmiDetailView: View {
     @State var bmiRangeHigh:Double = 0.0
     @State var bmiColor: Color = .green
     @State var bmiText: String = "Normal weight"
-    
+
+    // Computed properties to break down complex expressions
+    private var currentHeight: Double {
+        userProfileManager.currentProfile?.height ?? 0.0
+    }
+
+    private var currentWeight: Double {
+        userProfileManager.currentProfile?.weight ?? 0.0
+    }
+
+    private var weightUnit: String {
+        userProfileManager.currentProfile?.weightUnit ?? "Kg"
+    }
+
+    private var isKgUnit: Bool {
+        weightUnit == "Kg"
+    }
+
+    private var weightConversionFactor: Double {
+        isKgUnit ? 1.0 : 2.20462
+    }
+
+    private var maxWeightThreshold: Double {
+        isKgUnit ? 102.7 : 226.4
+    }
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -52,15 +78,15 @@ struct BmiDetailView: View {
                                     Text("Body weight :")
                                         .foregroundStyle(.white.opacity(0.6))
                                         .frame(width: 110)
-                                    TextField("70 \(config.weightUnit)", text: $bodyWeight)
+                                    TextField("70 \(weightUnit)", text: $bodyWeight)
                                         .padding(.horizontal)
                                         .keyboardType(.numbersAndPunctuation)
                                         .offset(x: -10)
                                         .onSubmit {
                                             if let weight = Double(bodyWeight) {
                                                 // Convert weight to kg if needed for BMI calculation
-                                                let weightInKg = config.weightUnit == "Kg" ? weight : weight / 2.20462
-                                                let heightSquared = config.userHeight * config.userHeight
+                                                let weightInKg = isKgUnit ? weight : weight / 2.20462
+                                                let heightSquared = (userProfileManager.currentProfile?.height ?? 0.0) * (userProfileManager.currentProfile?.height ?? 0.0)
                                                 bmi = weightInKg / heightSquared
                                                 let (color, status) = getBmiStyle(bmi: bmi)
                                                 bmiColor = color
@@ -74,22 +100,23 @@ struct BmiDetailView: View {
                                 }
                                 Spacer()
                                 HStack {
-                                    let minWeightKg = config.userHeight * config.userHeight * bmiRangeLow
-                                    let maxWeightKg = config.userHeight * config.userHeight * bmiRangeHigh
+                                    let heightSquared = currentHeight * currentHeight
+                                    let minWeightKg = heightSquared * bmiRangeLow
+                                    let maxWeightKg = heightSquared * bmiRangeHigh
+
                                     // Convert to display units
-                                    let minWeight = config.weightUnit == "Kg" ? minWeightKg : minWeightKg * 2.20462
-                                    let maxWeight = config.weightUnit == "Kg" ? maxWeightKg : maxWeightKg * 2.20462
+                                    let minWeight = minWeightKg * weightConversionFactor
+                                    let maxWeight = maxWeightKg * weightConversionFactor
                                     let formattedMin = String(format: "%.1f", minWeight)
                                     let formattedMax = String(format: "%.1f", maxWeight)
-                                    let maxWeightThreshold = config.weightUnit == "Kg" ? 102.7 : 226.4 // 102.7kg = 226.4lbs
-                                    if Double(formattedMax) ?? 0.0 > maxWeightThreshold {
-                                        Text("\(formattedMin)+ \(config.weightUnit)")
+
+                                    if maxWeight > maxWeightThreshold {
+                                        Text("\(formattedMin)+ \(weightUnit)")
                                             .foregroundStyle(bmiColor)
                                     } else {
-                                        Text("\(formattedMin) - \(formattedMax) \(config.weightUnit)")
+                                        Text("\(formattedMin) - \(formattedMax) \(weightUnit)")
                                             .foregroundStyle(bmiColor)
                                     }
-
                                 }
                             }
                         }
@@ -127,10 +154,11 @@ struct BmiDetailView: View {
                     }
                 }
                 .onAppear() {
-                    config.userBMI = config.userWeight / (config.userHeight * config.userHeight)
-                    bmi = config.userWeight / (config.userHeight * config.userHeight)
+                    // Get BMI from profile (it's calculated correctly there)
+                    bmi = userProfileManager.currentProfile?.bmi ?? 0.0
+
                     // Display weight in the user's preferred unit
-                    let displayWeight = config.weightUnit == "Kg" ? config.userWeight : config.userWeight * 2.20462
+                    let displayWeight = currentWeight * weightConversionFactor
                     bodyWeight = String(format: "%.1f", displayWeight)
                     changeRange()
                 }

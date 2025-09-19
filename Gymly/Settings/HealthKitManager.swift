@@ -8,6 +8,7 @@
 
 import HealthKit
 import SwiftData
+import CloudKit
 
 class HealthKitManager: ObservableObject {
     let healthStore = HKHealthStore()
@@ -205,14 +206,24 @@ class HealthKitManager: ObservableObject {
                 // Fetch from HealthKit
                 fetchDailyLatestWeightLastMonth { result in
                     Task { @MainActor in
+                        var newWeightPoints: [WeightPoint] = []
                         for item in result {
-                            context.insert(WeightPoint(date: item.date, weight: item.weight))
-                            debugPrint("Inserted into context: \(WeightPoint(date: item.date, weight: item.weight))")
+                            let weightPoint = WeightPoint(date: item.date, weight: item.weight)
+                            context.insert(weightPoint)
+                            newWeightPoints.append(weightPoint)
+                            debugPrint("Inserted into context: \(weightPoint)")
                         }
 
                         do {
                             try context.save()
                             debugPrint("Saved context after inserting weight points")
+
+                            // Sync to CloudKit if enabled
+                            if UserDefaults.standard.bool(forKey: "isCloudKitEnabled") {
+                                for weightPoint in newWeightPoints {
+                                    try? await CloudKitManager.shared.saveWeightPoint(weightPoint)
+                                }
+                            }
                         } catch {
                             print("❌ Failed to save new weight data: \(error)")
                         }

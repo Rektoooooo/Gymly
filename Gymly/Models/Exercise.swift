@@ -11,23 +11,23 @@ import SwiftData
 
 @Model
 class Exercise: Codable {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var sets: [Set]
-    var repGoal: String
-    var muscleGroup: String
+    var id: UUID = UUID()
+    var name: String = ""
+    var sets: [Set]?
+    var repGoal: String = ""
+    var muscleGroup: String = ""
     var createdAt: Date = Date()
     var completedAt: Date?
     var animationId = UUID()
-    var exerciseOrder: Int
-    var done: Bool
+    var exerciseOrder: Int = 0
+    var done: Bool = false
 
     @Relationship(deleteRule: .nullify, inverse: \Day.exercises) var day: Day?
 
     init(id: UUID = UUID(), name: String, sets: [Set] = [], repGoal: String, muscleGroup: String, createdAt: Date = Date(), completedAt: Date? = nil, animationId: UUID = UUID(), exerciseOrder: Int, done: Bool = false, day: Day? = nil) {
         self.id = id
         self.name = name
-        self.sets = sets
+        self.sets = sets.isEmpty ? nil : sets
         self.repGoal = repGoal
         self.muscleGroup = muscleGroup
         self.createdAt = createdAt
@@ -53,8 +53,10 @@ class Exercise: Codable {
         )
 
         // **Deep copy each set without duplication**
-        newExercise.sets = self.sets.map { $0.copySets() }
-        
+        if let currentSets = self.sets {
+            newExercise.sets = currentSets.map { $0.copySets() }
+        }
+
         return newExercise
     }
     
@@ -91,17 +93,17 @@ class Exercise: Codable {
     
     @Model
     class Set: Codable {
-        @Attribute(.unique) var id: UUID
-        var weight: Double
-        var reps: Int
-        var failure: Bool
-        var warmUp: Bool
-        var restPause: Bool
-        var dropSet: Bool
-        var time: String
-        var note: String
-        var createdAt: Date
-        var bodyWeight: Bool
+        var id: UUID = UUID()
+        var weight: Double = 0.0
+        var reps: Int = 0
+        var failure: Bool = false
+        var warmUp: Bool = false
+        var restPause: Bool = false
+        var dropSet: Bool = false
+        var time: String = ""
+        var note: String = ""
+        var createdAt: Date = Date()
+        var bodyWeight: Bool = false
 
         @Relationship(deleteRule: .cascade, inverse: \Exercise.sets) var exercise: Exercise?
 

@@ -10,6 +10,7 @@ import SwiftUI
 
 struct SetCell: View {
     @ObservedObject var viewModel: WorkoutViewModel
+    @EnvironmentObject var userProfileManager: UserProfileManager
     var index: Int
     var set: Exercise.Set
     var config: Config
@@ -17,6 +18,15 @@ struct SetCell: View {
     var setForCalendar: Bool
     var onSetTap: ((Exercise.Set) -> Void)? = nil
     @State private var showEditSheet = false
+
+    // Computed properties to break down complex expressions
+    private var weightUnit: String {
+        userProfileManager.currentProfile?.weightUnit ?? "Kg"
+    }
+
+    private var weightConversionFactor: Double {
+        weightUnit == "Kg" ? 1.0 : 2.20462
+    }
 
     var body: some View {
         Section("Set \(index + 1)") {
@@ -43,10 +53,10 @@ struct SetCell: View {
                                 .foregroundStyle(.accent)
                                 .bold()
                         }
-                        Text("\(Int(round(Double(set.weight) * (config.weightUnit == "Kg" ? 1.0 : 2.20462))))")
+                        Text("\(Int(round(Double(set.weight) * weightConversionFactor)))")
                             .foregroundStyle(.accent)
                             .bold()
-                        Text("\(config.weightUnit)")
+                        Text("\(weightUnit)")
                             .foregroundStyle(.accent)
                             .opacity(0.6)
                             .offset(x: -5)
@@ -100,7 +110,7 @@ struct SetCell: View {
                 EditExerciseSetView(
                     targetSet: set,
                     exercise: exercise,
-                    unit: .constant(config.weightUnit)
+                    unit: .constant(weightUnit)
                 )
                 .onAppear {
                     print("📱 EditExerciseSetView appeared for set \(index + 1)")

@@ -44,7 +44,7 @@ struct SplitDetailView: View {
                 }
             }
             .task {
-                days = split.days
+                days = split.days ?? []
             }
             .navigationTitle(split.name)
             .scrollContentBackground(.hidden)

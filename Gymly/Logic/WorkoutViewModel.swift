@@ -10,6 +10,7 @@ import SwiftData
 import SwiftUI
 import AuthenticationServices
 import HealthKit
+import CloudKit
 
 final class WorkoutViewModel: ObservableObject {
     @Published var days: [Day] = []
@@ -50,24 +51,71 @@ final class WorkoutViewModel: ObservableObject {
     /// Create new split
     @MainActor
     func createNewSplit(name: String, numberOfDays: Int, startDate: Date, context: ModelContext) {
+        print("🔧 Starting createNewSplit with name: \(name), days: \(numberOfDays)")
+
         var days: [Day] = []
-        
+
         for i in 1...numberOfDays {
             let day = Day(name: "Day \(i)", dayOfSplit: i, exercises: [], date: "")
             days.append(day)
+            print("🔧 Created day: \(day.name)")
         }
-        
-        
 
-        let newSplit = Split(name: name, days: days, isActive: true, startDate: startDate)
+        print("🔧 Creating split with \(days.count) days")
+
+        let newSplit = Split(name: name, days: days.isEmpty ? [] : days, isActive: false, startDate: startDate)
+        print("🔧 Split created, inserting into context...")
         context.insert(newSplit)
-        switchActiveSplit(split: newSplit, context: context)
+
+        // Also insert each day into the context
+        for day in days {
+            print("🔧 Inserting day: \(day.name)")
+            context.insert(day)
+        }
 
         do {
+            print("🔧 Attempting to save context...")
             try context.save()
-            print("New split '\(name)' created.")
+            print("✅ New split '\(name)' created and saved.")
+
+            // Verify the split was actually saved
+            let allSplitsAfterSave = getAllSplits()
+            print("🔧 After initial save: found \(allSplitsAfterSave.count) total splits")
+            for split in allSplitsAfterSave {
+                print("🔧 Found split: \(split.name), active: \(split.isActive)")
+            }
+
+            // Now switch it to active AFTER it's been saved
+            print("🔧 Switching to active split...")
+            switchActiveSplit(split: newSplit, context: context)
+
+            // Verify the split is now active
+            print("🔧 Verifying active split...")
+            if let activeSplit = getActiveSplit() {
+                print("✅ Verified active split: \(activeSplit.name)")
+
+                // Force UI refresh by triggering objectWillChange
+                DispatchQueue.main.async {
+                    self.objectWillChange.send()
+                }
+            } else {
+                print("❌ Failed to verify active split!")
+            }
+
+            // Temporarily disable CloudKit sync to test if it's causing the issue
+            print("🔧 CloudKit sync temporarily disabled for testing")
+            // if config.isCloudKitEnabled {
+            //     print("🔧 CloudKit sync is enabled, syncing split...")
+            //     syncSplitToCloudKit(newSplit)
+            // } else {
+            //     print("🔧 CloudKit sync is disabled, skipping sync")
+            // }
         } catch {
-            print("Error saving split: \(error)")
+            print("❌ Error saving split: \(error)")
+            print("❌ Error details: \(error.localizedDescription)")
+            if let swiftDataError = error as? SwiftDataError {
+                print("❌ SwiftData specific error: \(swiftDataError)")
+            }
         }
     }
     
@@ -76,9 +124,17 @@ final class WorkoutViewModel: ObservableObject {
     func getActiveSplit() -> Split? {
         let fetchDescriptor = FetchDescriptor<Split>(predicate: #Predicate { $0.isActive })
         do {
-            return try context.fetch(fetchDescriptor).first
+            let activeSplits = try context.fetch(fetchDescriptor)
+            print("🔧 Found \(activeSplits.count) active splits")
+            if let activeSplit = activeSplits.first {
+                print("🔧 Active split: \(activeSplit.name)")
+                return activeSplit
+            } else {
+                print("🔧 No active split found in database")
+                return nil
+            }
         } catch {
-            print("Error fetching active split: \(error)")
+            print("❌ Error fetching active split: \(error)")
             return nil
         }
     }
@@ -90,40 +146,57 @@ final class WorkoutViewModel: ObservableObject {
             print("No active split found.")
             return []
         }
-        return activeSplit.days
+        return activeSplit.days ?? []
     }
 
     /// Set all splits as inactive
     @MainActor
     func deactivateAllSplits() {
-        Task { @MainActor in
-            do {
-                let splits = getAllSplits()
-                for split in splits {
-                    split.isActive = false
-                }
-                try context.save()
-                objectWillChange.send() // Force UI to refresh
-            } catch {
-                print("Error deactivating splits: \(error)")
+        do {
+            let splits = getAllSplits()
+            for split in splits {
+                split.isActive = false
             }
+            try context.save()
+            objectWillChange.send() // Force UI to refresh
+            print("🔧 Deactivated \(splits.count) splits")
+        } catch {
+            print("❌ Error deactivating splits: \(error)")
         }
     }
     
     /// Switch split from inactive to active
     @MainActor
     func switchActiveSplit(split: Split, context: ModelContext) {
-        deactivateAllSplits()
-        
-        Task { @MainActor in
-            split.isActive = true
-            do {
-                try context.save()
-                print("Switched to active split: \(split.name)")
-                objectWillChange.send() // Manually notify SwiftUI of changes
-            } catch {
-                print("Error switching split: \(error)")
+        print("🔧 Deactivating all splits...")
+
+        // First deactivate all splits synchronously
+        let allSplits = getAllSplits()
+        print("🔧 Found \(allSplits.count) total splits to deactivate")
+        for existingSplit in allSplits {
+            print("🔧 Deactivating split: \(existingSplit.name)")
+            existingSplit.isActive = false
+        }
+
+        print("🔧 Setting split '\(split.name)' as active...")
+        split.isActive = true
+        print("🔧 Split '\(split.name)' isActive = \(split.isActive)")
+
+        do {
+            print("🔧 Saving context in switchActiveSplit...")
+            try context.save()
+            print("✅ Context saved successfully in switchActiveSplit")
+
+            // Immediately verify the save worked
+            let activeSplitsAfterSave = getAllSplits().filter { $0.isActive }
+            print("🔧 After save: found \(activeSplitsAfterSave.count) active splits")
+            for activeSplit in activeSplitsAfterSave {
+                print("🔧 Active split after save: \(activeSplit.name)")
             }
+
+            objectWillChange.send() // Manually notify SwiftUI of changes
+        } catch {
+            print("❌ Error switching split: \(error)")
         }
     }
     
@@ -138,10 +211,17 @@ final class WorkoutViewModel: ObservableObject {
     /// Delete split
     @MainActor
     func deleteSplit(split: Split) {
+        let splitId = split.id
         context.delete(split)
         do {
             try context.save()
             debugPrint("Deleted split: \(split.name)")
+            // Delete from CloudKit too
+            if config.isCloudKitEnabled {
+                Task {
+                    try? await CloudKitManager.shared.deleteSplit(splitId)
+                }
+            }
         } catch {
             debugPrint(error)
         }
@@ -181,11 +261,21 @@ final class WorkoutViewModel: ObservableObject {
             let fetchedData = try context.fetch(descriptor)
             debugPrint("Fetched calendar day count: \(fetchedData.count)")
 
-            guard let dayStorage = fetchedData.first else {
-                return emptyDay
+            // Fetch the day from storage
+            if let dayStorage = fetchedData.first {
+                let dayId = dayStorage.dayId
+                let dayPredicate = #Predicate<Day> { day in
+                    day.id == dayId
+                }
+                let dayDescriptor = FetchDescriptor<Day>(predicate: dayPredicate)
+                let fetchedDays = try context.fetch(dayDescriptor)
+
+                if let foundDay = fetchedDays.first {
+                    return foundDay
+                }
             }
 
-            return dayStorage.day // Correctly return the saved day instance!
+            return emptyDay
 
         } catch {
             debugPrint("Error fetching data: \(error.localizedDescription)")
@@ -201,7 +291,7 @@ final class WorkoutViewModel: ObservableObject {
         let today = await fetchCalendarDay(date: date)
 
         for name in muscleGroupNames {
-            let filteredExercises = today.exercises.filter { exercise in
+            let filteredExercises = (today.exercises ?? []).filter { exercise in
                 exercise.muscleGroup == name
             }
 
@@ -223,9 +313,9 @@ final class WorkoutViewModel: ObservableObject {
         var newMuscleGroups: [MuscleGroup] = []
         
         let updatedDay = await fetchDay(dayOfSplit: dayOfSplit)
-        debugPrint("Exercises fetch for day : \(updatedDay.exercises.count)")
+        debugPrint("Exercises fetch for day : \((updatedDay.exercises ?? []).count)")
 
-        let freshExercises = updatedDay.exercises
+        let freshExercises = updatedDay.exercises ?? []
 
         await MainActor.run {
             self.day = updatedDay
@@ -265,7 +355,7 @@ final class WorkoutViewModel: ObservableObject {
         let newDay = Day(
             name: today.name,
             dayOfSplit: today.dayOfSplit,
-            exercises: today.exercises.filter { $0.done }.map { $0.copy() },
+            exercises: (today.exercises ?? []).filter { $0.done }.map { $0.copy() },
             date: formattedDateString(from: Date())
         )
         
@@ -273,10 +363,11 @@ final class WorkoutViewModel: ObservableObject {
         let dayStorage = DayStorage(id: UUID(), day: newDay, date: formattedDateString(from: Date()))
         context.insert(dayStorage)
         config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
-        
+
         do {
             try context.save()
             debugPrint("Day saved with date: \(formattedDateString(from: Date()))")
+            syncDayStorageToCloudKit(dayStorage)
         } catch {
             debugPrint(error)
         }
@@ -284,8 +375,8 @@ final class WorkoutViewModel: ObservableObject {
     
     @MainActor
     func copyWorkout(from: Day, to: Day) {
-        to.exercises.removeAll()
-        to.exercises = from.exercises.map { $0.copy() }
+        to.exercises?.removeAll()
+        to.exercises = (from.exercises ?? []).map { $0.copy() }
     }
     
  // MARK: Calendar oriented functions
@@ -342,7 +433,7 @@ final class WorkoutViewModel: ObservableObject {
                 return config.dayInSplit
             }
 
-            let newDayInSplit = (totalDays - 1) % activeSplit.days.count + 1
+            let newDayInSplit = (totalDays - 1) % (activeSplit.days?.count ?? 1) + 1
 
             config.dayInSplit = newDayInSplit
             config.lastUpdateDate = Date()
@@ -385,7 +476,7 @@ final class WorkoutViewModel: ObservableObject {
             do {
                 let today = await fetchDay(dayOfSplit: config.dayInSplit)
 
-                if today.exercises.contains(where: { $0.name == name }) {
+                if (today.exercises ?? []).contains(where: { $0.name == name }) {
                     debugPrint("Exercise already exists in today's workout.")
                     return
                 }
@@ -398,11 +489,14 @@ final class WorkoutViewModel: ObservableObject {
                     repGoal: reps,
                     muscleGroup: muscleGroup,
                     createdAt: Date(),
-                    exerciseOrder: await fetchDay(dayOfSplit: config.dayInSplit).exercises.count + 1, done: false
+                    exerciseOrder: (await fetchDay(dayOfSplit: config.dayInSplit).exercises ?? []).count + 1, done: false
                 )
 
                 await MainActor.run {
-                    to.exercises.append(newExercise)
+                    if to.exercises == nil {
+                        to.exercises = []
+                    }
+                    to.exercises?.append(newExercise)
                     try? context.save()
                 }
 
@@ -424,7 +518,7 @@ final class WorkoutViewModel: ObservableObject {
             debugPrint("Exercise has no associated day.")
             return
         }
-        day.exercises.removeAll { $0.id == exercise.id }
+        day.exercises?.removeAll { $0.id == exercise.id }
         context.delete(exercise)
         do {
             try context.save()
@@ -481,9 +575,10 @@ final class WorkoutViewModel: ObservableObject {
     
     /// Delete set for exercise
     func deleteSet(_ set: Exercise.Set, exercise: Exercise) {
-        if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
+        if let sets = exercise.sets,
+           let index = sets.firstIndex(where: { $0.id == set.id }) {
             withAnimation {
-                _ = exercise.sets.remove(at: index)
+                _ = exercise.sets?.remove(at: index)
             }
         }
         context.delete(set)
@@ -491,10 +586,16 @@ final class WorkoutViewModel: ObservableObject {
     /// Add set for exercise
     func addSet(exercise: Exercise) async -> Exercise {
         let currentExercise = await fetchExercise(id: exercise.id)
-        currentExercise.sets.insert(
+
+        if currentExercise.sets == nil {
+            currentExercise.sets = []
+        }
+
+        currentExercise.sets?.insert(
             Exercise.Set.createDefault(),
-            at: currentExercise.sets.endIndex
+            at: currentExercise.sets?.endIndex ?? 0
         )
+
         do {
             try context.save()
         } catch {
@@ -510,9 +611,25 @@ final class WorkoutViewModel: ObservableObject {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     }
     
-    /// Load image from path
+    /// Load image from path (legacy local files) or CloudKit
     func loadImage(from path: String) -> UIImage? {
-        let fileURL = URL(fileURLWithPath: path)
+        // Check if this is a CloudKit image identifier
+        if path == "cloudkit_profile_image" {
+            // For CloudKit images, we'll need to use async loading
+            // This sync method will return nil and we'll handle CloudKit loading elsewhere
+            return nil
+        }
+
+        // Handle both full paths (legacy) and filenames (local files)
+        let fileURL: URL
+        if path.contains("/") {
+            // Full path provided (legacy)
+            fileURL = URL(fileURLWithPath: path)
+        } else {
+            // Just filename provided, construct path in Documents directory
+            fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(path)
+        }
+
         guard FileManager.default.fileExists(atPath: fileURL.path),
               let imageData = try? Data(contentsOf: fileURL),
               let uiImage = UIImage(data: imageData) else {
@@ -520,17 +637,28 @@ final class WorkoutViewModel: ObservableObject {
         }
         return uiImage
     }
+
+    /// Load profile image from CloudKit (async)
+    func loadProfileImageFromCloudKit() async -> UIImage? {
+        do {
+            return try await CloudKitManager.shared.fetchProfileImage()
+        } catch {
+            debugPrint("❌ Failed to load profile image from CloudKit: \(error)")
+            return nil
+        }
+    }
     
     /// Saves the UIImage to the Documents directory
     func saveImageToDocuments(image: UIImage) -> String? {
         guard let data = image.jpegData(compressionQuality: 0.8) else { return nil }
-        
+
         let filename = "profile_picture.jpg"
         let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(filename)
-        
+
         do {
             try data.write(to: fileURL)
-            return fileURL.path
+            // Return just the filename, not the full path (for CloudKit compatibility across reinstalls)
+            return filename
         } catch {
             print("Error saving image: \(error)")
             return nil
@@ -584,7 +712,7 @@ final class WorkoutViewModel: ObservableObject {
                 startDate: decodedSplit.startDate
             )
 
-            for decodedDay in decodedSplit.days {
+            for decodedDay in decodedSplit.days ?? [] {
                 let newDay = Day(
                     id: UUID(),
                     name: decodedDay.name,
@@ -593,25 +721,39 @@ final class WorkoutViewModel: ObservableObject {
                     date: decodedDay.date
                 )
 
-                for decodedExercise in decodedDay.exercises {
+                for decodedExercise in decodedDay.exercises ?? [] {
                     let newExercise = Exercise(
                         id: UUID(),
                         name: decodedExercise.name,
-                        sets: decodedExercise.sets,
+                        sets: decodedExercise.sets ?? [],
                         repGoal: decodedExercise.repGoal,
                         muscleGroup: decodedExercise.muscleGroup,
                         createdAt: decodedExercise.createdAt,
                         exerciseOrder: decodedExercise.exerciseOrder
                     )
-                    newDay.exercises.append(newExercise)
+                    if newDay.exercises == nil {
+                        newDay.exercises = []
+                    }
+                    newDay.exercises?.append(newExercise)
+                    context.insert(newExercise)  // Insert each exercise
                 }
 
-                newSplit.days.append(newDay)
+                newDay.split = newSplit
+                if newSplit.days == nil {
+                    newSplit.days = []
+                }
+                newSplit.days?.append(newDay)  // Add day to split
+                context.insert(newDay)  // Insert each day
             }
 
             context.insert(newSplit)
             try context.save()
             print("✅ Split successfully saved: \(newSplit.name)")
+
+            // Force UI refresh
+            DispatchQueue.main.async {
+                self.objectWillChange.send()
+            }
 
             return newSplit
 
@@ -664,7 +806,7 @@ final class WorkoutViewModel: ObservableObject {
         // Add new exercise contributions
         for exercise in newExercises {
             if let group = MuscleGroupEnum(rawValue: exercise.muscleGroup.lowercased()) {
-                muscleCounts[group, default: 0] += Double(exercise.sets.count)
+                muscleCounts[group, default: 0] += Double(exercise.sets?.count ?? 0)
             }
         }
 
@@ -716,5 +858,68 @@ final class WorkoutViewModel: ObservableObject {
         }
     }
 
+    // MARK: - CloudKit Sync Methods
+    @MainActor
+    func syncSplitToCloudKit(_ split: Split) {
+        print("🔧 CloudKit sync temporarily disabled")
+        return
+
+        guard config.isCloudKitEnabled else { return }
+
+        Task {
+            do {
+                try await CloudKitManager.shared.saveSplit(split)
+                debugPrint("✅ Split '\(split.name)' synced to CloudKit")
+            } catch {
+                debugPrint("❌ Failed to sync split to CloudKit: \(error)")
+            }
+        }
+    }
+
+    @MainActor
+    func syncDayStorageToCloudKit(_ dayStorage: DayStorage) {
+        guard config.isCloudKitEnabled else { return }
+
+        Task {
+            do {
+                try await CloudKitManager.shared.saveDayStorage(dayStorage)
+                debugPrint("✅ DayStorage for date '\(dayStorage.date)' synced to CloudKit")
+            } catch {
+                debugPrint("❌ Failed to sync DayStorage to CloudKit: \(error)")
+            }
+        }
+    }
+
+    @MainActor
+    func syncWeightPointToCloudKit(_ weightPoint: WeightPoint) {
+        guard config.isCloudKitEnabled else { return }
+
+        Task {
+            do {
+                try await CloudKitManager.shared.saveWeightPoint(weightPoint)
+                debugPrint("✅ WeightPoint synced to CloudKit")
+            } catch {
+                debugPrint("❌ Failed to sync WeightPoint to CloudKit: \(error)")
+            }
+        }
+    }
+
+    @MainActor
+    func performFullCloudKitSync() {
+        guard config.isCloudKitEnabled else { return }
+
+        Task {
+            await CloudKitManager.shared.performFullSync(context: context, config: config)
+        }
+    }
+
+    @MainActor
+    func fetchFromCloudKit() {
+        guard config.isCloudKitEnabled else { return }
+
+        Task {
+            await CloudKitManager.shared.fetchAndMergeData(context: context, config: config)
+        }
+    }
 }
     

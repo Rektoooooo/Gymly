@@ -112,6 +112,9 @@ struct SplitsView: View {
         .task {
             splits = viewModel.getAllSplits()
         }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name.importSplit)) { notification in
+            splits = viewModel.getAllSplits()
+        }
         .sheet(isPresented: $createSplit, onDismiss: {
             
         }) {

@@ -11,7 +11,7 @@ import SwiftData
 @main
 struct GymlyApp: App {
     var body: some Scene {
-        let config = Config(weightUnit: "Kg",splitStarted: false, daysRecorded: [],dayInSplit: 0, lastUpdateDate: Date(), splitLenght: 0, isUserLoggedIn: false, userProfileImageURL: "defaultProfileImage",username: "User",userEmail: "user@gmail.com", allowdateOfBirth: false, allowHeight: false, allowWeight: false, isHealthEnabled: false, roundSetWeights: false, firstSplitEdit: true, activeExercise: 1, graphDataValues: [], graphMaxValue: 1.0, graphUpdatedExercisesIDs: [], userWeight: 0.0, userBMI: 0.0, userHeight: 0.0, userAge: 0, totalWorkoutTimeMinutes: 0)
+        let config = Config()
         WindowGroup {
             ToolBar()
                 .environmentObject(config)
@@ -19,13 +19,13 @@ struct GymlyApp: App {
                     handleIncomingFile(url, config: config)
                 }
         }
-        .modelContainer(for: [Exercise.self, Day.self, DayStorage.self, WeightPoint.self])
+        .modelContainer(for: [Split.self, Exercise.self, Day.self, DayStorage.self, WeightPoint.self, UserProfile.self])
     }
     
     private func handleIncomingFile(_ url: URL, config: Config) {
         print("Opened file: \(url)")
 
-        if let modelContainer = try? ModelContainer(for: Exercise.self, Day.self, DayStorage.self) {
+        if let modelContainer = try? ModelContainer(for: Split.self, Exercise.self, Day.self, DayStorage.self, WeightPoint.self, UserProfile.self) {
             let context = modelContainer.mainContext
             let viewModel = WorkoutViewModel(config: config, context: context)
             
@@ -34,6 +34,10 @@ struct GymlyApp: App {
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .importSplit, object: split)
                     print("📢 Notification posted for imported split")
+
+                    // Also post cloudKitDataSynced to refresh any other views
+                    NotificationCenter.default.post(name: .cloudKitDataSynced, object: nil)
+                    print("📢 CloudKit sync notification posted")
                 }
             } else {
                 print("❌ Failed to decode split")
@@ -44,4 +48,5 @@ struct GymlyApp: App {
 
 extension Notification.Name {
     static let importSplit = Notification.Name("importSplit")
+    static let cloudKitDataSynced = Notification.Name("cloudKitDataSynced")
 }

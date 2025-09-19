@@ -18,6 +18,7 @@ struct ShowSplitDayExerciseView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @State var exercise: Exercise
     @Environment(\.colorScheme) var scheme
+    @EnvironmentObject var userProfileManager: UserProfileManager
 
     /// UI State Variables
     @State var showSheet = false
@@ -36,7 +37,7 @@ struct ShowSplitDayExerciseView: View {
         VStack {
             /// Displays set and rep count
             HStack {
-                Text("\(exercise.sets.count) Sets")
+                Text("\((exercise.sets ?? []).count) Sets")
                     .foregroundStyle(.accent)
                     .padding()
                     .bold()
@@ -46,10 +47,10 @@ struct ShowSplitDayExerciseView: View {
                     .padding()
                     .bold()
             }
-            
+
             Form {
                 /// List of exercise sets
-                ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
+                ForEach(Array((exercise.sets ?? []).sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
                     SetCell(
                         viewModel: viewModel,
                         index: index,
@@ -91,7 +92,7 @@ struct ShowSplitDayExerciseView: View {
                     EditExerciseSetView(
                         targetSet: set,
                         exercise: exercise,
-                        unit: .constant(config.weightUnit)
+                        unit: .constant(userProfileManager.currentProfile?.weightUnit ?? "Kg")
                     )
                     .onAppear {
                         print("📱 EditExerciseSetView appeared for set ID: \(set.id)")

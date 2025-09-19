@@ -14,6 +14,8 @@ struct CalendarExerciseView: View {
     @EnvironmentObject var config: Config
     @Environment(\.dismiss) var dismiss
     @ObservedObject var viewModel: WorkoutViewModel
+    @EnvironmentObject var userProfileManager: UserProfileManager
+
     @State var exercise: Exercise
     @State private var isOn = false
     @State var showSheet = false
@@ -29,7 +31,7 @@ struct CalendarExerciseView: View {
     
     /// Converts weight to correct unit (Kg/Lbs)
     var convertedWeight: Double {
-        if config.weightUnit == "Kg" {
+        if userProfileManager.currentProfile?.weightUnit ?? "Kg" == "Kg" {
             return weight
         } else {
             return weight * 2.20462
@@ -39,7 +41,7 @@ struct CalendarExerciseView: View {
     var body: some View {
         VStack {
             HStack {
-                Text("\(exercise.sets.count) Sets")
+                Text("\(exercise.sets?.count ?? 0) Sets")
                     .foregroundStyle(.accent)
                     .padding()
                     .bold()
@@ -51,7 +53,7 @@ struct CalendarExerciseView: View {
             }
             Form {
                 /// List of exercise sets
-                ForEach(Array(exercise.sets.sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
+                ForEach(Array((exercise.sets ?? []).sorted(by: { $0.createdAt < $1.createdAt }).enumerated()), id: \.element.id) { index, set in
                     SetCell(
                         viewModel: viewModel,
                         index: index,

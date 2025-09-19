@@ -69,13 +69,13 @@ struct ShowSplitDayView: View {
                     }
                     .environment(\.editMode, $editModeExercises)
                 } else {
-                    let globalOrderMap: [UUID: Int] = Dictionary(uniqueKeysWithValues: day.exercises.map { ($0.id, $0.exerciseOrder) })
+                    let globalOrderMap: [UUID: Int] = Dictionary(uniqueKeysWithValues: (day.exercises ?? []).map { ($0.id, $0.exerciseOrder) })
                     List {
                         // Build groups from day.exercises while preserving the order of first appearance
                         let grouped: [(String, [Exercise])] = {
                             var order: [String] = []
                             var dict: [String: [Exercise]] = [:]
-                            for ex in day.exercises.sorted(by: { $0.exerciseOrder < $1.exerciseOrder }) {
+                            for ex in (day.exercises ?? []).sorted(by: { $0.exerciseOrder < $1.exerciseOrder }) {
                                 if dict[ex.muscleGroup] == nil {
                                     order.append(ex.muscleGroup)
                                     dict[ex.muscleGroup] = []
@@ -186,7 +186,7 @@ struct ShowSplitDayView: View {
                         }
                     } else {
                         // Enter: snapshot into buffer using persisted order
-                        reorderingBufferExercises = day.exercises.sorted { ($0.exerciseOrder) < ($1.exerciseOrder) }
+                        reorderingBufferExercises = (day.exercises ?? []).sorted { ($0.exerciseOrder) < ($1.exerciseOrder) }
                         isReorderingExercises = true
                         editModeExercises = .active
                     }

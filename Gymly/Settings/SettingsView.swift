@@ -7,10 +7,12 @@
 
 import SwiftUI
 import SwiftData
+import Foundation
 
 struct SettingsView: View {
     @ObservedObject var viewModel: WorkoutViewModel
     @EnvironmentObject var config: Config
+    @EnvironmentObject var userProfileManager: UserProfileManager
     @Environment(\.dismiss) var dismiss
     @StateObject var healthKitManager = HealthKitManager()
     @Environment(\.modelContext) var context: ModelContext
@@ -70,7 +72,7 @@ struct SettingsView: View {
                                         .padding()
                                     VStack {
                                         VStack {
-                                            Text("\(config.username)")
+                                            Text("\(userProfileManager.currentProfile?.username ?? "User")")
                                                 .multilineTextAlignment(.leading)
                                                 .bold()
                                                 .padding(2)
@@ -108,8 +110,13 @@ struct SettingsView: View {
                                     SettingUserInfoCell(
                                         value: String(
                                             format: "%.1f",
-                                            config.userWeight * (config.weightUnit == "Kg" ? 1.0 : 2.20462262)),
-                                        metric: config.weightUnit,
+                                            {
+                                                let weight = userProfileManager.currentProfile?.weight ?? 0.0
+                                                let unit = userProfileManager.currentProfile?.weightUnit ?? "Kg"
+                                                let factor = unit == "Kg" ? 1.0 : 2.20462262
+                                                return weight * factor
+                                            }()),
+                                        metric: userProfileManager.currentProfile?.weightUnit ?? "Kg",
                                         headerColor: .accent,
                                         additionalInfo: "Body weight",
                                         icon: "figure.mixed.cardio"
@@ -122,7 +129,7 @@ struct SettingsView: View {
                                     showBmiDetail = true
                                 }) {
                                     SettingUserInfoCell(
-                                        value: String(format: "%.1f", config.userBMI),
+                                        value: String(format: "%.1f", userProfileManager.currentProfile?.bmi ?? 0.0),
                                         metric: "BMI",
                                         headerColor: bmiColor,
                                         additionalInfo: bmiStatus,
@@ -133,14 +140,14 @@ struct SettingsView: View {
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                                 SettingUserInfoCell(
-                                    value: String(format: "%.2f", config.userHeight),
+                                    value: String(format: "%.2f", userProfileManager.currentProfile?.height ?? 0.0),
                                     metric: "m",
                                     headerColor: .accent,
                                     additionalInfo: "Height",
                                     icon: "figure.wave"
                                 )
                                 SettingUserInfoCell(
-                                    value: String(format: "%.0f", Double(config.userAge)),
+                                    value: String(format: "%.0f", Double(userProfileManager.currentProfile?.age ?? 0)),
                                     metric: "yo",
                                     headerColor: .accent,
                                     additionalInfo: "Age",
@@ -162,7 +169,10 @@ struct SettingsView: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             
-                            Picker(selection: $config.weightUnit, label: Text("")) {
+                            Picker(selection: Binding(
+                                get: { userProfileManager.currentProfile?.weightUnit ?? "Kg" },
+                                set: { userProfileManager.updatePreferences(weightUnit: $0) }
+                            ), label: Text("")) {
                                 ForEach(units, id: \.self) { unit in
                                     Text(unit)
                                 }
@@ -170,9 +180,9 @@ struct SettingsView: View {
                             .pickerStyle(.segmented)
                             .frame(maxWidth: .infinity, alignment: .trailing)
                             .padding(.trailing, -30)
-                            .onChange(of: config.weightUnit) {
-                                debugPrint("Selected unit: \(config.weightUnit)")
-                                config.roundSetWeights = true
+                            .onChange(of: userProfileManager.currentProfile?.weightUnit ?? "Kg") {
+                                debugPrint("Selected unit: \(userProfileManager.currentProfile?.weightUnit ?? "Kg")")
+                                userProfileManager.updatePreferences(roundSetWeights: true)
                                 weightUpdatedTrigger.toggle()
                             }
                         }
@@ -207,57 +217,58 @@ struct SettingsView: View {
                 }
                 .scrollContentBackground(.hidden)
                 .background(Color.clear)
-                .navigationTitle("\(config.username)'s profile")
+                .navigationTitle("\(userProfileManager.currentProfile?.username ?? "User")'s profile")
                 .onAppear {
-                    if let imagePath = config.userProfileImageURL {
-                        profileImage = viewModel.loadImage(from: imagePath)
-                    }
+                    profileImage = userProfileManager.currentProfile?.profileImage
                     healthKitManager.fetchHeight { height in
                         DispatchQueue.main.async {
-                            config.userHeight = height ?? 0.0
+                            // Convert from meters to centimeters for UserProfile storage
+                            let heightInCm = (height ?? 0.0) * 100.0
+                            userProfileManager.updatePhysicalStats(height: heightInCm)
                         }
                     }
                     healthKitManager.fetchWeight { weight in
                         DispatchQueue.main.async {
-                            config.userWeight = weight ?? 0.0
+                            userProfileManager.updatePhysicalStats(weight: weight ?? 0.0)
                         }
                     }
                     healthKitManager.fetchAge { age in
                         DispatchQueue.main.async {
-                            config.userAge = age ?? 0
+                            userProfileManager.updatePhysicalStats(age: age ?? 0)
                         }
                     }
-                    
-                    config.userBMI = config.userWeight / (config.userHeight * config.userHeight)
-                    let (color, status) = getBmiStyle(bmi: config.userBMI)
+
+                    let bmi = userProfileManager.currentProfile?.bmi ?? 0.0
+                    let (color, status) = getBmiStyle(bmi: bmi)
                     bmiColor = color
                     bmiStatus = status
                     
                     healthKitManager.updateFromWeightChart(context: context)
                 }
                 .sheet(isPresented: $editUser, onDismiss: {
-                    if let imagePath = config.userProfileImageURL {
-                        profileImage = viewModel.loadImage(from: imagePath)
+                    Task {
+                        await loadProfileImage()
                     }
                     healthKitManager.fetchWeight { weight in
                         DispatchQueue.main.async {
-                            config.userWeight = weight ?? 0.0
+                            userProfileManager.updatePhysicalStats(weight: weight ?? 0.0)
                         }
                     }                }) {
                         EditUserView(viewModel: viewModel)
                     }
                     .sheet(isPresented: $showBmiDetail, onDismiss: {
                     }) {
-                        let (color, status) = getBmiStyle(bmi: config.userBMI)
+                        let (color, status) = getBmiStyle(bmi: userProfileManager.currentProfile?.bmi ?? 0.0)
                         BmiDetailView(viewModel: viewModel, bmiColor: color, bmiText: status)
                     }
                     .sheet(isPresented: $showWeightDetail, onDismiss: {
                         healthKitManager.fetchWeight { weight in
                             DispatchQueue.main.async {
                                 healthKitManager.updateFromWeightChart(context: context)
-                                config.userWeight = weight ?? config.userWeight
-                                config.userBMI = config.userWeight / (config.userHeight * config.userHeight)
-                                let (color, status) = getBmiStyle(bmi: config.userBMI)
+                                let currentWeight = weight ?? (userProfileManager.currentProfile?.weight ?? 0.0)
+                                userProfileManager.updatePhysicalStats(weight: currentWeight)
+                                let bmi = userProfileManager.currentProfile?.bmi ?? 0.0
+                                let (color, status) = getBmiStyle(bmi: bmi)
                                 bmiColor = color
                                 bmiStatus = status
                                 weightUpdatedTrigger.toggle() // Trigger UI update
@@ -265,7 +276,88 @@ struct SettingsView: View {
                         }                }) {
                             WeightDetailView(viewModel: viewModel)
                         }
+                        .onAppear {
+                            // Refresh HealthKit permissions when view appears
+                            refreshHealthKitDataWithFullUpdate()
+                            // Load profile image
+                            Task {
+                                await loadProfileImage()
+                            }
+                        }
             }
+        }
+    }
+
+    /// Refresh HealthKit data
+    private func refreshHealthKitData() {
+        if userProfileManager.currentProfile?.isHealthEnabled ?? false {
+            healthKitManager.fetchWeight { weight in
+                DispatchQueue.main.async {
+                    let currentWeight = userProfileManager.currentProfile?.weight ?? 0.0
+                    userProfileManager.updatePhysicalStats(weight: weight ?? currentWeight)
+                }
+            }
+            healthKitManager.fetchHeight { height in
+                DispatchQueue.main.async {
+                    let currentHeight = userProfileManager.currentProfile?.height ?? 0.0
+                    // Convert from meters to centimeters for UserProfile storage
+                    let heightInCm = (height ?? (currentHeight / 100.0)) * 100.0
+                    userProfileManager.updatePhysicalStats(height: heightInCm)
+                }
+            }
+            healthKitManager.fetchAge { age in
+                DispatchQueue.main.async {
+                    let currentAge = userProfileManager.currentProfile?.age ?? 0
+                    userProfileManager.updatePhysicalStats(age: age ?? currentAge)
+                }
+            }
+            // Update BMI
+            DispatchQueue.main.async {
+                let bmi = userProfileManager.currentProfile?.bmi ?? 0.0
+                if bmi > 0 {
+                    let (color, status) = getBmiStyle(bmi: bmi)
+                    bmiColor = color
+                    bmiStatus = status
+                }
+            }
+        }
+    }
+
+    /// Full HealthKit data refresh with weight chart update (same as WeightDetailView onDismiss)
+    private func refreshHealthKitDataWithFullUpdate() {
+        // Always try to fetch data, regardless of isHealthEnabled state
+        healthKitManager.fetchWeight { weight in
+            DispatchQueue.main.async {
+                healthKitManager.updateFromWeightChart(context: context)
+                let currentWeight = weight ?? (userProfileManager.currentProfile?.weight ?? 0.0)
+                userProfileManager.updatePhysicalStats(weight: currentWeight)
+                let bmi = userProfileManager.currentProfile?.bmi ?? 0.0
+                let (color, status) = getBmiStyle(bmi: bmi)
+                bmiColor = color
+                bmiStatus = status
+                weightUpdatedTrigger.toggle() // Trigger UI update
+            }
+        }
+        healthKitManager.fetchHeight { height in
+            DispatchQueue.main.async {
+                let currentHeight = userProfileManager.currentProfile?.height ?? 0.0
+                // Convert from meters to centimeters for UserProfile storage
+                let heightInCm = (height ?? (currentHeight / 100.0)) * 100.0
+                userProfileManager.updatePhysicalStats(height: heightInCm)
+            }
+        }
+        healthKitManager.fetchAge { age in
+            DispatchQueue.main.async {
+                let currentAge = userProfileManager.currentProfile?.age ?? 0
+                userProfileManager.updatePhysicalStats(age: age ?? currentAge)
+            }
+        }
+    }
+
+    /// Load profile image from UserProfile
+    private func loadProfileImage() async {
+        await MainActor.run {
+            profileImage = userProfileManager.currentProfile?.profileImage
         }
     }
 }

@@ -6,6 +6,18 @@
     <string>We use your health data to sync your weight and height.</string>
     <key>NSHealthUpdateUsageDescription</key>
     <string>We use your health data to update your weight and height when you edit them in the app.</string>
+    <key>NSUbiquitousContainers</key>
+    <dict>
+        <key>iCloud.com.gymly.app</key>
+        <dict>
+            <key>NSUbiquitousContainerIsDocumentScopePublic</key>
+            <false/>
+            <key>NSUbiquitousContainerName</key>
+            <string>Gymly</string>
+            <key>NSUbiquitousContainerSupportedFolderLevels</key>
+            <string>None</string>
+        </dict>
+    </dict>
     <key>CFBundleDocumentTypes</key>
     <array>
         <dict>
@@ -27,6 +39,11 @@
 
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
+
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>remote-notification</string>
+    </array>
 
     <key>UTImportedTypeDeclarations</key>
     <array>

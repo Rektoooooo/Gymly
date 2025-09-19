@@ -82,8 +82,9 @@ struct ContentViewGraph: View {
                 let muscleGroup = exercise.muscleGroup.lowercased()
                 if let index = muscleGroups.firstIndex(of: muscleGroup) {
                     // Count the number of sets in this exercise
-                    muscleGroupCounts[index] += Double(exercise.sets.count)
-                    debugPrint("[Graph] Added \(exercise.sets.count) sets for \(muscleGroup)")
+                    let setsCount = exercise.sets?.count ?? 0
+                    muscleGroupCounts[index] += Double(setsCount)
+                    debugPrint("[Graph] Added \(setsCount) sets for \(muscleGroup)")
                 }
             }
 

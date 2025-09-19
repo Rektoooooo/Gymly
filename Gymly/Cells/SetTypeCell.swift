@@ -60,11 +60,13 @@ struct SetTypeCell: View {
     
     /// Updates the exercise set with the toggled value and saves it to Core Data
     private func updateExerciseSet(for label: String, with value: Bool) {
+        guard let sets = exercise.sets, setNumber < sets.count else { return }
+
         switch label {
-        case "Failure": exercise.sets[setNumber].failure = value
-        case "Warm Up": exercise.sets[setNumber].warmUp = value
-        case "Rest Pause": exercise.sets[setNumber].restPause = value
-        case "Drop Set": exercise.sets[setNumber].dropSet = value
+        case "Failure": exercise.sets?[setNumber].failure = value
+        case "Warm Up": exercise.sets?[setNumber].warmUp = value
+        case "Rest Pause": exercise.sets?[setNumber].restPause = value
+        case "Drop Set": exercise.sets?[setNumber].dropSet = value
         default: break
         }
         

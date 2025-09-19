@@ -9,9 +9,14 @@ import SwiftData
 
 @Model
 class WeightPoint {
-    var date: Date
-    var weight: Double
-    
+    var date: Date = Date()
+    var weight: Double = 0.0
+
+    // Computed property for CloudKit ID
+    var cloudKitID: String {
+        return "\(date.timeIntervalSince1970)-\(weight)"
+    }
+
     init(date: Date, weight: Double) {
         self.date = date
         self.weight = weight

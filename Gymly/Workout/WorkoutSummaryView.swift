@@ -12,6 +12,7 @@ struct WorkoutSummaryView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var config: Config
     @Environment(\.colorScheme) var scheme
+    @EnvironmentObject var userProfileManager: UserProfileManager
 
     let completedExercises: [Exercise]
     let workoutDurationMinutes: Int
@@ -46,7 +47,7 @@ struct WorkoutSummaryView: View {
                         VStack(spacing: 16) {
                             HStack {
                                 Image(systemName: "clock.fill")
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.white)
                                 Text("Workout Duration")
                                     .font(.headline)
                                     .foregroundColor(.white)
@@ -56,7 +57,7 @@ struct WorkoutSummaryView: View {
                             HStack {
                                 Text("\(workoutDurationMinutes)")
                                     .font(.system(size: 36, weight: .bold))
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.white)
                                 Text("minutes")
                                     .font(.title3)
                                     .foregroundColor(.white.opacity(0.8))
@@ -74,7 +75,7 @@ struct WorkoutSummaryView: View {
                             }
                         }
                         .padding()
-                        .background(Color.black.opacity(0.2))
+                        .background(Color.white.opacity(0.2))
                         .cornerRadius(12)
 
                         // Workout Stats Cards
@@ -86,7 +87,7 @@ struct WorkoutSummaryView: View {
                             // Total Exercises
                             VStack {
                                 Image(systemName: "dumbbell.fill")
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.white)
                                     .font(.title2)
                                 Text("\(completedExercises.count)")
                                     .font(.title2)
@@ -98,13 +99,13 @@ struct WorkoutSummaryView: View {
                             }
                             .frame(height: 80)
                             .frame(maxWidth: .infinity)
-                            .background(Color.black.opacity(0.2))
+                            .background(Color.white.opacity(0.2))
                             .cornerRadius(12)
 
                             // Total Sets
                             VStack {
                                 Image(systemName: "list.number")
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.white)
                                     .font(.title2)
                                 Text("\(totalSets)")
                                     .font(.title2)
@@ -116,13 +117,13 @@ struct WorkoutSummaryView: View {
                             }
                             .frame(height: 80)
                             .frame(maxWidth: .infinity)
-                            .background(Color.black.opacity(0.2))
+                            .background(Color.white.opacity(0.2))
                             .cornerRadius(12)
 
                             // Total Reps
                             VStack {
                                 Image(systemName: "repeat")
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.white)
                                     .font(.title2)
                                 Text("\(totalReps)")
                                     .font(.title2)
@@ -134,25 +135,25 @@ struct WorkoutSummaryView: View {
                             }
                             .frame(height: 80)
                             .frame(maxWidth: .infinity)
-                            .background(Color.black.opacity(0.2))
+                            .background(Color.white.opacity(0.2))
                             .cornerRadius(12)
 
                             // Total Weight
                             VStack {
                                 Image(systemName: "scalemass.fill")
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.white)
                                     .font(.title2)
                                 Text("\(formattedTotalWeight)")
                                     .font(.title2)
                                     .fontWeight(.bold)
                                     .foregroundColor(.white)
-                                Text(config.weightUnit)
+                                Text(userProfileManager.currentProfile?.weightUnit ?? "Kg")
                                     .font(.caption)
                                     .foregroundColor(.white.opacity(0.8))
                             }
                             .frame(height: 80)
                             .frame(maxWidth: .infinity)
-                            .background(Color.black.opacity(0.2))
+                            .background(Color.white.opacity(0.2))
                             .cornerRadius(12)
                         }
 
@@ -160,7 +161,7 @@ struct WorkoutSummaryView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 Image(systemName: "figure.strengthtraining.traditional")
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.white)
                                 Text("Muscle Groups Trained")
                                     .font(.headline)
                                     .foregroundColor(.white)
@@ -177,21 +178,21 @@ struct WorkoutSummaryView: View {
                                         .font(.caption)
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 6)
-                                        .background(Color.black.opacity(0.2))
-                                        .foregroundColor(.black)
+                                        .background(Color.white.opacity(0.2))
+                                        .foregroundColor(.white)
                                         .cornerRadius(20)
                                 }
                             }
                         }
                         .padding()
-                        .background(Color.black.opacity(0.2))
+                        .background(Color.white.opacity(0.2))
                         .cornerRadius(12)
 
                         // Exercises Completed
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 Image(systemName: "list.bullet")
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.white)
                                 Text("Exercises Completed")
                                     .font(.headline)
                                     .foregroundColor(.white)
@@ -203,7 +204,7 @@ struct WorkoutSummaryView: View {
                                     Text(exercise.name)
                                         .foregroundColor(.white)
                                     Spacer()
-                                    Text("\(exercise.sets.count) sets")
+                                    Text("\(exercise.sets?.count ?? 0) sets")
                                         .font(.caption)
                                         .foregroundColor(.white.opacity(0.6))
                                 }
@@ -211,7 +212,7 @@ struct WorkoutSummaryView: View {
                             }
                         }
                         .padding()
-                        .background(Color.black.opacity(0.2))
+                        .background(Color.white.opacity(0.2))
                         .cornerRadius(12)
 
                         Spacer(minLength: 20)
@@ -227,6 +228,7 @@ struct WorkoutSummaryView: View {
                         dismiss()
                     }
                     .foregroundColor(.black)
+                    .bold()
                 }
             }
         }
@@ -234,23 +236,23 @@ struct WorkoutSummaryView: View {
 
     // Computed properties for stats
     private var totalSets: Int {
-        completedExercises.reduce(0) { $0 + $1.sets.count }
+        completedExercises.reduce(0) { $0 + ($1.sets?.count ?? 0) }
     }
 
     private var totalReps: Int {
         completedExercises.reduce(0) { result, exercise in
-            result + exercise.sets.reduce(0) { $0 + $1.reps }
+            result + (exercise.sets ?? []).reduce(0) { $0 + $1.reps }
         }
     }
 
     private var totalWeight: Double {
         completedExercises.reduce(0) { result, exercise in
-            result + exercise.sets.reduce(0) { $0 + $1.weight }
+            result + (exercise.sets ?? []).reduce(0) { $0 + $1.weight }
         }
     }
 
     private var formattedTotalWeight: String {
-        let weightInDisplayUnit = config.weightUnit == "Kg" ? totalWeight : totalWeight * 2.20462
+        let weightInDisplayUnit = userProfileManager.currentProfile?.weightUnit ?? "Kg" == "Kg" ? totalWeight : totalWeight * 2.20462
         return String(format: "%.0f", weightInDisplayUnit)
     }
 
@@ -259,38 +261,3 @@ struct WorkoutSummaryView: View {
     }
 }
 
-#Preview {
-    // Create mock exercise sets
-    let mockSet1 = Exercise.Set(weight: 80.0, reps: 8, failure: false, warmUp: false, restPause: false, dropSet: false, time: "14:30", note: "Felt strong", createdAt: Date(), bodyWeight: false)
-    let mockSet2 = Exercise.Set(weight: 82.5, reps: 6, failure: true, warmUp: false, restPause: false, dropSet: false, time: "14:35", note: "Last rep was tough", createdAt: Date(), bodyWeight: false)
-    let mockSet3 = Exercise.Set(weight: 60.0, reps: 12, failure: false, warmUp: false, restPause: true, dropSet: false, time: "14:45", note: "Rest pause set", createdAt: Date(), bodyWeight: false)
-
-    // Create mock exercises
-    let benchPress = Exercise(id: UUID(), name: "Bench Press", sets: [mockSet1, mockSet2], repGoal: "8-10", muscleGroup: "Chest", createdAt: Date(), completedAt: Date(), animationId: UUID(), exerciseOrder: 1, done: true, day: nil)
-    let inclineDB = Exercise(id: UUID(), name: "Incline Dumbbell Press", sets: [mockSet3], repGoal: "10-12", muscleGroup: "Chest", createdAt: Date(), completedAt: Date(), animationId: UUID(), exerciseOrder: 2, done: true, day: nil)
-    let pullups = Exercise(id: UUID(), name: "Pull-ups", sets: [
-        Exercise.Set(weight: 0, reps: 10, failure: false, warmUp: false, restPause: false, dropSet: false, time: "15:00", note: "Bodyweight", createdAt: Date(), bodyWeight: true)
-    ], repGoal: "8-12", muscleGroup: "Back", createdAt: Date(), completedAt: Date(), animationId: UUID(), exerciseOrder: 3, done: true, day: nil)
-
-    let mockExercises = [benchPress, inclineDB, pullups]
-
-    // Create mock config for weight unit
-    let mockConfig = Config(
-        weightUnit: "Kg", splitStarted: true, daysRecorded: [], dayInSplit: 1,
-        lastUpdateDate: Date(), splitLenght: 7, isUserLoggedIn: true,
-        userProfileImageURL: nil, username: "TestUser", userEmail: "test@test.com",
-        allowdateOfBirth: false, allowHeight: false, allowWeight: false,
-        isHealthEnabled: false, roundSetWeights: false, firstSplitEdit: false,
-        activeExercise: 1, graphDataValues: [], graphMaxValue: 1.0,
-        graphUpdatedExercisesIDs: Set<UUID>(), userWeight: 80.0, userBMI: 22.0,
-        userHeight: 1.80, userAge: 25, totalWorkoutTimeMinutes: 1200
-    )
-
-    WorkoutSummaryView(
-        completedExercises: mockExercises,
-        workoutDurationMinutes: 45,
-        startTime: "14:30",
-        endTime: "15:15"
-    )
-    .environmentObject(mockConfig)
-}

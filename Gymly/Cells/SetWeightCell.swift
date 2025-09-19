@@ -74,7 +74,8 @@ struct SetWeightCell: View {
                 Toggle("Body Weight", isOn: $bodyWeight)
                     .toggleStyle(CheckToggleStyle())
                     .onChange(of: bodyWeight) { _, newValue in
-                        exercise.sets[setNumber].bodyWeight = newValue
+                        guard let sets = exercise.sets, setNumber < sets.count else { return }
+                        exercise.sets?[setNumber].bodyWeight = newValue
                         do {
                             try context.save()
                         } catch {
