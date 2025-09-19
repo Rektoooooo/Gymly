@@ -100,7 +100,7 @@ struct BmiDetailView: View {
                                 }
                                 Spacer()
                                 HStack {
-                                    let heightSquared = currentHeight * currentHeight
+                                    let heightSquared = currentHeight / 100.0 * currentHeight / 100.0
                                     let minWeightKg = heightSquared * bmiRangeLow
                                     let maxWeightKg = heightSquared * bmiRangeHigh
 
