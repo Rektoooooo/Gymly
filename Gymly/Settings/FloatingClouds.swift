@@ -45,6 +45,35 @@ struct CloudsTheme {
         )
     }
     
+    static func appleIntelligence(_ scheme: ColorScheme) -> CloudsTheme {
+        CloudsTheme(
+            // Inky base with an indigo tint (dark) / airy off-white with lavender cast (light)
+            background: scheme == .dark
+                ? Color(red: 0.05, green: 0.06, blue: 0.10)                 // near-black indigo
+                : Color(red: 0.97, green: 0.97, blue: 1.00),                // soft cool white
+
+            // Luminous electric blue/cyan up top-left
+            topLeading: scheme == .dark
+                ? Color(red: 0.20, green: 0.60, blue: 1.00, opacity: 0.85)  // electric blue glow
+                : Color(red: 0.40, green: 0.70, blue: 1.00, opacity: 0.70),
+
+            // Violet/magenta bloom top-right
+            topTrailing: scheme == .dark
+                ? Color(red: 0.75, green: 0.40, blue: 1.00, opacity: 0.75)  // vibrant violet
+                : Color(red: 0.85, green: 0.55, blue: 1.00, opacity: 0.65),
+
+            // Pink warmth bottom-left to balance the cool tones
+            bottomLeading: scheme == .dark
+                ? Color(red: 1.00, green: 0.45, blue: 0.70, opacity: 0.65)  // rosy glow
+                : Color(red: 1.00, green: 0.55, blue: 0.80, opacity: 0.60),
+
+            // Mint/cyan shimmer bottom-right for that “intelligent” sparkle
+            bottomTrailing: scheme == .dark
+                ? Color(red: 0.30, green: 1.00, blue: 0.95, opacity: 0.78)  // cool mint
+                : Color(red: 0.45, green: 1.00, blue: 0.95, opacity: 0.70)
+        )
+    }
+    
     static func orange(_ scheme: ColorScheme) -> CloudsTheme {
         CloudsTheme(
             background: Color(red: 0.45, green: 0.25, blue: 0.0),
