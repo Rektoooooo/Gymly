@@ -161,6 +161,14 @@ struct SettingsView: View {
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                     .id(weightUpdatedTrigger)
+                    Section("") {
+                        NavigationLink(destination: AISummaryView()) {
+                            Image(systemName: "apple.intelligence")
+                            Text("Week AI Summary")
+                        }
+                        .frame(width: 300)
+                    }
+                    .listRowBackground(Color.black.opacity(0.05))
                     Section("Preferences") {
                         HStack {
                             HStack {
