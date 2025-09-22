@@ -259,11 +259,13 @@ final class WorkoutViewModel: ObservableObject {
 
         do {
             let fetchedData = try context.fetch(descriptor)
-            debugPrint("Fetched calendar day count: \(fetchedData.count)")
+            debugPrint("📅 FETCH: Looking for date '\(date)' - found \(fetchedData.count) DayStorage entries")
 
             // Fetch the day from storage
             if let dayStorage = fetchedData.first {
                 let dayId = dayStorage.dayId
+                debugPrint("📅 FETCH: Found DayStorage with dayId: \(dayId)")
+
                 let dayPredicate = #Predicate<Day> { day in
                     day.id == dayId
                 }
@@ -271,14 +273,19 @@ final class WorkoutViewModel: ObservableObject {
                 let fetchedDays = try context.fetch(dayDescriptor)
 
                 if let foundDay = fetchedDays.first {
+                    debugPrint("✅ FETCH: Successfully found Day '\(foundDay.name)' with \(foundDay.exercises?.count ?? 0) exercises")
                     return foundDay
+                } else {
+                    debugPrint("⚠️ FETCH: No Day found with id \(dayId)")
                 }
+            } else {
+                debugPrint("⚠️ FETCH: No DayStorage found for date '\(date)'")
             }
 
             return emptyDay
 
         } catch {
-            debugPrint("Error fetching data: \(error.localizedDescription)")
+            debugPrint("❌ FETCH ERROR: \(error.localizedDescription)")
             return emptyDay
         }
     }
@@ -351,18 +358,83 @@ final class WorkoutViewModel: ObservableObject {
     @MainActor
     func insertWorkout() async {
         let today = await fetchDay(dayOfSplit: config.dayInSplit)
-        
+
         let newDay = Day(
             name: today.name,
             dayOfSplit: today.dayOfSplit,
             exercises: (today.exercises ?? []).filter { $0.done }.map { $0.copy() },
             date: formattedDateString(from: Date())
         )
-        
-        
-        let dayStorage = DayStorage(id: UUID(), day: newDay, date: formattedDateString(from: Date()))
+    }
+
+    // New method that accepts the day with completed exercises
+    @MainActor
+    func insertWorkout(from day: Day) async {
+        let completedExercises = (day.exercises ?? []).filter { $0.done }
+        debugPrint("💾 WORKOUT SAVE: Found \(completedExercises.count) completed exercises out of \(day.exercises?.count ?? 0) total")
+
+        let todaysDate = formattedDateString(from: Date())
+
+        // First, check if there's already a DayStorage for today and remove it
+        let existingPredicate = #Predicate<DayStorage> { storage in
+            storage.date == todaysDate
+        }
+        let existingDescriptor = FetchDescriptor<DayStorage>(predicate: existingPredicate)
+
+        do {
+            let existingStorages = try context.fetch(existingDescriptor)
+            debugPrint("🔍 SAVE: Found \(existingStorages.count) existing DayStorage entries for date '\(todaysDate)'")
+
+            // Delete old Day objects and DayStorage entries for this date
+            for storage in existingStorages {
+                // Try to delete the old Day object if it exists
+                let dayIdToDelete = storage.dayId
+                let oldDayPredicate = #Predicate<Day> { day in
+                    day.id == dayIdToDelete
+                }
+                let oldDayDescriptor = FetchDescriptor<Day>(predicate: oldDayPredicate)
+                if let oldDays = try? context.fetch(oldDayDescriptor) {
+                    for oldDay in oldDays {
+                        context.delete(oldDay)
+                        debugPrint("🗑️ SAVE: Deleted old Day with id: \(oldDay.id)")
+                    }
+                }
+                context.delete(storage)
+                debugPrint("🗑️ SAVE: Deleted old DayStorage for date '\(todaysDate)'")
+            }
+        } catch {
+            debugPrint("⚠️ SAVE: Error checking existing storage: \(error)")
+        }
+
+        let newDay = Day(
+            name: day.name,
+            dayOfSplit: day.dayOfSplit,
+            exercises: completedExercises.map { $0.copy() },
+            date: formattedDateString(from: Date())
+        )
+
+        // Insert the Day object first so it gets persisted with an ID
+        context.insert(newDay)
+        debugPrint("📝 SAVE: Inserted Day with id: \(newDay.id), name: '\(newDay.name)'")
+
+        let dayStorage = DayStorage(id: UUID(), day: newDay, date: todaysDate)
         context.insert(dayStorage)
-        config.daysRecorded.insert(formattedDateString(from: Date()), at: 0)
+        debugPrint("📝 SAVE: Created DayStorage for date '\(todaysDate)' referencing Day id: \(newDay.id)")
+
+        // Only add to daysRecorded if not already present
+        if !config.daysRecorded.contains(todaysDate) {
+            config.daysRecorded.insert(todaysDate, at: 0)
+            print("🟢 CALENDAR: Added new date '\(todaysDate)' to daysRecorded. Array now has \(config.daysRecorded.count) dates")
+        } else {
+            print("🟡 CALENDAR: Date '\(todaysDate)' already exists in daysRecorded")
+        }
+        print("📅 CALENDAR: Current daysRecorded: \(config.daysRecorded)")
+
+
+        // Force a UI update by triggering objectWillChange
+        DispatchQueue.main.async {
+            self.config.objectWillChange.send()
+        }
 
         do {
             try context.save()
@@ -380,12 +452,32 @@ final class WorkoutViewModel: ObservableObject {
     }
     
  // MARK: Calendar oriented functions
-    
+
+    /// Remove duplicate dates from daysRecorded array
+    @MainActor
+    func cleanupDuplicateDates() {
+        let uniqueDates = Array(Set(config.daysRecorded))
+        if uniqueDates.count != config.daysRecorded.count {
+            config.daysRecorded = uniqueDates.sorted { date1, date2 in
+                // Sort by date, most recent first
+                let formatter = DateFormatter()
+                formatter.dateFormat = "d MMMM yyyy"
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                let d1 = formatter.date(from: date1) ?? Date.distantPast
+                let d2 = formatter.date(from: date2) ?? Date.distantPast
+                return d1 > d2
+            }
+            debugPrint("🧹 CLEANUP: Removed duplicates from daysRecorded. Now has \(config.daysRecorded.count) unique dates")
+        }
+    }
+
     /// Get time for comparing
     func formattedDateString(from date: Date) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "d MMMM yyyy"
-        return dateFormatter.string(from: date)
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")  // Ensure consistent formatting
+        let formattedString = dateFormatter.string(from: date)
+        return formattedString
     }
     
     /// Get year and moth for calnedar day titile
@@ -459,6 +551,7 @@ final class WorkoutViewModel: ObservableObject {
     // MARK: Functions for exercise
     
     /// Create new exercises and add it to respective day
+    @MainActor
     func createExercise(to: Day) async {
         if !name.isEmpty && !sets.isEmpty && !reps.isEmpty {
             var setList: [Exercise.Set] = []
@@ -530,6 +623,7 @@ final class WorkoutViewModel: ObservableObject {
     
     
     /// Fetch exercise from id
+    @MainActor
     func fetchExercise(id: UUID) async -> Exercise {
         let predicate = #Predicate<Exercise> {
             $0.id == id
@@ -553,6 +647,7 @@ final class WorkoutViewModel: ObservableObject {
     }
     
     /// Fetch exercises for day
+    @MainActor
     func fetchAllExerciseForDay(day: Day) async -> [Exercise] {
         let descriptor = FetchDescriptor<Exercise>()
         do {
@@ -584,6 +679,7 @@ final class WorkoutViewModel: ObservableObject {
         context.delete(set)
     }
     /// Add set for exercise
+    @MainActor
     func addSet(exercise: Exercise) async -> Exercise {
         let currentExercise = await fetchExercise(id: exercise.id)
 

@@ -49,7 +49,7 @@ struct TodayWorkoutView: View {
                                         selectedDay = day
                                         viewModel.day = selectedDay
                                         config.dayInSplit = day.dayOfSplit
-                                        Task {
+                                        Task { @MainActor in
                                             await refreshView()
                                         }
                                     }) {
@@ -106,9 +106,12 @@ struct TodayWorkoutView: View {
                                             showWorkoutSummary = true
                                         }
 
-                                        Task {
+                                        Task { @MainActor in
                                             // Set completion time for all done exercises
                                             let now = Date()
+                                            let doneCount = selectedDay.exercises?.filter { $0.done }.count ?? 0
+                                            debugPrint("🏃‍♂️ WORKOUT DONE: \(doneCount) exercises marked as done")
+
                                             if let exercises = selectedDay.exercises {
                                                 for i in exercises.indices {
                                                     if exercises[i].done {
@@ -118,7 +121,7 @@ struct TodayWorkoutView: View {
                                             }
 
                                             viewModel.updateMuscleGroupDataValues(from: selectedDay.exercises ?? [], modelContext: context)
-                                            await viewModel.insertWorkout()
+                                            await viewModel.insertWorkout(from: selectedDay)
                                             if let exercises = selectedDay.exercises {
                                                 for i in exercises.indices {
                                                     exercises[i].done = false
@@ -172,12 +175,12 @@ struct TodayWorkoutView: View {
                 }
                 /// On change of adding exercise refresh the exercises
                 .onChange(of: viewModel.exerciseAddedTrigger) {
-                    Task {
+                    Task { @MainActor in
                         await refreshMuscleGroups()
                     }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name.importSplit)) { notification in
-                    Task {
+                    Task { @MainActor in
                         await refreshView()
                     }
                 }
@@ -192,13 +195,13 @@ struct TodayWorkoutView: View {
             }
             /// Refresh when user logs in
             .onChange(of: loginRefreshTrigger) {
-                Task {
+                Task { @MainActor in
                     await refreshView()
                 }
             }
             /// Sheet for showing splits view
             .sheet(isPresented: $viewModel.editPlan, onDismiss: {
-                Task {
+                Task { @MainActor in
                     await refreshView()
                     navigationTitle = viewModel.day.name
                 }
@@ -207,7 +210,7 @@ struct TodayWorkoutView: View {
             }
             /// Sheet for showing setting and profile view
             .sheet(isPresented: $showProfileView, onDismiss: {
-                Task {
+                Task { @MainActor in
                     await loadProfileImage()
                     await refreshMuscleGroups()
                 }
@@ -216,7 +219,7 @@ struct TodayWorkoutView: View {
             }
             /// Sheet for adding exercises
             .sheet(isPresented: $viewModel.addExercise, onDismiss: {
-                Task {
+                Task { @MainActor in
                     await refreshView()
                 }
                 viewModel.name = ""

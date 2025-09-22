@@ -87,14 +87,25 @@ struct CalendarView: View {
                                         .padding(3)
                                     } else {
                                         ZStack {
+                                            let dayDateString = viewModel.formattedDateString(from: day.date)
+
                                             NavigationLink("\(day.day)") {
-                                                CalendarDayView(viewModel: viewModel, date: viewModel.formattedDateString(from: day.date))
+                                                CalendarDayView(viewModel: viewModel, date: dayDateString)
                                             }
                                             .frame(width: UIScreen.main.bounds.width * 0.085, height: UIScreen.main.bounds.height * 0.04)
                                             .font(.system(size: 22))
                                             .foregroundColor(Color.white)
                                             .padding(3)
-                                            if config.daysRecorded.contains(viewModel.formattedDateString(from: day.date)) {
+                                            .onAppear {
+                                                // Only log for today's date to reduce noise
+                                                if Calendar.current.isDate(day.date, inSameDayAs: Date()) {
+                                                    print("🔍 CALENDAR: Today's date is '\(dayDateString)'")
+                                                    print("🔍 CALENDAR: daysRecorded contains: \(config.daysRecorded)")
+                                                    print("🔍 CALENDAR: Contains today? \(config.daysRecorded.contains(dayDateString))")
+                                                }
+                                            }
+
+                                            if config.daysRecorded.contains(dayDateString) {
                                                 Circle()
                                                     .frame(width: 10, height: 10)
                                                     .foregroundColor(.red)
@@ -121,6 +132,8 @@ struct CalendarView: View {
                 .navigationTitle("Calendar")
                 .onAppear() {
                     currentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: Date())) ?? currentMonth
+                    // Clean up any duplicate dates in the daysRecorded array
+                    viewModel.cleanupDuplicateDates()
                 }
             }
         }

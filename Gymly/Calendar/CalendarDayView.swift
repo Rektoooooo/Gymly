@@ -67,9 +67,12 @@ struct CalendarDayView: View {
     }
     
     func refreshMuscleGroups() async {
+        debugPrint("🔍 CalendarDayView: Fetching data for date '\(date)'")
         day = await viewModel.fetchCalendarDay(date: date)
-        debugPrint(day.name)
+        debugPrint("📋 CalendarDayView: Day name: '\(day.name)', exercises count: \(day.exercises?.count ?? 0)")
+
         muscleGroups.removeAll() /// Clear array to trigger UI update
         muscleGroups = await viewModel.sortDataForCalendar(date: date) /// Reassign updated data
+        debugPrint("💪 CalendarDayView: Found \(muscleGroups.count) muscle groups with exercises")
     }
 }
