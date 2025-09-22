@@ -385,20 +385,8 @@ final class WorkoutViewModel: ObservableObject {
             let existingStorages = try context.fetch(existingDescriptor)
             debugPrint("🔍 SAVE: Found \(existingStorages.count) existing DayStorage entries for date '\(todaysDate)'")
 
-            // Delete old Day objects and DayStorage entries for this date
+            // Delete old DayStorage entries only (DO NOT delete Day objects to avoid deleting template days)
             for storage in existingStorages {
-                // Try to delete the old Day object if it exists
-                let dayIdToDelete = storage.dayId
-                let oldDayPredicate = #Predicate<Day> { day in
-                    day.id == dayIdToDelete
-                }
-                let oldDayDescriptor = FetchDescriptor<Day>(predicate: oldDayPredicate)
-                if let oldDays = try? context.fetch(oldDayDescriptor) {
-                    for oldDay in oldDays {
-                        context.delete(oldDay)
-                        debugPrint("🗑️ SAVE: Deleted old Day with id: \(oldDay.id)")
-                    }
-                }
                 context.delete(storage)
                 debugPrint("🗑️ SAVE: Deleted old DayStorage for date '\(todaysDate)'")
             }
@@ -453,13 +441,38 @@ final class WorkoutViewModel: ObservableObject {
     
  // MARK: Calendar oriented functions
 
-    /// Remove duplicate dates from daysRecorded array
+    /// Check if a DayStorage exists for the given date
+    @MainActor
+    func hasDayStorage(for dateString: String) -> Bool {
+        let predicate = #Predicate<DayStorage> { storage in
+            storage.date == dateString
+        }
+        let descriptor = FetchDescriptor<DayStorage>(predicate: predicate)
+
+        do {
+            let existingStorages = try context.fetch(descriptor)
+            return !existingStorages.isEmpty
+        } catch {
+            debugPrint("❌ Error checking DayStorage for date '\(dateString)': \(error)")
+            return false
+        }
+    }
+
+    /// Remove duplicate dates from daysRecorded array and rebuild from actual DayStorage entries
     @MainActor
     func cleanupDuplicateDates() {
-        let uniqueDates = Array(Set(config.daysRecorded))
-        if uniqueDates.count != config.daysRecorded.count {
-            config.daysRecorded = uniqueDates.sorted { date1, date2 in
-                // Sort by date, most recent first
+        // First, get all dates from actual DayStorage entries
+        let descriptor = FetchDescriptor<DayStorage>()
+
+        do {
+            let allStorages = try context.fetch(descriptor)
+            let storageDate = Set(allStorages.map { $0.date })
+
+            // Combine with existing daysRecorded and remove duplicates
+            let allDates = Set(config.daysRecorded).union(storageDate)
+
+            // Sort by date, most recent first
+            let sortedDates = allDates.sorted { date1, date2 in
                 let formatter = DateFormatter()
                 formatter.dateFormat = "d MMMM yyyy"
                 formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -467,7 +480,28 @@ final class WorkoutViewModel: ObservableObject {
                 let d2 = formatter.date(from: date2) ?? Date.distantPast
                 return d1 > d2
             }
-            debugPrint("🧹 CLEANUP: Removed duplicates from daysRecorded. Now has \(config.daysRecorded.count) unique dates")
+
+            if config.daysRecorded.count != sortedDates.count {
+                config.daysRecorded = sortedDates
+                debugPrint("🧹 CLEANUP: Rebuilt daysRecorded from DayStorage. Now has \(config.daysRecorded.count) dates")
+                debugPrint("📅 CLEANUP: Dates found: \(sortedDates)")
+            }
+        } catch {
+            debugPrint("❌ Error fetching DayStorage entries for cleanup: \(error)")
+
+            // Fallback: just remove duplicates from existing array
+            let uniqueDates = Array(Set(config.daysRecorded))
+            if uniqueDates.count != config.daysRecorded.count {
+                config.daysRecorded = uniqueDates.sorted { date1, date2 in
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "d MMMM yyyy"
+                    formatter.locale = Locale(identifier: "en_US_POSIX")
+                    let d1 = formatter.date(from: date1) ?? Date.distantPast
+                    let d2 = formatter.date(from: date2) ?? Date.distantPast
+                    return d1 > d2
+                }
+                debugPrint("🧹 CLEANUP: Fallback - removed duplicates from daysRecorded. Now has \(config.daysRecorded.count) unique dates")
+            }
         }
     }
 
