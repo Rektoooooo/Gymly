@@ -100,6 +100,12 @@ class Config:ObservableObject {
             UserDefaults.standard.set(cloudKitSyncDate, forKey: "cloudKitSyncDate")
         }
     }
+    
+    @Published var isHealtKitEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(isHealtKitEnabled, forKey: "isHealtKitEnabled")
+        }
+    }
 
     init() {
         self.daysRecorded = UserDefaults.standard.object(forKey: "daysRecorded") as? [String] ?? []
@@ -116,6 +122,7 @@ class Config:ObservableObject {
         self.totalWorkoutTimeMinutes = UserDefaults.standard.object(forKey: "totalWorkoutTimeMinutes") as? Int ?? 0
         self.isCloudKitEnabled = UserDefaults.standard.object(forKey: "isCloudKitEnabled") as? Bool ?? false
         self.cloudKitSyncDate = UserDefaults.standard.object(forKey: "cloudKitSyncDate") as? Date
+        self.isHealtKitEnabled = UserDefaults.standard.object(forKey: "isHealtKitEnabled") as? Bool ?? false
     }
 
 }
