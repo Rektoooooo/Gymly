@@ -18,32 +18,26 @@ struct SignInView: View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        VStack {
-            ZStack {
-                LinearGradient(
-                    gradient: Gradient(colors: [.red, .pink]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+        ZStack {
+            FloatingClouds(theme: CloudsTheme.graphite(colorScheme))
                 .ignoresSafeArea()
-                Circle()
-                    .fill(ColorSchemeAdaptiveColor(light: .white, dark: .black))
-                    .frame(width: 600, height: 600)
-                VStack {
-                    VStack{
-                        Text("Gymly")
-                            .bold()
-                            .font(.largeTitle)
-                            .foregroundStyle(ColorSchemeAdaptiveColor(light: .black, dark: .white))
-                        Text("Track your workouts and progress")
-                            .bold()
-                            .foregroundStyle(ColorSchemeAdaptiveColor(light: .black, dark: .white))
-                    }
-                    VStack {
-                        /// Sign in with apple id
-                        SignInWithAppleButton(.signUp) { request in
-                            request.requestedScopes = [.fullName, .email]
-                        } onCompletion: { result in
+
+            VStack(spacing: 40) {
+                VStack(spacing: 16) {
+                    Text("Gymly")
+                        .bold()
+                        .font(.largeTitle)
+                        .foregroundStyle(Color.primary)
+                    Text("Track your workouts and progress")
+                        .font(.body)
+                        .foregroundStyle(Color.secondary)
+                }
+
+                VStack(spacing: 20) {
+                    /// Sign in with apple id
+                    SignInWithAppleButton(.signUp) { request in
+                        request.requestedScopes = [.fullName, .email]
+                    } onCompletion: { result in
                             switch result {
                             case .success(let authorization):
                                 config.isUserLoggedIn = true
@@ -115,12 +109,13 @@ struct SignInView: View {
                             case .failure(let error):
                                 print("Could not authenticate: \(error.localizedDescription)")
                             }
-                        }
-                        .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
-                        .frame(width: 200, height: 44)
-                    }                }
+                    }
+                    .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
+                    .frame(width: 280, height: 50)
+                    .cornerRadius(25)
+                }
+                .padding(.horizontal, 40)
             }
-            .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
         }
     }
     

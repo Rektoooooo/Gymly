@@ -197,6 +197,9 @@ struct TodayWorkoutView: View {
             .onChange(of: loginRefreshTrigger) {
                 Task { @MainActor in
                     await refreshView()
+                    // Also refresh profile image after login/CloudKit sync
+                    await loadProfileImage()
+                    print("🖼️ PROFILE: Refreshed profile image after login")
                 }
             }
             /// Sheet for showing splits view

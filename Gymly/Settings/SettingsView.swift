@@ -242,8 +242,18 @@ struct SettingsView: View {
                     let (color, status) = getBmiStyle(bmi: bmi)
                     bmiColor = color
                     bmiStatus = status
-                    
+
                     healthKitManager.updateFromWeightChart(context: context)
+                }
+                .onChange(of: config.isHealtKitEnabled) { _, newValue in
+                    // When HealthKit status changes, update BMI color immediately
+                    DispatchQueue.main.async {
+                        let bmi = userProfileManager.currentProfile?.bmi ?? 0.0
+                        let (color, status) = getBmiStyle(bmi: bmi)
+                        bmiColor = color
+                        bmiStatus = status
+                        print("🎨 SETTINGS: Updated BMI color due to HealthKit status change")
+                    }
                 }
                 .sheet(isPresented: $editUser, onDismiss: {
                     Task {
@@ -290,7 +300,7 @@ struct SettingsView: View {
 
     /// Refresh HealthKit data
     private func refreshHealthKitData() {
-        if userProfileManager.currentProfile?.isHealthEnabled ?? false {
+        if UserDefaults.standard.bool(forKey: "healthKitEnabled") {
             healthKitManager.fetchWeight { weight in
                 DispatchQueue.main.async {
                     let currentWeight = userProfileManager.currentProfile?.weight ?? 0.0

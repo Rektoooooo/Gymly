@@ -36,14 +36,14 @@ struct ConnectionsView: View {
             Form {
             Section(header: Text("Apple Health")) {
                 Toggle("Enable Apple Health", isOn: Binding(
-                    get: { userProfileManager.currentProfile?.isHealthEnabled ?? false },
-                    set: { userProfileManager.updateHealthPermissions(healthEnabled: $0) }
-                ))
-                    .onChange(of: userProfileManager.currentProfile?.isHealthEnabled ?? false) {
-                        if userProfileManager.currentProfile?.isHealthEnabled ?? false {
+                    get: { config.isHealtKitEnabled },
+                    set: { newValue in
+                        if newValue {
+                            // User wants to enable HealthKit - request authorization first
                             requestHealthKitAuthorization()
                         }
                     }
+                ))
 
                 Text("To fully revoke permissions, disable HealthKit access in Settings > Privacy & Security > Health > Gymly")
                     .font(.caption)
@@ -116,9 +116,6 @@ struct ConnectionsView: View {
         }
         .navigationTitle("Connected Apps")
         .task {
-            if userProfileManager.currentProfile?.isHealthEnabled ?? false  {
-                updateHealthPermissions() // ✅ Ensure toggles sync with user settings
-            }
             await cloudKitManager.checkCloudKitStatus()
             isCloudKitAvailable = await cloudKitManager.isCloudKitAvailable()
             // Sync the config state with CloudKit manager state
@@ -139,24 +136,29 @@ struct ConnectionsView: View {
 
         healthStore.requestAuthorization(toShare: nil, read: healthDataToRead) { success, error in
             DispatchQueue.main.async {
-                self.updateHealthPermissions() // ✅ Ensure UI updates right after auth
+
+                    config.isHealtKitEnabled = true
+                    print("🩺 HEALTH: Authorization result - permissions granted")
+
             }
         }
     }
 
-    
-    /// Syncs UI toggles with HealthKit permissions
-    private func updateHealthPermissions() {
+
+    /// Check if HealthKit permissions are granted
+    private func checkHealthKitPermissions() -> Bool {
         let dateOfBirthType = HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!
         let heightType = HKObjectType.quantityType(forIdentifier: .height)!
         let weightType = HKObjectType.quantityType(forIdentifier: .bodyMass)!
 
-        DispatchQueue.global(qos: .userInitiated).async {
-            let dateOfBirthStatus = self.healthStore.authorizationStatus(for: dateOfBirthType)
-            let heightStatus = self.healthStore.authorizationStatus(for: heightType)
-            let weightStatus = self.healthStore.authorizationStatus(for: weightType)
-        }
-    }
+        let dateOfBirthStatus = healthStore.authorizationStatus(for: dateOfBirthType)
+        let heightStatus = healthStore.authorizationStatus(for: heightType)
+        let weightStatus = healthStore.authorizationStatus(for: weightType)
 
+        // Return true if at least one permission is granted
+        return dateOfBirthStatus == .sharingAuthorized ||
+               heightStatus == .sharingAuthorized ||
+               weightStatus == .sharingAuthorized
+    }
 
 }

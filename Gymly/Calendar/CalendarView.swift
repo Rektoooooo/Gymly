@@ -105,7 +105,7 @@ struct CalendarView: View {
                                                 }
                                             }
 
-                                            if config.daysRecorded.contains(dayDateString) {
+                                            if config.daysRecorded.contains(dayDateString) || viewModel.hasDayStorage(for: dayDateString) {
                                                 Circle()
                                                     .frame(width: 10, height: 10)
                                                     .foregroundColor(.red)
