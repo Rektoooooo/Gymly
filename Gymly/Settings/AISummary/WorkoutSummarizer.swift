@@ -28,7 +28,7 @@ final class WorkoutSummarizer: ObservableObject {
                 "Focus on:"
                 "- Identifying patterns in performance"
                 "- Recognizing personal records and achievements"
-                "- Spotting potential issues with form, volume, or consistency"
+                "- Spotting potential issues with volume, consistency, muscle balance, or training frequency"
                 "- Providing actionable recommendations for improvement"
 
                 "Be concise but comprehensive."
@@ -38,7 +38,7 @@ final class WorkoutSummarizer: ObservableObject {
         )
     }
 
-    func generateWeeklySummary(from workouts: [CompletedWorkout]) async throws {
+    func generateWeeklySummary(thisWeek: [CompletedWorkout], lastWeek: [CompletedWorkout]) async throws {
         isGenerating = true
         defer { isGenerating = false }
 
@@ -47,9 +47,10 @@ final class WorkoutSummarizer: ObservableObject {
             includeSchemaInPrompt: false,
             options: GenerationOptions(sampling: .greedy)
         ) {
-            "Analyze the following workout data from the past week and generate a comprehensive summary:"
+            "Analyze the following workout data and generate a comprehensive summary with percentage comparisons:"
 
-            for (index, workout) in workouts.enumerated() {
+            "THIS WEEK'S WORKOUTS:"
+            for (index, workout) in thisWeek.enumerated() {
                 "Workout \(index + 1):"
                 "Date: \(workout.date)"
                 "Day: \(workout.dayName)"
@@ -67,17 +68,54 @@ final class WorkoutSummarizer: ObservableObject {
                         if set.restPause { "(rest-pause)" }
                     }
                 }
+
+                if !workout.incompleteExercises.isEmpty {
+                    "Skipped exercises:"
+                    for skipped in workout.incompleteExercises {
+                        "- \(skipped.name) (\(skipped.muscleGroup))"
+                    }
+                }
+            }
+
+            if !lastWeek.isEmpty {
+                "LAST WEEK'S WORKOUTS (for comparison):"
+                for (index, workout) in lastWeek.enumerated() {
+                    "Workout \(index + 1):"
+                    "Date: \(workout.date)"
+                    "Day: \(workout.dayName)"
+                    "Duration: \(workout.duration) minutes"
+
+                    for exercise in workout.exercises {
+                        "Exercise: \(exercise.name)"
+                        "Muscle Group: \(exercise.muscleGroup)"
+                        "Sets: \(exercise.sets.count)"
+
+                        for (setIndex, set) in exercise.sets.enumerated() {
+                            "Set \(setIndex + 1): \(set.weight)kg × \(set.reps) reps"
+                            if set.failure { "(to failure)" }
+                            if set.dropSet { "(drop set)" }
+                            if set.restPause { "(rest-pause)" }
+                        }
+                    }
+
+                    if !workout.incompleteExercises.isEmpty {
+                        "Skipped exercises:"
+                        for skipped in workout.incompleteExercises {
+                            "- \(skipped.name) (\(skipped.muscleGroup))"
+                        }
+                    }
+                }
             }
 
             "Generate a workout summary with:"
             "- A motivating headline capturing the week's key achievement"
             "- A 2-3 sentence overview in plain language"
-            "- Key statistics (total volume, sessions, PRs)"
+            "- Key statistics (total volume, sessions, PRs) with percentage changes vs last week (calculate exact percentages like '+15%', '-8%', or 'NEW' if no previous data)"
             "- Exercise-by-exercise breakdown"
             "- Short-term trends (comparing to previous weeks if applicable)"
             "- Personal records achieved"
-            "- Any potential issues to address"
-            "- 2-3 specific, actionable recommendations for next week"
+            "- Any potential training issues (NOT form-related, focus on volume, consistency, balance)"
+            "- 2-3 specific, actionable recommendations for next week (prioritize completing skipped exercises if any)"
 
             "Make it personal, specific, and actionable."
         }
@@ -101,6 +139,7 @@ struct CompletedWorkout {
     let dayName: String
     let duration: Int
     let exercises: [CompletedExercise]
+    let incompleteExercises: [IncompleteExercise]
 }
 
 struct CompletedExercise {

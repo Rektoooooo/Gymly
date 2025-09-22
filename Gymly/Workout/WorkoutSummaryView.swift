@@ -75,8 +75,7 @@ struct WorkoutSummaryView: View {
                             }
                         }
                         .padding()
-                        .background(Color.white.opacity(0.2))
-                        .cornerRadius(12)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
 
                         // Workout Stats Cards
                         LazyVGrid(columns: [
@@ -99,8 +98,7 @@ struct WorkoutSummaryView: View {
                             }
                             .frame(height: 80)
                             .frame(maxWidth: .infinity)
-                            .background(Color.white.opacity(0.2))
-                            .cornerRadius(12)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
 
                             // Total Sets
                             VStack {
@@ -117,8 +115,7 @@ struct WorkoutSummaryView: View {
                             }
                             .frame(height: 80)
                             .frame(maxWidth: .infinity)
-                            .background(Color.white.opacity(0.2))
-                            .cornerRadius(12)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
 
                             // Total Reps
                             VStack {
@@ -135,8 +132,7 @@ struct WorkoutSummaryView: View {
                             }
                             .frame(height: 80)
                             .frame(maxWidth: .infinity)
-                            .background(Color.white.opacity(0.2))
-                            .cornerRadius(12)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
 
                             // Total Weight
                             VStack {
@@ -153,8 +149,7 @@ struct WorkoutSummaryView: View {
                             }
                             .frame(height: 80)
                             .frame(maxWidth: .infinity)
-                            .background(Color.white.opacity(0.2))
-                            .cornerRadius(12)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                         }
 
                         // Muscle Groups Trained
@@ -178,15 +173,13 @@ struct WorkoutSummaryView: View {
                                         .font(.caption)
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 6)
-                                        .background(Color.white.opacity(0.2))
-                                        .foregroundColor(.white)
-                                        .cornerRadius(20)
+                                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+
                                 }
                             }
                         }
                         .padding()
-                        .background(Color.white.opacity(0.2))
-                        .cornerRadius(12)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
 
                         // Exercises Completed
                         VStack(alignment: .leading, spacing: 12) {
@@ -212,8 +205,7 @@ struct WorkoutSummaryView: View {
                             }
                         }
                         .padding()
-                        .background(Color.white.opacity(0.2))
-                        .cornerRadius(12)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
 
                         Spacer(minLength: 20)
                     }

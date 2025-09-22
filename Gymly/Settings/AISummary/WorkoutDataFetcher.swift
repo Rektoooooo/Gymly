@@ -17,9 +17,19 @@ class WorkoutDataFetcher {
     }
 
     func fetchWeeklyWorkouts() -> [CompletedWorkout] {
+        return fetchWorkouts(weeksBack: 0, numberOfWeeks: 1)
+    }
+
+    func fetchWorkoutsForComparison() -> (thisWeek: [CompletedWorkout], lastWeek: [CompletedWorkout]) {
+        let thisWeek = fetchWorkouts(weeksBack: 0, numberOfWeeks: 1)
+        let lastWeek = fetchWorkouts(weeksBack: 1, numberOfWeeks: 1)
+        return (thisWeek, lastWeek)
+    }
+
+    private func fetchWorkouts(weeksBack: Int, numberOfWeeks: Int) -> [CompletedWorkout] {
         let calendar = Calendar.current
-        let endDate = Date()
-        guard let startDate = calendar.date(byAdding: .day, value: -7, to: endDate) else {
+        let endDate = calendar.date(byAdding: .weekOfYear, value: -weeksBack, to: Date()) ?? Date()
+        guard let startDate = calendar.date(byAdding: .day, value: -(numberOfWeeks * 7), to: endDate) else {
             print("🔍 AI Fetch: Failed to create start date")
             return []
         }
@@ -83,13 +93,13 @@ class WorkoutDataFetcher {
 
                 print("🔍 AI Fetch: Day \(day.name) has \(exercises.count) exercises")
 
+                // Separate completed and incomplete exercises
                 let completedExercises = exercises.compactMap { exercise -> CompletedExercise? in
                     print("🔍 AI Fetch: Exercise \(exercise.name) - done: \(exercise.done), sets: \(exercise.sets?.count ?? 0)")
 
                     guard exercise.done,
                           let sets = exercise.sets,
                           !sets.isEmpty else {
-                        print("❌ AI Fetch: Exercise \(exercise.name) not completed or has no sets")
                         return nil
                     }
 
@@ -112,6 +122,18 @@ class WorkoutDataFetcher {
                     )
                 }
 
+                // Get incomplete exercises for recommendations
+                let incompleteExercises = exercises.compactMap { exercise -> IncompleteExercise? in
+                    guard !exercise.done else { return nil }
+
+                    print("⚠️ AI Fetch: Exercise \(exercise.name) was skipped")
+
+                    return IncompleteExercise(
+                        name: exercise.name,
+                        muscleGroup: exercise.muscleGroup
+                    )
+                }
+
                 guard !completedExercises.isEmpty else {
                     print("❌ AI Fetch: No completed exercises found for \(dayStorage.dayName)")
                     continue
@@ -125,7 +147,8 @@ class WorkoutDataFetcher {
                         date: workoutDate,
                         dayName: dayStorage.dayName,
                         duration: duration,
-                        exercises: completedExercises
+                        exercises: completedExercises,
+                        incompleteExercises: incompleteExercises
                     )
                 )
 
@@ -192,4 +215,9 @@ struct ExerciseHistory {
     let maxWeight: Double
     let totalVolume: Double
     let setCount: Int
+}
+
+struct IncompleteExercise {
+    let name: String
+    let muscleGroup: String
 }
