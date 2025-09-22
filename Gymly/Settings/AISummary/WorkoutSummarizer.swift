@@ -90,6 +90,10 @@ final class WorkoutSummarizer: ObservableObject {
     func prewarm() {
         session.prewarm()
     }
+
+    func clearSummary() {
+        workoutSummary = nil
+    }
 }
 
 struct CompletedWorkout {

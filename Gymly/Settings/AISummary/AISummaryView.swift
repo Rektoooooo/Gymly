@@ -16,6 +16,7 @@ struct AISummaryView: View {
     @State private var weeklyWorkouts: [CompletedWorkout] = []
     @State private var selectedTimeframe = 7
     @State private var showError = false
+    @State private var hasStartedGeneration = false
 
     var body: some View {
         ZStack {
@@ -26,10 +27,10 @@ struct AISummaryView: View {
                 VStack(spacing: 20) {
                     headerView
 
-                    if summarizer.isGenerating {
+                    if summarizer.isGenerating && !hasStartedGeneration {
                         loadingView
-                    } else if let summary = summarizer.workoutSummary {
-                        summaryContent(summary)
+                    } else if hasStartedGeneration || summarizer.workoutSummary != nil {
+                        streamingContent
                     } else {
                         emptyStateView
                     }
@@ -50,7 +51,7 @@ struct AISummaryView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Generate") {
+                Button(hasStartedGeneration ? "Regenerate" : "Generate") {
                     generateSummary()
                 }
                 .disabled(summarizer.isGenerating || weeklyWorkouts.isEmpty)
@@ -96,35 +97,119 @@ struct AISummaryView: View {
     }
 
     @ViewBuilder
+    private var streamingContent: some View {
+        VStack(spacing: 20) {
+            if summarizer.isGenerating {
+                VStack(spacing: 16) {
+                    HStack {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Analyzing your workouts...")
+                                .font(.subheadline)
+                                .foregroundStyle(.primary)
+                            Text("AI is examining patterns, trends, and performance")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                    }
+                    .padding()
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                }
+                .transition(.scale.combined(with: .opacity))
+            }
+
+            if let summary = summarizer.workoutSummary {
+                summaryContent(summary)
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: summarizer.workoutSummary?.headline)
+        .animation(.easeInOut(duration: 0.3), value: summarizer.workoutSummary?.overview)
+        .animation(.easeInOut(duration: 0.3), value: summarizer.workoutSummary?.keyStats?.count)
+        .animation(.easeInOut(duration: 0.3), value: summarizer.workoutSummary?.trends?.count)
+        .animation(.easeInOut(duration: 0.3), value: summarizer.workoutSummary?.prs?.count)
+        .animation(.easeInOut(duration: 0.3), value: summarizer.workoutSummary?.issues?.count)
+        .animation(.easeInOut(duration: 0.3), value: summarizer.workoutSummary?.recommendations?.count)
+    }
+
+    @ViewBuilder
     private func summaryContent(_ summary: WorkoutSummary.PartiallyGenerated) -> some View {
         VStack(spacing: 20) {
             if let headline = summary.headline {
                 headlineCard(headline)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .top).combined(with: .opacity),
+                        removal: .opacity
+                    ))
             }
 
             if let overview = summary.overview {
                 overviewCard(overview)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .leading).combined(with: .opacity),
+                        removal: .opacity
+                    ))
             }
 
-            if let keyStats = summary.keyStats {
+            if let keyStats = summary.keyStats, !keyStats.isEmpty {
                 keyStatsCard(keyStats)
+                    .transition(.asymmetric(
+                        insertion: .scale.combined(with: .opacity),
+                        removal: .opacity
+                    ))
             }
 
-
-            if let trends = summary.trends {
+            if let trends = summary.trends, !trends.isEmpty {
                 trendsCard(trends)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .opacity
+                    ))
             }
 
-            if let prs = summary.prs {
+            if let prs = summary.prs, !prs.isEmpty {
                 personalRecordsCard(prs)
+                    .transition(.asymmetric(
+                        insertion: .scale(scale: 0.8).combined(with: .opacity),
+                        removal: .opacity
+                    ))
             }
 
-            if let issues = summary.issues {
+            if let issues = summary.issues, !issues.isEmpty {
                 issuesCard(issues)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal: .opacity
+                    ))
             }
 
-            if let recommendations = summary.recommendations {
+            if let recommendations = summary.recommendations, !recommendations.isEmpty {
                 recommendationsCard(recommendations)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal: .opacity
+                    ))
+            }
+
+            if summarizer.isGenerating {
+                HStack {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .scaleEffect(0.6)
+                        Text("Generating more insights...")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "sparkles")
+                        .font(.caption)
+                        .foregroundStyle(.blue)
+                        .opacity(0.7)
+                }
+                .padding()
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
     }
@@ -136,6 +221,7 @@ struct AISummaryView: View {
             Text(headline)
                 .font(.title3.bold())
                 .multilineTextAlignment(.leading)
+                .contentTransition(.opacity)
             Spacer()
         }
         .padding()
@@ -151,6 +237,7 @@ struct AISummaryView: View {
             Text(overview)
                 .font(.body)
                 .foregroundStyle(.secondary)
+                .contentTransition(.opacity)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
@@ -394,11 +481,17 @@ struct AISummaryView: View {
 
         Task {
             do {
+                await MainActor.run {
+                    hasStartedGeneration = true
+                    // Clear previous summary to show fresh streaming
+                    summarizer.clearSummary()
+                }
                 try await summarizer.generateWeeklySummary(from: weeklyWorkouts)
             } catch {
                 await MainActor.run {
                     summarizer.error = error
                     showError = true
+                    hasStartedGeneration = false
                 }
             }
         }
