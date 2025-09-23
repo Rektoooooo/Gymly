@@ -49,61 +49,51 @@ final class WorkoutSummarizer: ObservableObject {
         ) {
             "Analyze the following workout data and generate a comprehensive summary with percentage comparisons:"
 
+            let workoutNames = thisWeek.map { $0.dayName }.joined(separator: ", ")
+            "This week's workout split: \(workoutNames)"
+
             "THIS WEEK'S WORKOUTS:"
             for (index, workout) in thisWeek.enumerated() {
-                "Workout \(index + 1):"
-                "Date: \(workout.date)"
-                "Day: \(workout.dayName)"
-                "Duration: \(workout.duration) minutes"
+                "Workout \(index + 1): \(workout.dayName) - \(workout.duration) min"
 
                 for exercise in workout.exercises {
-                    "Exercise: \(exercise.name)"
-                    "Muscle Group: \(exercise.muscleGroup)"
-                    "Sets: \(exercise.sets.count)"
+                    let totalVolume = exercise.sets.reduce(0.0) { $0 + ($1.weight * Double($1.reps)) }
+                    let maxWeight = exercise.sets.map { $0.weight }.max() ?? 0
+                    let totalReps = exercise.sets.reduce(0) { $0 + $1.reps }
+                    let specialTechniques = exercise.sets.compactMap { set in
+                        if set.failure { return "failure" }
+                        if set.dropSet { return "drop" }
+                        if set.restPause { return "rest-pause" }
+                        return nil
+                    }
 
-                    for (setIndex, set) in exercise.sets.enumerated() {
-                        "Set \(setIndex + 1): \(set.weight)kg × \(set.reps) reps"
-                        if set.failure { "(to failure)" }
-                        if set.dropSet { "(drop set)" }
-                        if set.restPause { "(rest-pause)" }
+                    "- \(exercise.name): \(exercise.sets.count) sets, \(totalReps) reps, max \(maxWeight)kg, volume \(String(format: "%.0f", totalVolume))kg"
+                    if !specialTechniques.isEmpty {
+                        "  (used: \(specialTechniques.joined(separator: ", ")))"
                     }
                 }
 
                 if !workout.incompleteExercises.isEmpty {
-                    "Skipped exercises:"
-                    for skipped in workout.incompleteExercises {
-                        "- \(skipped.name) (\(skipped.muscleGroup))"
-                    }
+                    "Skipped: \(workout.incompleteExercises.map { $0.name }.joined(separator: ", "))"
                 }
             }
 
             if !lastWeek.isEmpty {
-                "LAST WEEK'S WORKOUTS (for comparison):"
-                for (index, workout) in lastWeek.enumerated() {
-                    "Workout \(index + 1):"
-                    "Date: \(workout.date)"
-                    "Day: \(workout.dayName)"
-                    "Duration: \(workout.duration) minutes"
+                "LAST WEEK'S SUMMARY (for comparison):"
+                "Total workouts: \(lastWeek.count)"
+                "Total duration: \(lastWeek.reduce(0) { $0 + $1.duration }) minutes"
 
-                    for exercise in workout.exercises {
-                        "Exercise: \(exercise.name)"
-                        "Muscle Group: \(exercise.muscleGroup)"
-                        "Sets: \(exercise.sets.count)"
+                // Calculate essential metrics for comparison
+                let lastWeekVolume = lastWeek.flatMap { $0.exercises }.flatMap { $0.sets }.reduce(0.0) { $0 + ($1.weight * Double($1.reps)) }
+                let lastWeekTotalSets = lastWeek.flatMap { $0.exercises }.reduce(0) { $0 + $1.sets.count }
+                let lastWeekExercises = Set(lastWeek.flatMap { $0.exercises }.map { $0.name })
+                let lastWeekSkipped = lastWeek.flatMap { $0.incompleteExercises }.map { $0.name }
 
-                        for (setIndex, set) in exercise.sets.enumerated() {
-                            "Set \(setIndex + 1): \(set.weight)kg × \(set.reps) reps"
-                            if set.failure { "(to failure)" }
-                            if set.dropSet { "(drop set)" }
-                            if set.restPause { "(rest-pause)" }
-                        }
-                    }
-
-                    if !workout.incompleteExercises.isEmpty {
-                        "Skipped exercises:"
-                        for skipped in workout.incompleteExercises {
-                            "- \(skipped.name) (\(skipped.muscleGroup))"
-                        }
-                    }
+                "Total volume: \(String(format: "%.0f", lastWeekVolume)) kg"
+                "Total sets: \(lastWeekTotalSets)"
+                "Unique exercises: \(lastWeekExercises.count)"
+                if !lastWeekSkipped.isEmpty {
+                    "Skipped exercises: \(lastWeekSkipped.joined(separator: ", "))"
                 }
             }
 
