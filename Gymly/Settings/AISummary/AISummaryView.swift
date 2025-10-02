@@ -54,7 +54,7 @@ struct AISummaryView: View {
                 Button(hasStartedGeneration ? "Regenerate" : "Generate") {
                     generateSummary()
                 }
-                .disabled(summarizer.isGenerating || weeklyWorkouts.isEmpty)
+                .disabled(summarizer.isGenerating)
             }
         }
     }
@@ -436,23 +436,21 @@ struct AISummaryView: View {
             Image(systemName: "dumbbell")
                 .font(.system(size: 60))
                 .foregroundStyle(.quaternary)
-            
+
             Text("No Summary Yet")
                 .font(.title2.bold())
-            
-            Text("Complete some workouts this week and generate an AI summary to see insights")
+
+            Text("Generate an AI summary to see insights from your workout data")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-            
-            if !weeklyWorkouts.isEmpty {
-                Button(action: generateSummary) {
-                    Label("Generate Summary", systemImage: "sparkles")
-                        .padding()
-                        .background(.blue)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
+
+            Button(action: generateSummary) {
+                Label("Generate Summary", systemImage: "sparkles")
+                    .padding()
+                    .background(.blue)
+                    .foregroundStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
         .padding()
@@ -479,7 +477,6 @@ struct AISummaryView: View {
     }
     
     private func generateSummary() {
-        guard !weeklyWorkouts.isEmpty else { return }
         guard let fetcher = dataFetcher else { return }
 
         Task {

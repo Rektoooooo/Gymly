@@ -37,37 +37,36 @@ class WorkoutDataFetcher {
         // Use the correct date format that matches your DayStorage entries
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "d MMMM yyyy"
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
         let startDateString = dateFormatter.string(from: startDate)
         let endDateString = dateFormatter.string(from: endDate)
 
         print("🔍 AI Fetch: Looking for workouts between '\(startDateString)' and '\(endDateString)'")
 
-        // Use DayStorage approach since it's more reliable
+        // Fetch all DayStorage and filter in-memory since string date comparison is unreliable
         let dayStorageDescriptor = FetchDescriptor<DayStorage>(
-            predicate: #Predicate<DayStorage> { dayStorage in
-                dayStorage.date >= startDateString && dayStorage.date <= endDateString
-            },
             sortBy: [SortDescriptor(\.date, order: .forward)]
         )
 
         do {
-            // First, let's see ALL DayStorage entries to understand the data
-            let allDayStorageDescriptor = FetchDescriptor<DayStorage>(
-                sortBy: [SortDescriptor(\.date, order: .reverse)]
-            )
-            let allDayStorages = try context.fetch(allDayStorageDescriptor)
+            // Fetch all DayStorage entries
+            let allDayStorages = try context.fetch(dayStorageDescriptor)
             print("🔍 AI Fetch: Total DayStorage entries in database: \(allDayStorages.count)")
 
-            for (index, storage) in allDayStorages.prefix(10).enumerated() {
-                print("🔍 AI Fetch: DayStorage \(index + 1): \(storage.dayName) on '\(storage.date)'")
+            // Filter in-memory by converting date strings to Date objects for proper comparison
+            let dayStorages = allDayStorages.filter { storage in
+                guard let storageDate = dateFormatter.date(from: storage.date) else {
+                    print("⚠️ AI Fetch: Could not parse date '\(storage.date)'")
+                    return false
+                }
+                let isInRange = storageDate >= startDate && storageDate <= endDate
+                if isInRange {
+                    print("✅ AI Fetch: Including \(storage.dayName) on '\(storage.date)'")
+                }
+                return isInRange
             }
 
-            let dayStorages = try context.fetch(dayStorageDescriptor)
             print("🔍 AI Fetch: Found \(dayStorages.count) DayStorage entries in date range \(startDateString) to \(endDateString)")
-
-            for (index, storage) in dayStorages.enumerated() {
-                print("🔍 AI Fetch: DayStorage \(index + 1): \(storage.dayName) on \(storage.date)")
-            }
 
             var completedWorkouts: [CompletedWorkout] = []
 
