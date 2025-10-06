@@ -5,10 +5,10 @@
 ## 📸 Screenshots
 
 <div align="center">
-  <img src="docs/images/TodayWorkout.png" width="200" alt="Today's Workout">
-  <img src="docs/images/Calendar.png" width="200" alt="Workout Calendar">
-  <img src="docs/images/MusleGraph.png" width="200" alt="Muscle Progress Graph">
-  <img src="docs/images/AISummary.png" width="200" alt="AI Workout Summary">
+  <img src="images/TodayWorkout.png" width="300" alt="Today's Workout">
+  <img src="images/Calendar.png" width="300" alt="Workout Calendar">
+  <img src="images/MusleGraph.png" width="300" alt="Muscle Progress Graph">
+  <img src="images/AISummary.png" width="300" alt="AI Workout Summary">
 </div>
 
 ## 🌟 Features
@@ -20,7 +20,7 @@
 - **Progress Analytics** – Advanced muscle group tracking with radar charts and progress visualization
 - **Unit Conversion** – Seamless switching between kg and lbs weight units
 
-  <img src="docs/images/TodayWorkout.png" width="300" alt="Today's Workout">
+  <img src="images/TodayWorkout.png" width="300" alt="Today's Workout">
 
 ### Advanced Features
 - **HealthKit Integration** – Sync weight, BMI, height, and workout data with Apple Health
@@ -30,7 +30,7 @@
 - **Workout Timer** – Track total workout time with automatic timing
 - **BMI Calculator** – Built-in BMI tracking with visual gauge display
 
-  <img src="docs/images/BMI.png" width="300" alt="BMI">
+  <img src="images/BMI.png" width="300" alt="BMI">
 
 ### User Experience
 - **Dark Mode Support** – Optimized for both light and dark themes
@@ -38,7 +38,7 @@
 - **Intuitive UI** – Clean, modern interface built with SwiftUI
 - **Offline First** – Full functionality without internet connection
 
-  <img src="docs/images/Settings.png" width="300" alt="Settings">
+  <img src="images/Settings.png" width="300" alt="Settings">
 
 ## 🏗️ Architecture
 
@@ -162,8 +162,8 @@ The app integrates with HealthKit for:
 - BMI monitoring with visual indicators
 
 <div align="center">
-  <img src="docs/images/MusleGraph.png" width="300" alt="Muscle Group Analytics">
-  <img src="docs/images/MyWeightGraph.png" width="300" alt="Weight Tracking Graph">
+  <img src="images/MusleGraph.png" width="300" alt="Muscle Group Analytics">
+  <img src="images/MyWeightGraph.png" width="300" alt="Weight Tracking Graph">
 </div>
 
 ### Calendar Integration
@@ -172,7 +172,7 @@ The app integrates with HealthKit for:
 - Progress tracking over time
 - Workout completion indicators
 
-  <img src="docs/images/Calendar.png" width="300" alt="Calendar">
+  <img src="images/Calendar.png" width="300" alt="Calendar">
   
 ## 🧪 Testing
 

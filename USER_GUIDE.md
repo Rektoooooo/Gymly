@@ -23,6 +23,8 @@ Welcome to **Gymly** - your complete iOS fitness tracking companion! This guide 
 
 ## 🏋️ Creating Your First Workout Split
 
+<img src="images/SplitsSelection.png" width="300" alt="Split Selection">
+
 ### What is a Workout Split?
 
 A workout split is your complete workout routine - a collection of workout days that you'll cycle through. Common examples include:
@@ -52,6 +54,8 @@ A workout split is your complete workout routine - a collection of workout days 
 - Your current day in the split is automatically tracked
 
 ## 💪 Adding Exercises to Your Workout
+
+<img src="images/TodayWorkout.png" width="300" alt="Today's Workout">
 
 ### Creating Exercises
 
@@ -95,17 +99,26 @@ Each exercise contains multiple sets with detailed tracking:
 
 ### Workout Analytics
 
+<img src="images/AISummary.png" width="300" alt="AI Workout Summary">
+
 #### Muscle Group Radar Chart
 - Visual representation of which muscle groups you've been working
 - Updates in real-time as you complete workouts
 - Helps identify imbalances in your training
+
+<img src="images/MusleGraph.png" width="300" alt="Muscle Group Analytics">
 
 #### Progress Tracking
 - **Weight Progression:** Track increases in weight over time
 - **Volume Tracking:** Monitor total sets and reps
 - **Frequency:** See how often you train each muscle group
 
+<img src="images/MyWeightGraph.png" width="300" alt="Weight Progress">
+<img src="images/BMI.png" width="300" alt="BMI Tracker">
+
 ### Calendar View
+
+<img src="images/Calendar.png" width="300" alt="Calendar View">
 
 Access your complete workout history:
 - **Monthly View:** See all workout days at a glance
@@ -113,6 +126,9 @@ Access your complete workout history:
 - **Progress Indicators:** Visual markers show which days you worked out
 
 ## ⚙️ Settings & Customization
+
+<img src="images/Settings.png" width="300" alt="Settings Screen">
+<img src="images/EditProfile.png" width="300" alt="Edit Profile">
 
 ### General Settings
 

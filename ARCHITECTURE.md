@@ -198,6 +198,8 @@ class Config: ObservableObject {
 
 ### Navigation Structure
 
+<img src="images/TodayWorkout.png" width="300" alt="Today's Workout View">
+
 ```
 TabView (ToolBar.swift)
 ├── TodayWorkoutView
@@ -228,6 +230,9 @@ TabView (ToolBar.swift)
 - **`ConnectionsView`**: HealthKit integration
 - **`EditUserView`**: Profile management
 
+<img src="images/Settings.png" width="300" alt="Settings View">
+<img src="images/EditProfile.png" width="300" alt="Edit Profile View">
+
 ### UI Components (`Cells/`)
 
 Reusable components following composition pattern:
@@ -235,6 +240,9 @@ Reusable components following composition pattern:
 - **`WeightChart`**: Progress visualization
 - **`BMIGaugeView`**: BMI visual representation
 - **`ProfileImageCell`**: User avatar handling
+
+<img src="images/Calendar.png" width="300" alt="Calendar View">
+<img src="images/AISummary.png" width="300" alt="AI Workout Summary">
 
 ## Data Persistence
 
@@ -276,6 +284,8 @@ exercise.day = currentDay  // Automatic relationship handling
 
 ### Split Management Flow
 
+<img src="images/SplitsSelection.png" width="300" alt="Split Selection">
+
 ```
 User Creates Split
         │
@@ -311,6 +321,10 @@ func updateDayInSplit() -> Int {
 ```
 
 ### Analytics Engine
+
+<img src="images/MusleGraph.png" width="300" alt="Muscle Group Analytics">
+<img src="images/MyWeightGraph.png" width="300" alt="Weight Progress Graph">
+<img src="images/BMI.png" width="300" alt="BMI Tracker">
 
 ```swift
 // Muscle group analytics
