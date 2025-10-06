@@ -5,10 +5,10 @@
 ## 📸 Screenshots
 
 <div align="center">
-  <img src="images/TodayWorkout.png" width="300" alt="Today's Workout">
-  <img src="images/Calendar.png" width="300" alt="Workout Calendar">
-  <img src="images/MusleGraph.png" width="300" alt="Muscle Progress Graph">
-  <img src="images/AISummary.png" width="300" alt="AI Workout Summary">
+  <img src="images/TodayWorkout.png" width="200" alt="Today's Workout">
+  <img src="images/Calendar.png" width="200" alt="Workout Calendar">
+  <img src="images/MusleGraph.png" width="200" alt="Muscle Progress Graph">
+  <img src="images/AISummary.png" width="200" alt="AI Workout Summary">
 </div>
 
 ## 🌟 Features
