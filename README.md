@@ -30,7 +30,7 @@
 - **Workout Timer** – Track total workout time with automatic timing
 - **BMI Calculator** – Built-in BMI tracking with visual gauge display
 
-![BMI Tracking](docs/images/BMI.png)
+  <img src="docs/images/BMI.png" width="300" alt="BMI">
 
 ### User Experience
 - **Dark Mode Support** – Optimized for both light and dark themes
@@ -38,7 +38,7 @@
 - **Intuitive UI** – Clean, modern interface built with SwiftUI
 - **Offline First** – Full functionality without internet connection
 
-![Settings & Profile](docs/images/Settings.png)
+  <img src="docs/images/Settings.png" width="300" alt="Settings">
 
 ## 🏗️ Architecture
 
@@ -107,7 +107,7 @@
 ## 🚀 Installation & Setup
 
 ### Prerequisites
-- **iOS 17.0+**
+- **iOS 26.0+**
 - **Xcode 15.0+**
 - **Swift 5.9+**
 
@@ -172,8 +172,8 @@ The app integrates with HealthKit for:
 - Progress tracking over time
 - Workout completion indicators
 
-![Calendar View](docs/images/Calendar.png)
-
+  <img src="docs/images/Calendar.png" width="300" alt="Calendar">
+  
 ## 🧪 Testing
 
 ### TestFlight Access
