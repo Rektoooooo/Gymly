@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SetTypeCell: View {
-    @Environment(\.modelContext) private var context
     @Binding var failure: Bool
     @Binding var warmup: Bool
     @Binding var restPause: Bool
@@ -48,32 +47,12 @@ struct SetTypeCell: View {
     private func ToggleButton(label: String, isOn: Binding<Bool>) -> some View {
         Button(action: {
             isOn.wrappedValue.toggle()
-            updateExerciseSet(for: label, with: isOn.wrappedValue)
         }) {
             HStack {
                 Text(label)
                 Spacer()
                 if isOn.wrappedValue { Image(systemName: "checkmark") }
             }
-        }
-    }
-    
-    /// Updates the exercise set with the toggled value and saves it to Core Data
-    private func updateExerciseSet(for label: String, with value: Bool) {
-        guard let sets = exercise.sets, setNumber < sets.count else { return }
-
-        switch label {
-        case "Failure": exercise.sets?[setNumber].failure = value
-        case "Warm Up": exercise.sets?[setNumber].warmUp = value
-        case "Rest Pause": exercise.sets?[setNumber].restPause = value
-        case "Drop Set": exercise.sets?[setNumber].dropSet = value
-        default: break
-        }
-        
-        do {
-            try context.save()
-        } catch {
-            debugPrint(error)
         }
     }
 }

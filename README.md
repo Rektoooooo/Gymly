@@ -2,6 +2,15 @@
 
 **Gymly** is a comprehensive iOS fitness tracking app built with SwiftUI that provides a complete workout logging and planning experience with HealthKit integration and advanced workout analytics.
 
+## 📸 Screenshots
+
+<div align="center">
+  <img src="docs/images/TodayWorkout.png" width="200" alt="Today's Workout">
+  <img src="docs/images/Calendar.png" width="200" alt="Workout Calendar">
+  <img src="docs/images/MusleGraph.png" width="200" alt="Muscle Progress Graph">
+  <img src="docs/images/AISummary.png" width="200" alt="AI Workout Summary">
+</div>
+
 ## 🌟 Features
 
 ### Core Functionality
@@ -11,6 +20,8 @@
 - **Progress Analytics** – Advanced muscle group tracking with radar charts and progress visualization
 - **Unit Conversion** – Seamless switching between kg and lbs weight units
 
+![Workout Tracking](docs/images/TodayWorkout.png)
+
 ### Advanced Features
 - **HealthKit Integration** – Sync weight, BMI, height, and workout data with Apple Health
 - **Split Management** – Import/export workout splits with `.gymlysplit` format
@@ -19,11 +30,15 @@
 - **Workout Timer** – Track total workout time with automatic timing
 - **BMI Calculator** – Built-in BMI tracking with visual gauge display
 
+![BMI Tracking](docs/images/BMI.png)
+
 ### User Experience
 - **Dark Mode Support** – Optimized for both light and dark themes
 - **Apple Sign In** – Secure authentication with Apple ID
 - **Intuitive UI** – Clean, modern interface built with SwiftUI
 - **Offline First** – Full functionality without internet connection
+
+![Settings & Profile](docs/images/Settings.png)
 
 ## 🏗️ Architecture
 
@@ -146,11 +161,18 @@ The app integrates with HealthKit for:
 - Weight progression graphs
 - BMI monitoring with visual indicators
 
+<div align="center">
+  <img src="docs/images/MusleGraph.png" width="300" alt="Muscle Group Analytics">
+  <img src="docs/images/MyWeightGraph.png" width="300" alt="Weight Tracking Graph">
+</div>
+
 ### Calendar Integration
 - Visual workout history
 - Date-based workout retrieval
 - Progress tracking over time
 - Workout completion indicators
+
+![Calendar View](docs/images/Calendar.png)
 
 ## 🧪 Testing
 

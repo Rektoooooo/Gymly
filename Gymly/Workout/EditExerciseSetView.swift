@@ -76,6 +76,14 @@ struct EditExerciseSetView: View {
         return 1
     }
 
+    /// Get the actual 0-based index for this set
+    private var setIndex: Int {
+        if let index = (exercise.sets ?? []).firstIndex(where: { $0.id == targetSet.id }) {
+            return index
+        }
+        return 0
+    }
+
     
     var body: some View {
         NavigationView {
@@ -98,7 +106,7 @@ struct EditExerciseSetView: View {
                         warmup: $warmup,
                         restPause: $restPause,
                         dropSet: $dropSet,
-                        setNumber: setDisplayNumber,
+                        setNumber: setIndex,
                         exercise: exercise
                     )
                 }
