@@ -39,7 +39,7 @@ Gymly uses a bottom tab bar for easy navigation between main sections:
 
 Tap the **Settings** tab at the bottom right to configure your profile and preferences.
 
-![Settings Screen](images/Settings.png)
+<img src="images/Settings.png" width="300" alt="Settings Screen">
 
 ### Profile Configuration
 
@@ -58,7 +58,7 @@ Tap the **Settings** tab at the bottom right to configure your profile and prefe
    - Add your height for BMI tracking
    - Enable HealthKit sync for automatic updates
 
-![Edit Profile](images/EditProfile.png)
+<img src="images/EditProfile.png" width="300" alt="Edit Profile">
 
 ### HealthKit Setup
 
@@ -87,7 +87,7 @@ A workout split is your training routine divided across multiple days. Common ex
 3. Name your split (e.g., "PPL Week 1")
 4. Add workout days
 
-![Split Selection](images/SplitsSelection.png)
+<img src="images/SplitsSelection.png" width="300" alt="Split Selection">
 
 ### Adding Workout Days
 
@@ -116,7 +116,7 @@ This helps with progress tracking and muscle group analytics.
 2. Your current day's workout will be displayed
 3. Tap on an exercise to begin
 
-![Today's Workout](images/TodayWorkout.png)
+<img src="images/TodayWorkout.png" width="300" alt="Today's Workout">
 
 ### Logging Sets
 
@@ -156,7 +156,7 @@ After completing your workout:
 - Review performance metrics
 - HealthKit automatically syncs your workout
 
-![AI Summary](images/AISummary.png)
+<img src="images/AISummary.png" width="300" alt="AI Summary">
 
 ---
 
@@ -171,7 +171,7 @@ View detailed analytics showing which muscle groups you're training:
 3. See workout frequency per muscle group
 4. Identify areas that need more attention
 
-![Muscle Group Graph](images/MusleGraph.png)
+<img src="images/MusleGraph.png" width="300" alt="Muscle Group Graph">
 
 ### Weight Tracking
 
@@ -182,7 +182,7 @@ Monitor your body weight changes over time:
 3. View your weight progression graph
 4. Track trends over weeks and months
 
-![Weight Progress](images/MyWeightGraph.png)
+<img src="images/MyWeightGraph.png" width="300" alt="Weight Progress">
 
 ### BMI Monitoring
 
@@ -193,7 +193,7 @@ Track your Body Mass Index:
 3. Monitor changes over time
 4. Categories: Underweight, Normal, Overweight, Obese
 
-![BMI Tracker](images/BMI.png)
+<img src="images/BMI.png" width="300" alt="BMI Tracker">
 
 ---
 
@@ -208,7 +208,7 @@ The calendar provides a complete overview of your training history:
 3. Days with workouts are highlighted
 4. Tap any day to view that workout's details
 
-![Calendar View](images/Calendar.png)
+<img src="images/Calendar.png" width="300" alt="Calendar View">
 
 ### Calendar Features
 
