@@ -135,8 +135,6 @@ Calendar-based storage for completed workouts with date tracking.
 
 ## App Navigation Structure
 
-![App Navigation](images/ToolBar.png)
-
 The app uses a tab-based navigation system with 5 main sections:
 
 1. **Today's Workout** - Current day training interface
@@ -145,7 +143,7 @@ The app uses a tab-based navigation system with 5 main sections:
 4. **Splits** - Workout split management
 5. **Settings** - User preferences and configuration
 
-![Today's Workout Interface](images/TodayWorkout.png)
+<img src="images/TodayWorkout.png" width="300" alt="Today's Workout Interface">
 
 ## Key Components
 
@@ -188,7 +186,7 @@ Global configuration and user preferences:
 }
 ```
 
-![Settings Interface](images/Settings.png)
+<img src="images/Settings.png" width="300" alt="Settings Interface">
 
 ### Calendar Integration
 
@@ -199,7 +197,7 @@ The calendar system provides visual workout history:
 - **Historical Data** - Access past workout data
 - **Progress Tracking** - Monitor consistency over time
 
-![Calendar View](images/Calendar.png)
+<img src="images/Calendar.png" width="300" alt="Calendar View">
 
 ## Data Flow
 
@@ -258,7 +256,7 @@ Export Workout Data → HealthKit
 - JSON-based serialization
 - Share via FileManager
 
-![Split Selection](images/SplitsSelection.png)
+<img src="images/SplitsSelection.png" width="300" alt="Split Selection">
 
 ### Progress Analytics
 
@@ -267,7 +265,7 @@ Export Workout Data → HealthKit
 - Radar chart visualization
 - Volume and frequency tracking
 
-![Muscle Analytics](images/MusleGraph.png)
+<img src="images/MusleGraph.png" width="300" alt="Muscle Analytics">
 
 ### Weight & BMI Tracking
 
@@ -276,8 +274,8 @@ Export Workout Data → HealthKit
 - BMI calculation and visualization
 - Historical tracking
 
-![Weight Graph](images/MyWeightGraph.png)
-![BMI Tracker](images/BMI.png)
+<img src="images/MyWeightGraph.png" width="300" alt="Weight Graph">
+<img src="images/BMI.png" width="300" alt="BMI Tracker">
 
 ### AI Workout Summary
 
@@ -286,7 +284,7 @@ Export Workout Data → HealthKit
 - Performance insights
 - Progress recommendations
 
-![AI Summary](images/AISummary.png)
+<img src="images/AISummary.png" width="300" alt="AI Summary">
 
 ## Storage Strategy
 
