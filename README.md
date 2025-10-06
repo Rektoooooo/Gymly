@@ -20,7 +20,7 @@
 - **Progress Analytics** – Advanced muscle group tracking with radar charts and progress visualization
 - **Unit Conversion** – Seamless switching between kg and lbs weight units
 
-  <img src="docs/images/TodayWorkout.png" width="200" alt="Today's Workout">
+  <img src="docs/images/TodayWorkout.png" width="300" alt="Today's Workout">
 
 ### Advanced Features
 - **HealthKit Integration** – Sync weight, BMI, height, and workout data with Apple Health
