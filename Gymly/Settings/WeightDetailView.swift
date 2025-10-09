@@ -80,7 +80,9 @@ struct WeightDetailView: View {
         }
         .onAppear {
             let currentWeight = userProfileManager.currentProfile?.weight ?? 0.0
+            print("📊 OnAppear - Current weight from profile: \(currentWeight) kg")
             bodyWeight = String(Int(round(currentWeight * (userProfileManager.currentProfile?.weightUnit ?? "Kg" == "Kg" ? 1.0 : 2.20462))))
+            print("📊 OnAppear - Displaying weight: \(bodyWeight)")
         }
     }
     
@@ -104,8 +106,47 @@ struct WeightDetailView: View {
         // Save to HealthKit (always in kg)
         healthKitManager.saveWeight(weightInKg)
 
-        // Update user profile (always store in kg internally)
-        userProfileManager.updatePhysicalStats(weight: weightInKg)
+        // Update user profile directly (always store in kg internally)
+        if let profile = userProfileManager.currentProfile {
+            profile.weight = weightInKg
+            profile.updateBMI()
+            profile.markAsUpdated()
+
+            // Create or update WeightPoint for today
+            let today = Calendar.current.startOfDay(for: Date())
+            let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)!
+            let fetchDescriptor = FetchDescriptor<WeightPoint>(
+                predicate: #Predicate { point in
+                    point.date >= today && point.date < tomorrow
+                }
+            )
+
+            do {
+                let existingPoints = try context.fetch(fetchDescriptor)
+
+                if let existingPoint = existingPoints.first {
+                    // Update existing point for today
+                    existingPoint.weight = weightInKg
+                    existingPoint.date = Date() // Update to current time
+                    print("📊 Updated existing WeightPoint for today: \(weightInKg) kg")
+                } else {
+                    // Create new point for today
+                    let newPoint = WeightPoint(date: Date(), weight: weightInKg)
+                    context.insert(newPoint)
+                    print("📊 Created new WeightPoint: \(weightInKg) kg")
+                }
+
+                // Save context
+                try context.save()
+                print("✅ Weight saved to database successfully: \(weightInKg) kg")
+                print("✅ Profile weight after save: \(profile.weight) kg")
+
+                // Trigger UserProfileManager to update and sync
+                userProfileManager.objectWillChange.send()
+            } catch {
+                print("❌ Failed to save weight to database: \(error)")
+            }
+        }
 
         // Show success message
         saveMessage = "Weight saved: \(inputWeight) \(userProfileManager.currentProfile?.weightUnit ?? "Kg")"
@@ -115,9 +156,6 @@ struct WeightDetailView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             showingSaveSuccess = false
         }
-
-        // Refresh weight chart data
-        healthKitManager.updateFromWeightChart(context: context)
     }
 }
 

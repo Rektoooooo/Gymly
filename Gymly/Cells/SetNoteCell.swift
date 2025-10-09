@@ -15,8 +15,8 @@ struct SetNoteCell: View {
 
     var body: some View {
         TextField("Set note", text: $note)
-            .onChange(of: note) { _, newValue in
-                saveNote(newValue)
+            .onSubmit {
+                saveNote(note)
             }
     }
 

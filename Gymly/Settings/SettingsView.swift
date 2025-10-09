@@ -228,30 +228,15 @@ struct SettingsView: View {
                 .navigationTitle("\(userProfileManager.currentProfile?.username ?? "User")'s profile")
                 .onAppear {
                     profileImage = userProfileManager.currentProfile?.profileImage
-                    healthKitManager.fetchHeight { height in
-                        DispatchQueue.main.async {
-                            // Convert from meters to centimeters for UserProfile storage
-                            let heightInCm = (height ?? 0.0) * 100.0
-                            userProfileManager.updatePhysicalStats(height: heightInCm)
-                        }
-                    }
-                    healthKitManager.fetchWeight { weight in
-                        DispatchQueue.main.async {
-                            userProfileManager.updatePhysicalStats(weight: weight ?? 0.0)
-                        }
-                    }
-                    healthKitManager.fetchAge { age in
-                        DispatchQueue.main.async {
-                            userProfileManager.updatePhysicalStats(age: age ?? 0)
-                        }
-                    }
 
+                    // Don't fetch from HealthKit on appear to preserve manually saved data
+                    // Just update UI with current profile data
                     let bmi = userProfileManager.currentProfile?.bmi ?? 0.0
                     let (color, status) = getBmiStyle(bmi: bmi)
                     bmiColor = color
                     bmiStatus = status
 
-                    healthKitManager.updateFromWeightChart(context: context)
+                    print("📱 SettingsView appeared - Current weight: \(userProfileManager.currentProfile?.weight ?? 0.0) kg")
                 }
                 .onChange(of: config.isHealtKitEnabled) { _, newValue in
                     // When HealthKit status changes, update BMI color immediately
@@ -280,18 +265,15 @@ struct SettingsView: View {
                         BmiDetailView(viewModel: viewModel, bmiColor: color, bmiText: status)
                     }
                     .sheet(isPresented: $showWeightDetail, onDismiss: {
-                        healthKitManager.fetchWeight { weight in
-                            DispatchQueue.main.async {
-                                healthKitManager.updateFromWeightChart(context: context)
-                                let currentWeight = weight ?? (userProfileManager.currentProfile?.weight ?? 0.0)
-                                userProfileManager.updatePhysicalStats(weight: currentWeight)
-                                let bmi = userProfileManager.currentProfile?.bmi ?? 0.0
-                                let (color, status) = getBmiStyle(bmi: bmi)
-                                bmiColor = color
-                                bmiStatus = status
-                                weightUpdatedTrigger.toggle() // Trigger UI update
-                            }
-                        }                }) {
+                        // Just update the UI with the current profile weight (already saved in WeightDetailView)
+                        DispatchQueue.main.async {
+                            let bmi = userProfileManager.currentProfile?.bmi ?? 0.0
+                            let (color, status) = getBmiStyle(bmi: bmi)
+                            bmiColor = color
+                            bmiStatus = status
+                            weightUpdatedTrigger.toggle() // Trigger UI update
+                        }
+                    }) {
                             WeightDetailView(viewModel: viewModel)
                         }
                         .onAppear {
@@ -341,34 +323,16 @@ struct SettingsView: View {
         }
     }
 
-    /// Full HealthKit data refresh with weight chart update (same as WeightDetailView onDismiss)
+    /// Full HealthKit data refresh (WITHOUT weight chart update to preserve manual entries)
     private func refreshHealthKitDataWithFullUpdate() {
-        // Always try to fetch data, regardless of isHealthEnabled state
-        healthKitManager.fetchWeight { weight in
-            DispatchQueue.main.async {
-                healthKitManager.updateFromWeightChart(context: context)
-                let currentWeight = weight ?? (userProfileManager.currentProfile?.weight ?? 0.0)
-                userProfileManager.updatePhysicalStats(weight: currentWeight)
-                let bmi = userProfileManager.currentProfile?.bmi ?? 0.0
-                let (color, status) = getBmiStyle(bmi: bmi)
-                bmiColor = color
-                bmiStatus = status
-                weightUpdatedTrigger.toggle() // Trigger UI update
-            }
-        }
-        healthKitManager.fetchHeight { height in
-            DispatchQueue.main.async {
-                let currentHeight = userProfileManager.currentProfile?.height ?? 0.0
-                // Convert from meters to centimeters for UserProfile storage
-                let heightInCm = (height ?? (currentHeight / 100.0)) * 100.0
-                userProfileManager.updatePhysicalStats(height: heightInCm)
-            }
-        }
-        healthKitManager.fetchAge { age in
-            DispatchQueue.main.async {
-                let currentAge = userProfileManager.currentProfile?.age ?? 0
-                userProfileManager.updatePhysicalStats(age: age ?? currentAge)
-            }
+        // Don't fetch from HealthKit to preserve manually saved data
+        // Just update the UI with current profile data
+        DispatchQueue.main.async {
+            let bmi = userProfileManager.currentProfile?.bmi ?? 0.0
+            let (color, status) = getBmiStyle(bmi: bmi)
+            bmiColor = color
+            bmiStatus = status
+            weightUpdatedTrigger.toggle() // Trigger UI update
         }
     }
 
