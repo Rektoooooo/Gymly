@@ -73,13 +73,16 @@ class WorkoutDataFetcher {
             for dayStorage in dayStorages {
                 print("🔍 AI Fetch: Processing \(dayStorage.dayName) with dayId: \(dayStorage.dayId)")
 
-                // Fetch all days that match this dayId
-                let allDaysDescriptor = FetchDescriptor<Day>()
-                let allDays = try context.fetch(allDaysDescriptor)
-                print("🔍 AI Fetch: Found \(allDays.count) total Days in database")
+                // Fetch Day directly by ID (MUCH faster than loading all Days!)
+                let dayId = dayStorage.dayId
+                let dayDescriptor = FetchDescriptor<Day>(
+                    predicate: #Predicate<Day> { day in
+                        day.id == dayId
+                    }
+                )
 
-                guard let day = allDays.first(where: { $0.id == dayStorage.dayId }) else {
-                    print("❌ AI Fetch: No Day found with id \(dayStorage.dayId)")
+                guard let day = try context.fetch(dayDescriptor).first else {
+                    print("❌ AI Fetch: No Day found with id \(dayId)")
                     continue
                 }
 

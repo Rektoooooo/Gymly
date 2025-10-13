@@ -13,7 +13,6 @@ struct AISummaryView: View {
     @Environment(\.modelContext) private var context
     @StateObject private var summarizer = WorkoutSummarizer()
     @State private var dataFetcher: WorkoutDataFetcher?
-    @State private var weeklyWorkouts: [CompletedWorkout] = []
     @State private var selectedTimeframe = 7
     @State private var showError = false
     @State private var hasStartedGeneration = false
@@ -42,7 +41,12 @@ struct AISummaryView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             setupDataFetcher()
-            fetchWorkouts()
+            // Don't fetch workouts here - only fetch when generating summary
+        }
+        .onDisappear {
+            // Clean up memory when view disappears
+            dataFetcher = nil
+            summarizer.cleanup()
         }
         .alert("Error", isPresented: $showError) {
             Button("OK") { }
@@ -143,7 +147,7 @@ struct AISummaryView: View {
                         removal: .opacity
                     ))
             }
-            
+
             if let overview = summary.overview {
                 overviewCard(overview)
                     .transition(.asymmetric(
@@ -151,7 +155,7 @@ struct AISummaryView: View {
                         removal: .opacity
                     ))
             }
-            
+
             if let keyStats = summary.keyStats, !keyStats.isEmpty {
                 keyStatsCard(keyStats)
                     .transition(.asymmetric(
@@ -159,7 +163,7 @@ struct AISummaryView: View {
                         removal: .opacity
                     ))
             }
-            
+
             if let trends = summary.trends, !trends.isEmpty {
                 trendsCard(trends)
                     .transition(.asymmetric(
@@ -167,7 +171,7 @@ struct AISummaryView: View {
                         removal: .opacity
                     ))
             }
-            
+
             if let prs = summary.prs, !prs.isEmpty {
                 personalRecordsCard(prs)
                     .transition(.asymmetric(
@@ -175,7 +179,7 @@ struct AISummaryView: View {
                         removal: .opacity
                     ))
             }
-            
+
             if let issues = summary.issues, !issues.isEmpty {
                 issuesCard(issues)
                     .transition(.asymmetric(
@@ -183,8 +187,8 @@ struct AISummaryView: View {
                         removal: .opacity
                     ))
             }
-            
-            
+
+
             if let recommendations = summary.recommendations, !recommendations.isEmpty {
                 recommendationsCard(recommendations)
                     .transition(.asymmetric(
@@ -228,13 +232,13 @@ struct AISummaryView: View {
         .padding()
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
-    
+
     private func overviewCard(_ overview: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label("Overview", systemImage: "doc.text")
                 .font(.headline)
                 .foregroundStyle(.primary)
-            
+
             Text(overview)
                 .font(.body)
                 .foregroundStyle(.secondary)
@@ -457,23 +461,8 @@ struct AISummaryView: View {
     }
     
     private func setupDataFetcher() {
-        print("🔍 AI View: Setting up data fetcher")
         dataFetcher = WorkoutDataFetcher(context: context)
         summarizer.prewarm()
-    }
-    
-    private func fetchWorkouts() {
-        print("🔍 AI View: Starting to fetch workouts")
-        guard let fetcher = dataFetcher else {
-            print("❌ AI View: No data fetcher available")
-            return
-        }
-        weeklyWorkouts = fetcher.fetchWeeklyWorkouts()
-        print("🔍 AI View: Fetched \(weeklyWorkouts.count) weekly workouts")
-        
-        for (index, workout) in weeklyWorkouts.enumerated() {
-            print("🔍 AI View: Workout \(index + 1): \(workout.dayName) on \(workout.date) with \(workout.exercises.count) exercises")
-        }
     }
     
     private func generateSummary() {
