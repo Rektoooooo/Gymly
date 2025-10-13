@@ -19,18 +19,33 @@ struct EditExerciseView: View {
     @State private var order: String = ""
     @State private var muscleGroup: String = ""
     @State private var muscleGroups: [String] = []
+    @Environment(\.colorScheme) var scheme
+
     var body: some View {
         NavigationView {
+            ZStack {
+                FloatingClouds(theme: CloudsTheme.graphite(scheme))
+                    .ignoresSafeArea()
+                VStack {
             Form {
                 Section("Edit name") {
                     TextField("Name", text: $name)
                 }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .listRowBackground(Color.black.opacity(0.1))
                 Section("Edit repetitions") {
                     TextField("Repetitions", text: $repetitions)
                 }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .listRowBackground(Color.black.opacity(0.1))
                 Section("Edit order") {
                     TextField("Order", text: $order)
                 }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .listRowBackground(Color.black.opacity(0.1))
                 Section("Edit muslce group") {
                     Picker("Muscle Group", selection: $muscleGroup) {
                         ForEach(muscleGroups, id: \.self) { option in
@@ -38,6 +53,9 @@ struct EditExerciseView: View {
                         }
                     }
                 }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .listRowBackground(Color.black.opacity(0.1))
                 Section("") {
                     Button("Save") {
                         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -49,8 +67,16 @@ struct EditExerciseView: View {
                         dismiss()
                     }
                 }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .listRowBackground(Color.black.opacity(0.1))
             }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .listRowBackground(Color.clear)
             .navigationTitle("Edit \(exercise.name)")
+                }
+            }
         }
         .onAppear {
             self.name = exercise.name

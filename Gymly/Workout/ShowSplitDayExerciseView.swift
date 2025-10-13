@@ -57,14 +57,11 @@ struct ShowSplitDayExerciseView: View {
                         set: set,
                         config: config,
                         exercise: exercise,
-                        setForCalendar: false,  // Enable editing
-                        onSetTap: { tappedSet in
-                            print("📱 ShowSplitDayExerciseView received set tap for set ID: \(tappedSet.id)")
-                            selectedSet = tappedSet
-                            sheetType = .editSet(tappedSet)
-                            showSheet = true
-                        }
+                        setForCalendar: true
                     )
+                    .scrollContentBackground(.hidden)
+                    .background(Color.clear)
+                    .listRowBackground(Color.black.opacity(0.1))
                     .swipeActions(edge: .trailing) {
                         /// Swipe-to-delete action for a set
                         Button(role: .destructive) {
@@ -75,56 +72,59 @@ struct ShowSplitDayExerciseView: View {
                         }
                     }
                 }
-                
+
                 /// Dismiss button
                 Section("") {
                     Button("Done") {
                         dismiss()
                     }
-                }
-            }
-            .sheet(isPresented: $showSheet) {
-                switch sheetType {
-                case .editExercise:
-                    EditExerciseView(viewModel: viewModel, exercise: exercise)
-                        .presentationDetents([.large])
-                case .editSet(let set):
-                    EditExerciseSetView(
-                        targetSet: set,
-                        exercise: exercise,
-                        unit: .constant(userProfileManager.currentProfile?.weightUnit ?? "Kg")
-                    )
-                    .onAppear {
-                        print("📱 EditExerciseSetView appeared for set ID: \(set.id)")
-                    }
-                    .onDisappear {
-                        print("📱 EditExerciseSetView disappeared for set ID: \(set.id)")
-                    }
-                case .none:
-                    EmptyView()
-                }
-            }
-            .toolbar {
-                /// Edit exercise button
-                Button {
-                    sheetType = .editExercise
-                    showSheet = true
-                } label: {
-                    Label("Edit exercise", systemImage: "slider.horizontal.3")
-                }
-                /// Add set button
-                Button {
-                    Task {
-                        await viewModel.addSet(exercise: exercise)
-                    }
-                } label: {
-                    Label("Add set", systemImage: "plus.circle")
+                    .scrollContentBackground(.hidden)
+                    .background(Color.clear)
+                    .listRowBackground(Color.black.opacity(0.1))
                 }
             }
             .scrollContentBackground(.hidden)
             .background(Color.clear)
             .listRowBackground(Color.clear)
         }
+        }
+        .sheet(isPresented: $showSheet) {
+            switch sheetType {
+            case .editExercise:
+                EditExerciseView(viewModel: viewModel, exercise: exercise)
+                    .presentationDetents([.large])
+            case .editSet(let set):
+                EditExerciseSetView(
+                    targetSet: set,
+                    exercise: exercise,
+                    unit: .constant(userProfileManager.currentProfile?.weightUnit ?? "Kg")
+                )
+                .onAppear {
+                    print("📱 EditExerciseSetView appeared for set ID: \(set.id)")
+                }
+                .onDisappear {
+                    print("📱 EditExerciseSetView disappeared for set ID: \(set.id)")
+                }
+            case .none:
+                EmptyView()
+            }
+        }
+        .toolbar {
+            /// Edit exercise button
+            Button {
+                sheetType = .editExercise
+                showSheet = true
+            } label: {
+                Label("Edit exercise", systemImage: "slider.horizontal.3")
+            }
+            /// Add set button
+            Button {
+                Task {
+                    await viewModel.addSet(exercise: exercise)
+                }
+            } label: {
+                Label("Add set", systemImage: "plus.circle")
+            }
         }
         .navigationTitle("\(exercise.name)")
         .navigationBarTitleDisplayMode(.inline)
