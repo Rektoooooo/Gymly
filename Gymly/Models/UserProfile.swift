@@ -72,8 +72,10 @@ class UserProfile {
         if height > 0 && weight > 0 {
             let heightInMeters = height / 100.0
             bmi = weight / (heightInMeters * heightInMeters)
+            print("🧮 BMI CALC: height=\(height)cm, weight=\(weight)kg, heightInMeters=\(heightInMeters)m, BMI=\(bmi)")
         } else {
             bmi = 0.0
+            print("🧮 BMI CALC: Invalid data - height=\(height)cm, weight=\(weight)kg, BMI set to 0")
         }
         markAsUpdated()
     }

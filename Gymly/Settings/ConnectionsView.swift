@@ -136,10 +136,48 @@ struct ConnectionsView: View {
 
         healthStore.requestAuthorization(toShare: nil, read: healthDataToRead) { success, error in
             DispatchQueue.main.async {
+                config.isHealtKitEnabled = true
+                print("🩺 HEALTH: Authorization result - permissions granted")
 
-                    config.isHealtKitEnabled = true
-                    print("🩺 HEALTH: Authorization result - permissions granted")
+                // Immediately fetch HealthKit data after authorization
+                fetchHealthKitDataAfterAuthorization()
+            }
+        }
+    }
 
+    /// Fetch HealthKit data immediately after authorization
+    private func fetchHealthKitDataAfterAuthorization() {
+        print("📱 HEALTH: Fetching data from HealthKit after authorization...")
+
+        // Fetch height
+        healthKitManager.fetchHeight { height in
+            DispatchQueue.main.async {
+                if let height = height {
+                    // HealthKit returns height in meters, UserProfile stores in centimeters
+                    let heightInCm = height * 100.0
+                    userProfileManager.updatePhysicalStats(height: heightInCm)
+                    print("✅ HEALTH: Fetched height: \(height) m (\(heightInCm) cm)")
+                }
+            }
+        }
+
+        // Fetch age
+        healthKitManager.fetchAge { age in
+            DispatchQueue.main.async {
+                if let age = age {
+                    userProfileManager.updatePhysicalStats(age: age)
+                    print("✅ HEALTH: Fetched age: \(age) years")
+                }
+            }
+        }
+
+        // Fetch weight (initial sync only)
+        healthKitManager.fetchWeight { weight in
+            DispatchQueue.main.async {
+                if let weight = weight {
+                    userProfileManager.updatePhysicalStats(weight: weight)
+                    print("✅ HEALTH: Fetched weight: \(weight) kg")
+                }
             }
         }
     }

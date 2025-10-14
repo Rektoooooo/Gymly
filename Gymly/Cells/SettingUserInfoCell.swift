@@ -20,6 +20,8 @@ struct SettingUserInfoCell: View {
     @State var additionalInfo: String = "Normal Weight"
     @State var icon: String = "figure.run"
     @State var weightLastWeek: Double = 0.0
+    @State private var hasLoadedWeightData = false  // Prevent multiple loads
+
     var body: some View {
         VStack {
             GeometryReader { geo in
@@ -62,14 +64,15 @@ struct SettingUserInfoCell: View {
             }
         }
         .onAppear() {
+            // Only fetch last week's weight if this is a weight cell and we haven't loaded yet
+            guard (metric == "Kg" || metric == "Lbs") && !hasLoadedWeightData else { return }
+            hasLoadedWeightData = true
+
             getLastWeekWeight { weight in
                 if let weight = weight {
                     DispatchQueue.main.async {
                         self.weightLastWeek = weight
-                        print("Last week's latest weight: \(weight) kg")
                     }
-                } else {
-                    print("No weight data found.")
                 }
             }
         }

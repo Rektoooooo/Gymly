@@ -80,9 +80,9 @@ struct WeightDetailView: View {
         }
         .onAppear {
             let currentWeight = userProfileManager.currentProfile?.weight ?? 0.0
-            print("📊 OnAppear - Current weight from profile: \(currentWeight) kg")
-            bodyWeight = String(Int(round(currentWeight * (userProfileManager.currentProfile?.weightUnit ?? "Kg" == "Kg" ? 1.0 : 2.20462))))
-            print("📊 OnAppear - Displaying weight: \(bodyWeight)")
+            let displayWeight = currentWeight * (userProfileManager.currentProfile?.weightUnit ?? "Kg" == "Kg" ? 1.0 : 2.20462)
+            // Keep one decimal place for accuracy
+            bodyWeight = String(format: "%.1f", displayWeight)
         }
     }
     
