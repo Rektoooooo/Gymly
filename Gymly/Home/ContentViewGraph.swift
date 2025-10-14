@@ -14,6 +14,7 @@ struct ContentViewGraph: View {
     var range: TimeRange
     @State private var chartValues: [Double] = []
     @State private var chartMax: Double = 1.0
+    @State private var isCalculating = false
 
     enum TimeRange: String, CaseIterable, Identifiable {
         case day = "Day"
@@ -26,13 +27,26 @@ struct ContentViewGraph: View {
     // Define muscle groups in the same order as your radar chart
     private let muscleGroups = ["chest", "back", "biceps", "triceps", "shoulders", "quads", "hamstrings", "calves", "glutes", "abs"]
 
+    // Cache to avoid recalculating same data
+    @State private var cachedData: [TimeRange: (values: [Double], max: Double)] = [:]
+
     private var cal: Calendar { Calendar.current }
     private func startOfDay(_ d: Date) -> Date { cal.startOfDay(for: d) }
     private func startOfWeek(_ d: Date) -> Date { cal.date(from: cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: d)) ?? startOfDay(d) }
     private func startOfMonth(_ d: Date) -> Date { cal.date(from: cal.dateComponents([.year, .month], from: d)) ?? startOfDay(d) }
 
     private func calculateMuscleGroupData() {
-        debugPrint("[Graph] Calculating muscle group data for range: \(range)")
+        // Check cache first - avoid recalculation
+        if let cached = cachedData[range] {
+            chartValues = cached.values
+            chartMax = cached.max
+            return
+        }
+
+        // Prevent concurrent calculations
+        guard !isCalculating else { return }
+        isCalculating = true
+        defer { isCalculating = false }
 
         // Determine the date range to filter - backward looking periods
         let now = Date()
@@ -40,61 +54,57 @@ struct ContentViewGraph: View {
 
         switch range {
         case .day:
-            // Today only - from start of today to now
             fromDate = startOfDay(now)
         case .week:
-            // Past 7 days - from 7 days ago to now
             fromDate = cal.date(byAdding: .day, value: -7, to: now)
         case .month:
-            // Past 30 days - from 30 days ago to now
             fromDate = cal.date(byAdding: .day, value: -30, to: now)
         case .all:
-            // All time - no date filtering
             fromDate = nil
         }
 
-        debugPrint("[Graph] Filtering from date: \(fromDate?.description ?? "all time") to now")
-
         do {
-            // Fetch all exercises directly from the database
-            let allExercises = try modelContext.fetch(FetchDescriptor<Exercise>(sortBy: [SortDescriptor(\.createdAt)]))
-            debugPrint("[Graph] Found \(allExercises.count) total exercises in database")
-
-            // Filter exercises based on the time range and completion status
-            let filteredExercises = allExercises.filter { exercise in
-                // Only count completed exercises that have a completion date
-                guard exercise.done, let completedAt = exercise.completedAt else { return false }
-
-                // Apply time filter based on completion date
-                if let fromDate = fromDate {
-                    return completedAt >= fromDate
-                } else {
-                    return true // All time
+            // OPTIMIZATION 1: Use predicates to filter at database level (not in-memory)
+            // Fetch only completed exercises
+            let completedDescriptor = FetchDescriptor<Exercise>(
+                predicate: #Predicate<Exercise> { exercise in
+                    exercise.done == true && exercise.completedAt != nil
                 }
+            )
+
+            let completedExercises = try modelContext.fetch(completedDescriptor)
+
+            // OPTIMIZATION 2: Filter by date range in Swift (needed for proper date comparison)
+            let filteredExercises: [Exercise]
+            if let fromDate = fromDate {
+                filteredExercises = completedExercises.filter { exercise in
+                    guard let completedAt = exercise.completedAt else { return false }
+                    return completedAt >= fromDate
+                }
+            } else {
+                filteredExercises = completedExercises
             }
 
-            debugPrint("[Graph] Filtered to \(filteredExercises.count) completed exercises in time range")
+            #if DEBUG
+            print("[Graph] \(range.rawValue): Found \(filteredExercises.count) exercises (from \(completedExercises.count) total completed)")
+            #endif
 
-            // Count muscle group usage
+            // OPTIMIZATION 3: Aggregate muscle group counts efficiently
             var muscleGroupCounts = Array(repeating: 0.0, count: muscleGroups.count)
 
             for exercise in filteredExercises {
                 let muscleGroup = exercise.muscleGroup.lowercased()
                 if let index = muscleGroups.firstIndex(of: muscleGroup) {
-                    // Count the number of sets in this exercise
-                    let setsCount = exercise.sets?.count ?? 0
-                    muscleGroupCounts[index] += Double(setsCount)
-                    debugPrint("[Graph] Added \(setsCount) sets for \(muscleGroup)")
+                    muscleGroupCounts[index] += Double(exercise.sets?.count ?? 0)
                 }
             }
-
-            debugPrint("[Graph] Raw muscle group counts: \(muscleGroupCounts)")
 
             // If no data found, show empty chart
             if muscleGroupCounts.allSatisfy({ $0 == 0 }) {
                 chartValues = Array(repeating: 0.0, count: muscleGroups.count)
                 chartMax = 1.0
-                debugPrint("[Graph] No data found, showing empty chart")
+                // Cache empty result
+                cachedData[range] = (chartValues, chartMax)
                 return
             }
 
@@ -111,11 +121,10 @@ struct ContentViewGraph: View {
             chartValues = scaledValues
             chartMax = safeMax
 
-            debugPrint("[Graph] Final chart values: \(chartValues)")
-            debugPrint("[Graph] Chart max: \(chartMax)")
+            // OPTIMIZATION 3: Cache the result
+            cachedData[range] = (chartValues, chartMax)
 
         } catch {
-            debugPrint("[Graph] Error fetching exercises: \(error)")
             // Fallback to config values or minimal chart
             chartValues = config.graphDataValues.isEmpty ? Array(repeating: 1.0, count: muscleGroups.count) : config.graphDataValues
             chartMax = max(chartValues.max() ?? 1.0, 1.0)
@@ -144,13 +153,10 @@ struct ContentViewGraph: View {
             .padding()
         }
         .onAppear {
-            debugPrint("[Graph] View appeared with range: \(range)")
             calculateMuscleGroupData()
         }
-        .onChange(of: range) { newRange in
-            debugPrint("[Graph] Range changed to: \(newRange)")
+        .onChange(of: range) { _, _ in
             calculateMuscleGroupData()
         }
-        .id("\(range.rawValue)")  // Force view recreation when range changes
     }
 }
