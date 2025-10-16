@@ -19,6 +19,8 @@ struct EditUserView: View {
     @State private var profileImage: UIImage?
     @StateObject var healthKitManager = HealthKitManager()
     @Environment(\.colorScheme) private var scheme
+    @State private var showCropEditor = false
+    @State private var selectedImageForCrop: UIImage?
     
     var body: some View {
         NavigationView {
@@ -26,7 +28,7 @@ struct EditUserView: View {
                 FloatingClouds(theme: CloudsTheme.graphite(scheme))
                     .ignoresSafeArea()
                 List {
-                    Section("Profile image") {
+                Section("Profile image") {
                         HStack {
                             Spacer()
                             if avatarImage == nil {
@@ -50,7 +52,13 @@ struct EditUserView: View {
                                     if let newItem = avatarItem,
                                        let data = try? await newItem.loadTransferable(type: Data.self),
                                        let uiImage = UIImage(data: data) {
-                                        avatarImage = uiImage
+                                        print("📸 EDITUSER: Loaded image: \(uiImage.size)")
+                                        // Set image first, then present on main thread
+                                        await MainActor.run {
+                                            selectedImageForCrop = uiImage
+                                            showCropEditor = true
+                                            print("📸 EDITUSER: Presenting crop editor")
+                                        }
                                     }
                                 }
                             }
@@ -107,6 +115,23 @@ struct EditUserView: View {
                         await loadProfileImage()
                     }
                 }
+            }
+        }
+        .sheet(isPresented: $showCropEditor) {
+            if let image = selectedImageForCrop {
+                ProfileImageCropView(
+                    image: image,
+                    onComplete: { croppedImage in
+                        avatarImage = croppedImage
+                        showCropEditor = false
+                        selectedImageForCrop = nil
+                    },
+                    onCancel: {
+                        showCropEditor = false
+                        selectedImageForCrop = nil
+                    }
+                )
+                .ignoresSafeArea()
             }
         }
     }
