@@ -27,7 +27,7 @@ struct SignInView: View {
             // Loading overlay when syncing from iCloud
             if isSyncingFromCloud {
                 ZStack {
-                    FloatingClouds(theme: CloudsTheme.graphite(colorScheme))
+                    FloatingClouds(theme: CloudsTheme.iCloud(colorScheme))
                         .ignoresSafeArea()
 
                     VStack(spacing: 30) {

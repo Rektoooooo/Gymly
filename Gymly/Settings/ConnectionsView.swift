@@ -27,6 +27,8 @@ struct ConnectionsView: View {
     @EnvironmentObject var config: Config
     @Environment(\.colorScheme) var scheme
     @State private var isCloudKitAvailable = false
+    @State private var isHealthKitSyncing = false
+    @State private var showHealthKitSettingsAlert = false
     private let healthStore = HKHealthStore()
 
     var body: some View {
@@ -39,11 +41,28 @@ struct ConnectionsView: View {
                     get: { config.isHealtKitEnabled },
                     set: { newValue in
                         if newValue {
-                            // User wants to enable HealthKit - request authorization first
-                            requestHealthKitAuthorization()
+                            // Optimistic UI: Enable toggle immediately for instant feedback
+                            config.isHealtKitEnabled = true
+
+                            // Request authorization asynchronously
+                            requestHealthKitAuthorizationOptimistic()
+                        } else {
+                            // User wants to disable - just update the flag
+                            config.isHealtKitEnabled = false
+                            print("🩺 HEALTH: HealthKit disabled by user")
                         }
                     }
                 ))
+
+                if isHealthKitSyncing {
+                    HStack {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Syncing health data...")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
 
                 Text("To fully revoke permissions, disable HealthKit access in Settings > Privacy & Security > Health > Gymly")
                     .font(.caption)
@@ -123,61 +142,163 @@ struct ConnectionsView: View {
                 config.isCloudKitEnabled = true
             }
         }
+        .alert("Enable HealthKit in Settings", isPresented: $showHealthKitSettingsAlert) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("You previously denied HealthKit access. To enable it, go to Settings > Privacy & Security > Health > Gymly and turn on all permissions.")
+        }
     }
     
-    
-    /// Requests HealthKit authorization and updates UI instantly
-    private func requestHealthKitAuthorization() {
+
+    /// Requests HealthKit authorization with optimistic UI updates
+    private func requestHealthKitAuthorizationOptimistic() {
+        print("🩺 HEALTH: Requesting HealthKit authorization...")
+
         let healthDataToRead: Set = [
             HKObjectType.characteristicType(forIdentifier: .dateOfBirth)!,
             HKObjectType.quantityType(forIdentifier: .height)!,
             HKObjectType.quantityType(forIdentifier: .bodyMass)!
         ]
 
+        // Request authorization (this shows the system dialog on first attempt)
+        // On subsequent attempts, iOS returns cached result immediately
         healthStore.requestAuthorization(toShare: nil, read: healthDataToRead) { success, error in
-            DispatchQueue.main.async {
-                config.isHealtKitEnabled = true
-                print("🩺 HEALTH: Authorization result - permissions granted")
+            // Note: success is always true for read-only permissions due to privacy
+            // iOS doesn't tell us if user granted or denied - we must try fetching to find out
 
-                // Immediately fetch HealthKit data after authorization
-                fetchHealthKitDataAfterAuthorization()
+            DispatchQueue.main.async {
+                print("🩺 HEALTH: Authorization dialog completed, attempting to fetch data...")
+
+                // Show syncing indicator
+                self.isHealthKitSyncing = true
+
+                // Try to fetch data - if successful, permissions are granted
+                self.fetchHealthKitDataAfterAuthorizationWithValidation()
             }
         }
     }
 
-    /// Fetch HealthKit data immediately after authorization
+    /// Fetch HealthKit data with validation (checks if permissions actually work)
+    private func fetchHealthKitDataAfterAuthorizationWithValidation() {
+        print("📱 HEALTH: Fetching data from HealthKit with validation...")
+
+        // Track completion and success of fetches
+        var completedFetches = 0
+        var anyDataFetched = false
+        let totalFetches = 3
+
+        func checkCompletion() {
+            completedFetches += 1
+            if completedFetches == totalFetches {
+                DispatchQueue.main.async {
+                    self.isHealthKitSyncing = false
+
+                    if anyDataFetched {
+                        print("✅ HEALTH: Permissions granted - data fetched successfully")
+                        // Keep toggle enabled
+                    } else {
+                        print("❌ HEALTH: No data could be fetched - permissions likely denied")
+                        // Revert toggle
+                        self.config.isHealtKitEnabled = false
+                        self.showHealthKitSettingsAlert = true
+                    }
+                }
+            }
+        }
+
+        // Fetch height (parallel)
+        healthKitManager.fetchHeight { height in
+            DispatchQueue.main.async {
+                if let height = height {
+                    anyDataFetched = true
+                    let heightInCm = height * 100.0
+                    self.userProfileManager.updatePhysicalStats(height: heightInCm)
+                    print("✅ HEALTH: Fetched height: \(height) m (\(heightInCm) cm)")
+                }
+                checkCompletion()
+            }
+        }
+
+        // Fetch age (parallel)
+        healthKitManager.fetchAge { age in
+            DispatchQueue.main.async {
+                if let age = age {
+                    anyDataFetched = true
+                    self.userProfileManager.updatePhysicalStats(age: age)
+                    print("✅ HEALTH: Fetched age: \(age) years")
+                }
+                checkCompletion()
+            }
+        }
+
+        // Fetch weight (parallel)
+        healthKitManager.fetchWeight { weight in
+            DispatchQueue.main.async {
+                if let weight = weight {
+                    anyDataFetched = true
+                    self.userProfileManager.updatePhysicalStats(weight: weight)
+                    print("✅ HEALTH: Fetched weight: \(weight) kg")
+                }
+                checkCompletion()
+            }
+        }
+    }
+
+    /// Fetch HealthKit data immediately after authorization (parallel fetch)
     private func fetchHealthKitDataAfterAuthorization() {
         print("📱 HEALTH: Fetching data from HealthKit after authorization...")
 
-        // Fetch height
+        // Track completion of all three fetches
+        var completedFetches = 0
+        let totalFetches = 3
+
+        func checkCompletion() {
+            completedFetches += 1
+            if completedFetches == totalFetches {
+                DispatchQueue.main.async {
+                    self.isHealthKitSyncing = false
+                    print("✅ HEALTH: All data fetched successfully")
+                }
+            }
+        }
+
+        // Fetch height (parallel)
         healthKitManager.fetchHeight { height in
             DispatchQueue.main.async {
                 if let height = height {
                     // HealthKit returns height in meters, UserProfile stores in centimeters
                     let heightInCm = height * 100.0
-                    userProfileManager.updatePhysicalStats(height: heightInCm)
+                    self.userProfileManager.updatePhysicalStats(height: heightInCm)
                     print("✅ HEALTH: Fetched height: \(height) m (\(heightInCm) cm)")
                 }
+                checkCompletion()
             }
         }
 
-        // Fetch age
+        // Fetch age (parallel)
         healthKitManager.fetchAge { age in
             DispatchQueue.main.async {
                 if let age = age {
-                    userProfileManager.updatePhysicalStats(age: age)
+                    self.userProfileManager.updatePhysicalStats(age: age)
                     print("✅ HEALTH: Fetched age: \(age) years")
                 }
+                checkCompletion()
             }
         }
 
-        // Fetch weight (initial sync only)
+        // Fetch weight (parallel)
         healthKitManager.fetchWeight { weight in
             DispatchQueue.main.async {
                 if let weight = weight {
-                    userProfileManager.updatePhysicalStats(weight: weight)
+                    self.userProfileManager.updatePhysicalStats(weight: weight)
                     print("✅ HEALTH: Fetched weight: \(weight) kg")
                 }
+                checkCompletion()
             }
         }
     }

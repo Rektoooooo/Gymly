@@ -7,6 +7,7 @@
 
 import SwiftUI
 import HealthKit
+import SwiftData
 
 struct ToolBar: View {
     @EnvironmentObject var config: Config
@@ -41,14 +42,42 @@ struct ToolBar: View {
         }
         .environmentObject(config)
         .environmentObject(userProfileManager)
-        .onAppear {
+        .task {
             // Initialize UserProfileManager with SwiftData context
             userProfileManager.setup(modelContext: context)
 
             // Load profile if user is already logged in (app reopen)
             if config.isUserLoggedIn {
-                userProfileManager.loadOrCreateProfile()
-                print("🔄 TOOLBAR: Loaded existing profile on app reopen")
+                print("🔄 TOOLBAR: User already logged in, checking for existing profile...")
+
+                // Try to load existing profile first
+                let descriptor = FetchDescriptor<UserProfile>()
+                let profiles = try? context.fetch(descriptor)
+
+                if let existingProfile = profiles?.first {
+                    // Profile exists in SwiftData - use it
+                    userProfileManager.currentProfile = existingProfile
+                    print("✅ TOOLBAR: Loaded existing profile for \(existingProfile.username)")
+                } else {
+                    // No local profile - try CloudKit first before creating default
+                    print("🔍 TOOLBAR: No local profile found, checking CloudKit...")
+
+                    if config.isCloudKitEnabled {
+                        await userProfileManager.syncFromCloudKit()
+
+                        if userProfileManager.currentProfile != nil {
+                            print("✅ TOOLBAR: Restored profile from CloudKit")
+                        } else {
+                            // CloudKit had no data - create default profile
+                            print("⚠️ TOOLBAR: No CloudKit data, creating default profile")
+                            userProfileManager.loadOrCreateProfile()
+                        }
+                    } else {
+                        // CloudKit not available - create default profile
+                        print("⚠️ TOOLBAR: CloudKit not available, creating default profile")
+                        userProfileManager.loadOrCreateProfile()
+                    }
+                }
             }
         }
     }

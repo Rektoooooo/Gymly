@@ -122,6 +122,25 @@ struct CloudsTheme {
             bottomTrailing: Color(red: 0.541, green: 0.733, blue: 0.812, opacity: 0.7)
         )
     }
+
+    static func iCloud(_ scheme: ColorScheme) -> CloudsTheme {
+        CloudsTheme(
+            // Deep black background like iCloud interface
+            background: Color(red: 0.0, green: 0.0, blue: 0.0),
+
+            // Bright electric blue (iCloud brand color) - top left
+            topLeading: Color(red: 0.0, green: 0.48, blue: 1.0, opacity: 0.85),
+
+            // Lighter sky blue - top right
+            topTrailing: Color(red: 0.2, green: 0.6, blue: 1.0, opacity: 0.7),
+
+            // Deep blue with slight cyan tint - bottom left
+            bottomLeading: Color(red: 0.0, green: 0.3, blue: 0.7, opacity: 0.6),
+
+            // Bright cyan/light blue - bottom right
+            bottomTrailing: Color(red: 0.3, green: 0.7, blue: 1.0, opacity: 0.75)
+        )
+    }
 }
     
 class CloudProvider: ObservableObject {
