@@ -122,15 +122,31 @@ class CloudKitManager: ObservableObject {
             throw CloudKitError.notAvailable
         }
 
+        // CRITICAL: Save days FIRST before creating references to them
+        // CloudKit requires referenced records to exist before creating references
+        print("🔄 SAVESPLIT: Saving \(split.days?.count ?? 0) days for split '\(split.name)'")
+        for day in split.days ?? [] {
+            do {
+                try await saveDay(day, splitId: split.id)
+                print("✅ SAVESPLIT: Saved day '\(day.name)'")
+            } catch {
+                print("❌ SAVESPLIT: Failed to save day '\(day.name)': \(error.localizedDescription)")
+                throw error
+            }
+        }
+
+        // Now save the split record with references to the saved days
         let recordID = CKRecord.ID(recordName: split.id.uuidString)
 
         // Try to fetch existing record first
         let record: CKRecord
         do {
             record = try await privateDatabase.record(for: recordID)
+            print("🔄 SAVESPLIT: Updating existing split record '\(split.name)'")
         } catch {
             // Record doesn't exist, create new one
             record = CKRecord(recordType: "Split", recordID: recordID)
+            print("🆕 SAVESPLIT: Creating new split record '\(split.name)'")
         }
 
         // Update record fields
@@ -138,17 +154,18 @@ class CloudKitManager: ObservableObject {
         record["isActive"] = split.isActive ? 1 : 0
         record["startDate"] = split.startDate
 
-        // Save days as references
+        // Create references to the days we just saved
         let dayReferences = (split.days ?? []).map { day in
             CKRecord.Reference(recordID: CKRecord.ID(recordName: day.id.uuidString), action: .deleteSelf)
         }
         record["days"] = dayReferences
 
-        try await privateDatabase.save(record)
-
-        // Save each day
-        for day in split.days ?? [] {
-            try await saveDay(day, splitId: split.id)
+        do {
+            try await privateDatabase.save(record)
+            print("✅ SAVESPLIT: Split record '\(split.name)' saved successfully")
+        } catch {
+            print("❌ SAVESPLIT: Failed to save split record '\(split.name)': \(error.localizedDescription)")
+            throw error
         }
     }
 
@@ -157,32 +174,49 @@ class CloudKitManager: ObservableObject {
             throw CloudKitError.notAvailable
         }
 
+        // CRITICAL: Save exercises FIRST before creating references to them
+        print("🔄 SAVEDAY: Saving \(day.exercises?.count ?? 0) exercises for day '\(day.name)'")
+        for exercise in day.exercises ?? [] {
+            do {
+                try await saveExercise(exercise, dayId: day.id)
+                print("✅ SAVEDAY: Saved exercise '\(exercise.name)'")
+            } catch {
+                print("❌ SAVEDAY: Failed to save exercise '\(exercise.name)': \(error.localizedDescription)")
+                throw error
+            }
+        }
+
+        // Now save the day record with references
         let recordID = CKRecord.ID(recordName: day.id.uuidString)
 
         // Try to fetch existing record first
         let record: CKRecord
         do {
             record = try await privateDatabase.record(for: recordID)
+            print("🔄 SAVEDAY: Updating existing day record '\(day.name)'")
         } catch {
             // Record doesn't exist, create new one
             record = CKRecord(recordType: "Day", recordID: recordID)
+            print("🆕 SAVEDAY: Creating new day record '\(day.name)'")
         }
+
         record["name"] = day.name
         record["dayOfSplit"] = day.dayOfSplit
         record["date"] = day.date
         record["splitId"] = CKRecord.Reference(recordID: CKRecord.ID(recordName: splitId.uuidString), action: .deleteSelf)
 
-        // Save exercises as references
+        // Create references to the exercises we just saved
         let exerciseReferences = (day.exercises ?? []).map { exercise in
             CKRecord.Reference(recordID: CKRecord.ID(recordName: exercise.id.uuidString), action: .deleteSelf)
         }
         record["exercises"] = exerciseReferences
 
-        try await privateDatabase.save(record)
-
-        // Save each exercise
-        for exercise in day.exercises ?? [] {
-            try await saveExercise(exercise, dayId: day.id)
+        do {
+            try await privateDatabase.save(record)
+            print("✅ SAVEDAY: Day record '\(day.name)' saved successfully")
+        } catch {
+            print("❌ SAVEDAY: Failed to save day record '\(day.name)': \(error.localizedDescription)")
+            throw error
         }
     }
 
@@ -271,17 +305,48 @@ class CloudKitManager: ObservableObject {
             throw CloudKitError.notAvailable
         }
 
-        let query = CKQuery(recordType: "Split", predicate: NSPredicate(value: true))
-        let records = try await privateDatabase.records(matching: query).matchResults.compactMap { try? $0.1.get() }
+        print("🔍 FETCHING SPLITS FROM CLOUDKIT...")
 
-        var splits: [Split] = []
-        for record in records {
-            if let split = await splitFromRecord(record) {
-                splits.append(split)
+        do {
+            // Use the simpler records(matching:) API which works without queryable indexes
+            let query = CKQuery(recordType: "Split", predicate: NSPredicate(value: true))
+            let (matchResults, _) = try await privateDatabase.records(matching: query)
+
+            var fetchedRecords: [CKRecord] = []
+            for (_, result) in matchResults {
+                switch result {
+                case .success(let record):
+                    fetchedRecords.append(record)
+                    print("🔍 Fetched split record: \(record["name"] as? String ?? "unknown")")
+                case .failure(let error):
+                    print("❌ Error fetching individual record: \(error.localizedDescription)")
+                }
             }
-        }
 
-        return splits
+            print("🔍 QUERY RESULT: \(fetchedRecords.count) split records found")
+
+            var splits: [Split] = []
+            for record in fetchedRecords {
+                if let split = await splitFromRecord(record) {
+                    splits.append(split)
+                    print("🔍 CONVERTED SPLIT: \(split.name), isActive: \(split.isActive)")
+                }
+            }
+
+            print("🔍 FINAL SPLIT COUNT: \(splits.count)")
+            return splits
+        } catch let error as CKError {
+            print("❌ CLOUDKIT ERROR FETCHING SPLITS: \(error.localizedDescription)")
+            print("❌ ERROR CODE: \(error.code.rawValue)")
+            print("❌ ERROR DETAILS: \(error)")
+
+            // Return empty array instead of throwing if there are no records or query issues
+            if error.code == .unknownItem || error.code == .invalidArguments {
+                print("⚠️ NO SPLITS FOUND IN CLOUDKIT OR QUERY ISSUE - RETURNING EMPTY ARRAY")
+                return []
+            }
+            throw error
+        }
     }
 
     private func splitFromRecord(_ record: CKRecord) async -> Split? {
@@ -369,22 +434,29 @@ class CloudKitManager: ObservableObject {
             throw CloudKitError.notAvailable
         }
 
-        let query = CKQuery(recordType: "DayStorage", predicate: NSPredicate(value: true))
-        let records = try await privateDatabase.records(matching: query).matchResults.compactMap { try? $0.1.get() }
+        do {
+            let query = CKQuery(recordType: "DayStorage", predicate: NSPredicate(value: true))
+            let records = try await privateDatabase.records(matching: query).matchResults.compactMap { try? $0.1.get() }
 
-        var dayStorages: [DayStorage] = []
-        for record in records {
-            if let date = record["date"] as? String,
-               let dayIdString = record["dayId"] as? String,
-               let dayName = record["dayName"] as? String,
-               let dayOfSplit = record["dayOfSplit"] as? Int,
-               let dayId = UUID(uuidString: dayIdString) {
-                let id = UUID(uuidString: record.recordID.recordName) ?? UUID()
-                dayStorages.append(DayStorage(id: id, dayId: dayId, dayName: dayName, dayOfSplit: dayOfSplit, date: date))
+            var dayStorages: [DayStorage] = []
+            for record in records {
+                if let date = record["date"] as? String,
+                   let dayIdString = record["dayId"] as? String,
+                   let dayName = record["dayName"] as? String,
+                   let dayOfSplit = record["dayOfSplit"] as? Int,
+                   let dayId = UUID(uuidString: dayIdString) {
+                    let id = UUID(uuidString: record.recordID.recordName) ?? UUID()
+                    dayStorages.append(DayStorage(id: id, dayId: dayId, dayName: dayName, dayOfSplit: dayOfSplit, date: date))
+                }
             }
-        }
 
-        return dayStorages
+            return dayStorages
+        } catch let error as CKError {
+            if error.code == .unknownItem || error.code == .invalidArguments {
+                return []
+            }
+            throw error
+        }
     }
 
     func fetchAllWeightPoints() async throws -> [WeightPoint] {
@@ -392,18 +464,25 @@ class CloudKitManager: ObservableObject {
             throw CloudKitError.notAvailable
         }
 
-        let query = CKQuery(recordType: "WeightPoint", predicate: NSPredicate(value: true))
-        let records = try await privateDatabase.records(matching: query).matchResults.compactMap { try? $0.1.get() }
+        do {
+            let query = CKQuery(recordType: "WeightPoint", predicate: NSPredicate(value: true))
+            let records = try await privateDatabase.records(matching: query).matchResults.compactMap { try? $0.1.get() }
 
-        var weightPoints: [WeightPoint] = []
-        for record in records {
-            if let weight = record["weight"] as? Double,
-               let date = record["date"] as? Date {
-                weightPoints.append(WeightPoint(date: date, weight: weight))
+            var weightPoints: [WeightPoint] = []
+            for record in records {
+                if let weight = record["weight"] as? Double,
+                   let date = record["date"] as? Date {
+                    weightPoints.append(WeightPoint(date: date, weight: weight))
+                }
             }
-        }
 
-        return weightPoints
+            return weightPoints
+        } catch let error as CKError {
+            if error.code == .unknownItem || error.code == .invalidArguments {
+                return []
+            }
+            throw error
+        }
     }
 
 
@@ -436,20 +515,33 @@ class CloudKitManager: ObservableObject {
     }
 
     // MARK: - Full Sync
+    @MainActor
     func performFullSync(context: ModelContext, config: Config) async {
-        guard isCloudKitEnabled else { return }
-
-        DispatchQueue.main.async {
-            self.isSyncing = true
-            self.syncError = nil
+        guard isCloudKitEnabled else {
+            print("❌ PERFORMFULLSYNC: CloudKit not enabled")
+            return
         }
 
+        print("🔄 PERFORMFULLSYNC: Starting full CloudKit sync")
+
+        self.isSyncing = true
+        self.syncError = nil
+
         do {
-            // Sync Splits
+            // Sync Splits - fetch on main actor to avoid ModelContext threading issues
             let descriptor = FetchDescriptor<Split>()
             let localSplits = try context.fetch(descriptor)
+            print("🔄 PERFORMFULLSYNC: Found \(localSplits.count) local splits to sync")
+
             for split in localSplits {
-                try await saveSplit(split)
+                print("🔄 PERFORMFULLSYNC: Uploading split '\(split.name)' to CloudKit...")
+                do {
+                    try await saveSplit(split)
+                    print("✅ PERFORMFULLSYNC: Split '\(split.name)' uploaded successfully")
+                } catch {
+                    print("❌ PERFORMFULLSYNC: Failed to upload split '\(split.name)': \(error.localizedDescription)")
+                    throw error  // Re-throw to stop the sync
+                }
             }
 
             // Sync DayStorage
@@ -470,19 +562,17 @@ class CloudKitManager: ObservableObject {
             // Update last sync date
             let now = Date()
             userDefaults.set(now, forKey: lastSyncKey)
-
-            DispatchQueue.main.async {
-                self.lastSyncDate = now
-                self.isSyncing = false
-            }
+            self.lastSyncDate = now
+            self.isSyncing = false
+            print("✅ PERFORMFULLSYNC: All data synced to CloudKit successfully")
         } catch {
-            DispatchQueue.main.async {
-                self.syncError = error.localizedDescription
-                self.isSyncing = false
-            }
+            print("❌ PERFORMFULLSYNC ERROR: \(error.localizedDescription)")
+            self.syncError = error.localizedDescription
+            self.isSyncing = false
         }
     }
 
+    @MainActor
     func fetchAndMergeData(context: ModelContext, config: Config) async {
         guard isCloudKitEnabled else {
             print("🔥 CLOUDKIT NOT ENABLED - SKIPPING FETCH")
@@ -490,25 +580,38 @@ class CloudKitManager: ObservableObject {
         }
 
         print("🔥 STARTING FETCHANDMERGEDATA")
-        DispatchQueue.main.async {
-            self.isSyncing = true
-            self.syncError = nil
-        }
+        self.isSyncing = true
+        self.syncError = nil
 
         do {
-            // Fetch and merge splits
+            // Fetch from CloudKit (happens on background thread)
             let cloudSplits = try await fetchAllSplits()
+            let cloudDayStorages = try await fetchAllDayStorage()
+            let cloudWeightPoints = try await fetchAllWeightPoints()
+
+            print("🔥 FETCHED FROM CLOUDKIT: \(cloudSplits.count) splits, \(cloudDayStorages.count) day storages, \(cloudWeightPoints.count) weight points")
+
+            // Merge with local data (must happen on main thread with ModelContext)
             let localSplitDescriptor = FetchDescriptor<Split>()
             let localSplits = try context.fetch(localSplitDescriptor)
 
             for cloudSplit in cloudSplits {
                 if !localSplits.contains(where: { $0.id == cloudSplit.id }) {
                     context.insert(cloudSplit)
+                    print("🔥 INSERTED SPLIT: \(cloudSplit.name), isActive: \(cloudSplit.isActive)")
                 }
             }
 
-            // Fetch and merge DayStorage
-            let cloudDayStorages = try await fetchAllDayStorage()
+            // CRITICAL: If no split is active after CloudKit sync, activate the first one
+            // This ensures splits appear immediately on TodayWorkoutView
+            let updatedLocalSplits = try context.fetch(FetchDescriptor<Split>())
+            let hasActiveSplit = updatedLocalSplits.contains(where: { $0.isActive })
+
+            if !hasActiveSplit, let firstSplit = updatedLocalSplits.first {
+                print("🔥 NO ACTIVE SPLIT FOUND - Activating first split: \(firstSplit.name)")
+                firstSplit.isActive = true
+            }
+
             let localDayStorageDescriptor = FetchDescriptor<DayStorage>()
             let localDayStorages = try context.fetch(localDayStorageDescriptor)
 
@@ -518,8 +621,6 @@ class CloudKitManager: ObservableObject {
                 }
             }
 
-            // Fetch and merge WeightPoints
-            let cloudWeightPoints = try await fetchAllWeightPoints()
             let localWeightPointDescriptor = FetchDescriptor<WeightPoint>()
             let localWeightPoints = try context.fetch(localWeightPointDescriptor)
 
@@ -531,20 +632,17 @@ class CloudKitManager: ObservableObject {
 
             // Save context
             try context.save()
+            print("🔥 CONTEXT SAVED SUCCESSFULLY")
 
             // Update last sync date
             let now = Date()
             userDefaults.set(now, forKey: lastSyncKey)
-
-            DispatchQueue.main.async {
-                self.lastSyncDate = now
-                self.isSyncing = false
-            }
+            self.lastSyncDate = now
+            self.isSyncing = false
         } catch {
-            DispatchQueue.main.async {
-                self.syncError = error.localizedDescription
-                self.isSyncing = false
-            }
+            print("❌ FETCHANDMERGEDATA ERROR: \(error)")
+            self.syncError = error.localizedDescription
+            self.isSyncing = false
         }
     }
 

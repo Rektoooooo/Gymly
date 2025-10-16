@@ -102,14 +102,13 @@ final class WorkoutViewModel: ObservableObject {
                 print("❌ Failed to verify active split!")
             }
 
-            // Temporarily disable CloudKit sync to test if it's causing the issue
-            print("🔧 CloudKit sync temporarily disabled for testing")
-            // if config.isCloudKitEnabled {
-            //     print("🔧 CloudKit sync is enabled, syncing split...")
-            //     syncSplitToCloudKit(newSplit)
-            // } else {
-            //     print("🔧 CloudKit sync is disabled, skipping sync")
-            // }
+            // Sync to CloudKit if enabled
+            if config.isCloudKitEnabled {
+                print("🔧 CloudKit sync is enabled, syncing split...")
+                syncSplitToCloudKit(newSplit)
+            } else {
+                print("🔧 CloudKit sync is disabled, skipping sync")
+            }
         } catch {
             print("❌ Error saving split: \(error)")
             print("❌ Error details: \(error.localizedDescription)")
@@ -991,9 +990,6 @@ final class WorkoutViewModel: ObservableObject {
     // MARK: - CloudKit Sync Methods
     @MainActor
     func syncSplitToCloudKit(_ split: Split) {
-        print("🔧 CloudKit sync temporarily disabled")
-        return
-
         guard config.isCloudKitEnabled else { return }
 
         Task {
