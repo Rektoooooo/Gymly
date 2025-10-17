@@ -41,10 +41,27 @@ final class WorkoutViewModel: ObservableObject {
     }
     var config: Config
     var context: ModelContext
-    
+    var userProfileManager: UserProfileManager?
+
     init(config: Config, context: ModelContext) {
         self.config = config
         self.context = context
+    }
+
+    func setUserProfileManager(_ manager: UserProfileManager) {
+        self.userProfileManager = manager
+    }
+
+    // MARK: - TESTING ONLY - Remove before production
+    /// Test helper: Simulate workout on a specific date
+    @MainActor
+    func testSimulateWorkout(daysAgo: Int) {
+        let calendar = Calendar.current
+        let simulatedDate = calendar.date(byAdding: .day, value: -daysAgo, to: Date())!
+
+        print("🧪 TEST: Simulating workout \(daysAgo) days ago (date: \(formattedDateString(from: simulatedDate)))")
+
+        userProfileManager?.calculateStreak(workoutDate: simulatedDate)
     }
     
     // MARK: Split related funcs
@@ -427,6 +444,9 @@ final class WorkoutViewModel: ObservableObject {
             try context.save()
             debugPrint("Day saved with date: \(formattedDateString(from: Date()))")
             syncDayStorageToCloudKit(dayStorage)
+
+            // Update streak when workout is saved
+            userProfileManager?.calculateStreak(workoutDate: Date())
         } catch {
             debugPrint(error)
         }

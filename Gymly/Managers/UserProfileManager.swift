@@ -209,10 +209,10 @@ class UserProfileManager: ObservableObject {
     func updateProfileImage(_ image: UIImage?) {
         ensureProfileExists()
         guard let profile = currentProfile else { return }
-        
+
         profile.setProfileImage(image)
         saveProfile()
-        
+
         // Handle CloudKit image sync separately
         if let image = image {
             Task {
@@ -227,6 +227,35 @@ class UserProfileManager: ObservableObject {
                 }
             }
         }
+    }
+
+    func updateRestDays(_ restDays: Int) {
+        ensureProfileExists()
+        guard let profile = currentProfile else { return }
+
+        profile.restDaysPerWeek = max(0, min(7, restDays)) // Clamp between 0-7
+        saveProfile()
+    }
+
+    func updateStreak(currentStreak: Int, longestStreak: Int? = nil, lastWorkoutDate: Date? = nil, paused: Bool? = nil) {
+        ensureProfileExists()
+        guard let profile = currentProfile else { return }
+
+        profile.currentStreak = currentStreak
+
+        if let longestStreak = longestStreak {
+            profile.longestStreak = max(profile.longestStreak, longestStreak)
+        }
+
+        if let lastWorkoutDate = lastWorkoutDate {
+            profile.lastWorkoutDate = lastWorkoutDate
+        }
+
+        if let paused = paused {
+            profile.streakPaused = paused
+        }
+
+        saveProfile()
     }
     
     // MARK: - CloudKit Integration
@@ -309,5 +338,125 @@ class UserProfileManager: ObservableObject {
     }
     
 
-    
+
+    // MARK: - Streak Calculation
+
+    /// Calculate and update streak when user completes a workout
+    func calculateStreak(workoutDate: Date = Date()) {
+        ensureProfileExists()
+        guard let profile = currentProfile else { return }
+
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: workoutDate)
+
+        // If this is the first workout ever
+        guard let lastWorkout = profile.lastWorkoutDate else {
+            print("🔥 STREAK: First workout! Starting streak at 1")
+            updateStreak(currentStreak: 1, longestStreak: 1, lastWorkoutDate: today, paused: false)
+            return
+        }
+
+        let lastWorkoutDay = calendar.startOfDay(for: lastWorkout)
+
+        // Check if already worked out today
+        if calendar.isDate(today, inSameDayAs: lastWorkoutDay) {
+            print("🔥 STREAK: Already worked out today, keeping streak at \(profile.currentStreak)")
+            return
+        }
+
+        // Calculate days since last workout
+        let daysSinceLastWorkout = calendar.dateComponents([.day], from: lastWorkoutDay, to: today).day ?? 0
+
+        print("🔥 STREAK: Days since last workout: \(daysSinceLastWorkout)")
+
+        if daysSinceLastWorkout == 1 {
+            // Consecutive day - increment streak
+            let newStreak = profile.currentStreak + 1
+            print("🔥 STREAK: Consecutive day! Incrementing streak to \(newStreak)")
+            updateStreak(currentStreak: newStreak, longestStreak: newStreak, lastWorkoutDate: today, paused: false)
+        } else if daysSinceLastWorkout > 1 {
+            // Check if streak should be reset or just paused based on rest days
+            let shouldReset = shouldResetStreak(lastWorkoutDate: lastWorkoutDay, currentDate: today, restDaysPerWeek: profile.restDaysPerWeek)
+
+            if shouldReset {
+                print("🔥 STREAK: Exceeded rest days! Resetting streak to 1")
+                updateStreak(currentStreak: 1, lastWorkoutDate: today, paused: false)
+            } else {
+                // Within allowed rest days - continue streak
+                let newStreak = profile.currentStreak + 1
+                print("🔥 STREAK: Within rest days allowance! Continuing streak at \(newStreak)")
+                updateStreak(currentStreak: newStreak, longestStreak: newStreak, lastWorkoutDate: today, paused: false)
+            }
+        }
+    }
+
+    /// Check if streak should be reset based on missed days per calendar week
+    private func shouldResetStreak(lastWorkoutDate: Date, currentDate: Date, restDaysPerWeek: Int) -> Bool {
+        let calendar = Calendar.current
+
+        // Get all calendar weeks between last workout and current date
+        var checkDate = lastWorkoutDate
+        var maxMissedInAnyWeek = 0
+
+        while checkDate < currentDate {
+            // Get the week for checkDate
+            let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: checkDate))!
+            let weekEnd = calendar.date(byAdding: .day, value: 7, to: weekStart)!
+
+            // Count missed days in this week
+            var missedInThisWeek = 0
+            var dayInWeek = max(lastWorkoutDate, weekStart)
+
+            while dayInWeek < min(currentDate, weekEnd) {
+                let nextDay = calendar.date(byAdding: .day, value: 1, to: dayInWeek)!
+                if !calendar.isDate(dayInWeek, inSameDayAs: lastWorkoutDate) {
+                    missedInThisWeek += 1
+                }
+                dayInWeek = nextDay
+            }
+
+            maxMissedInAnyWeek = max(maxMissedInAnyWeek, missedInThisWeek)
+
+            // Move to next week
+            checkDate = weekEnd
+        }
+
+        print("🔥 STREAK: Max missed days in any week: \(maxMissedInAnyWeek), allowed: \(restDaysPerWeek)")
+
+        // Reset if exceeded rest days in any calendar week
+        return maxMissedInAnyWeek > restDaysPerWeek
+    }
+
+    /// Check streak status on app launch (for pausing logic)
+    func checkStreakStatus() {
+        ensureProfileExists()
+        guard let profile = currentProfile else { return }
+
+        guard let lastWorkout = profile.lastWorkoutDate else {
+            // No workout history, nothing to check
+            return
+        }
+
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let lastWorkoutDay = calendar.startOfDay(for: lastWorkout)
+        let daysSince = calendar.dateComponents([.day], from: lastWorkoutDay, to: today).day ?? 0
+
+        // If it's been more than one day, check if we need to reset or pause
+        if daysSince > 1 {
+            let shouldReset = shouldResetStreak(lastWorkoutDate: lastWorkoutDay, currentDate: today, restDaysPerWeek: profile.restDaysPerWeek)
+
+            if shouldReset && !profile.streakPaused {
+                print("🔥 STREAK: Streak expired! Resetting to 0")
+                updateStreak(currentStreak: 0, paused: true)
+            } else if !shouldReset && !profile.streakPaused {
+                print("🔥 STREAK: Within rest days, pausing streak")
+                updateStreak(currentStreak: profile.currentStreak, paused: true)
+            }
+        } else if daysSince == 1 && profile.streakPaused {
+            // Unpause if user is back within consecutive day window
+            print("🔥 STREAK: Un-pausing streak")
+            updateStreak(currentStreak: profile.currentStreak, paused: false)
+        }
+    }
 }

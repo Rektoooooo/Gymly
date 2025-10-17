@@ -67,34 +67,38 @@ struct SettingsView: View {
                             )
                             .cornerRadius(20)
                             HStack {
-                                HStack {
-                                    ProfileImageCell(profileImage: profileImage, frameSize: 80)
-                                        .padding()
-                                    VStack {
-                                        VStack {
-                                            Text("\(userProfileManager.currentProfile?.username ?? "User")")
-                                                .multilineTextAlignment(.leading)
-                                                .bold()
-                                                .padding(2)
+                                ProfileImageCell(profileImage: profileImage, frameSize: 80)
+                                    .padding()
+
+                                VStack(spacing: 8) {
+                                    Text("\(userProfileManager.currentProfile?.username ?? "User")")
+                                        .bold()
+                                        .font(.body)
+                                        .padding(.trailing)
+
+
+                                    HStack(spacing: 15) {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "flame")
+                                            Text("\(userProfileManager.currentProfile?.currentStreak ?? 0)")
                                         }
-                                        HStack {
-                                            HStack {
-                                                Image(systemName: "flame")
-                                                Text("100 streaks")
-                                            }
-                                            .font(.footnote)
-                                            .bold()
-                                            HStack {
-                                                Image(systemName: "clock")
-                                                Text("\(formattedWorkoutHours) h")
-                                            }
-                                            .font(.footnote)
-                                            .bold()
+                                        .font(.footnote)
+                                        .bold()
+
+
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "clock")
+                                            Text("\(formattedWorkoutHours) h")
                                         }
+                                        .font(.footnote)
+                                        .bold()
+                                        .padding(.trailing)
+
                                     }
-                                    .foregroundStyle(Color.black)
-                                    Spacer()
                                 }
+                                .foregroundStyle(Color.black)
+                                .frame(maxWidth: .infinity)
+                                .padding(.trailing)
                             }
                         }
                     }

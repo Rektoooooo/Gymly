@@ -14,30 +14,37 @@ struct ToolBar: View {
     @Environment(\.modelContext) private var context
     @State private var loginRefreshTrigger = false
     @StateObject private var userProfileManager = UserProfileManager.shared
+    @State private var todayViewModel: WorkoutViewModel?
+    @State private var calendarViewModel: WorkoutViewModel?
+    @State private var signInViewModel: WorkoutViewModel?
 
     var body: some View {
         Group {
             if config.isUserLoggedIn {
                 // Only show TabView when user is logged in
-                TabView {
-                    TodayWorkoutView(viewModel: WorkoutViewModel(config: config, context: context), loginRefreshTrigger: loginRefreshTrigger)
-                        .tabItem {
-                            Label("Routine", systemImage: "dumbbell")
-                        }
-                        .tag(1)
+                if let todayVM = todayViewModel, let calendarVM = calendarViewModel {
+                    TabView {
+                        TodayWorkoutView(viewModel: todayVM, loginRefreshTrigger: loginRefreshTrigger)
+                            .tabItem {
+                                Label("Routine", systemImage: "dumbbell")
+                            }
+                            .tag(1)
 
-                    CalendarView(viewModel: WorkoutViewModel(config: config, context: context))
-                        .tabItem {
-                            Label("Calendar", systemImage: "calendar")
-                        }
-                        .tag(2)
+                        CalendarView(viewModel: calendarVM)
+                            .tabItem {
+                                Label("Calendar", systemImage: "calendar")
+                            }
+                            .tag(2)
 
-                        .toolbar(.visible, for: .tabBar)
-                        .toolbarBackground(.black, for: .tabBar)
+                            .toolbar(.visible, for: .tabBar)
+                            .toolbarBackground(.black, for: .tabBar)
+                    }
                 }
             } else {
                 // Show sign-in view when not logged in
-                SignInView(viewModel: WorkoutViewModel(config: config, context: context))
+                if let signInVM = signInViewModel {
+                    SignInView(viewModel: signInVM)
+                }
             }
         }
         .environmentObject(config)
@@ -45,6 +52,21 @@ struct ToolBar: View {
         .task {
             // Initialize UserProfileManager with SwiftData context
             userProfileManager.setup(modelContext: context)
+
+            // Initialize WorkoutViewModels and connect userProfileManager
+            let todayVM = WorkoutViewModel(config: config, context: context)
+            let calendarVM = WorkoutViewModel(config: config, context: context)
+            let signInVM = WorkoutViewModel(config: config, context: context)
+
+            todayVM.setUserProfileManager(userProfileManager)
+            calendarVM.setUserProfileManager(userProfileManager)
+            signInVM.setUserProfileManager(userProfileManager)
+
+            todayViewModel = todayVM
+            calendarViewModel = calendarVM
+            signInViewModel = signInVM
+
+            print("✅ TOOLBAR: Connected userProfileManager to all ViewModels")
 
             // Load profile if user is already logged in (app reopen)
             if config.isUserLoggedIn {
@@ -78,6 +100,9 @@ struct ToolBar: View {
                         userProfileManager.loadOrCreateProfile()
                     }
                 }
+
+                // Check streak status on app launch
+                userProfileManager.checkStreakStatus()
             }
         }
     }

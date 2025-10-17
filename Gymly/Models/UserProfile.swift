@@ -28,6 +28,13 @@ class UserProfile {
 
     var isHealthEnabled: Bool = false
 
+    // Streak Tracking
+    var currentStreak: Int = 0
+    var longestStreak: Int = 0
+    var restDaysPerWeek: Int = 2  // Default: 2 rest days per week
+    var lastWorkoutDate: Date?
+    var streakPaused: Bool = false
+
     // User Preferences (can be argued if these belong to app settings instead)
     var weightUnit: String = "Kg"  // "Kg" or "Lbs"
     var roundSetWeights: Bool = false
@@ -117,6 +124,13 @@ extension UserProfile {
         record["age"] = age as CKRecordValue
         record["bmi"] = bmi as CKRecordValue
         record["isHealthEnabled"] = (isHealthEnabled ? 1 : 0) as CKRecordValue
+        record["currentStreak"] = currentStreak as CKRecordValue
+        record["longestStreak"] = longestStreak as CKRecordValue
+        record["restDaysPerWeek"] = restDaysPerWeek as CKRecordValue
+        record["streakPaused"] = (streakPaused ? 1 : 0) as CKRecordValue
+        if let lastWorkoutDate = lastWorkoutDate {
+            record["lastWorkoutDate"] = lastWorkoutDate as CKRecordValue
+        }
         record["weightUnit"] = weightUnit as CKRecordValue
         record["roundSetWeights"] = (roundSetWeights ? 1 : 0) as CKRecordValue
         record["createdAt"] = createdAt as CKRecordValue
@@ -153,6 +167,21 @@ extension UserProfile {
         }
         if let isHealthEnabled = record["isHealthEnabled"] as? Int {
             dict["isHealthEnabled"] = isHealthEnabled
+        }
+        if let currentStreak = record["currentStreak"] as? Int {
+            dict["currentStreak"] = currentStreak
+        }
+        if let longestStreak = record["longestStreak"] as? Int {
+            dict["longestStreak"] = longestStreak
+        }
+        if let restDaysPerWeek = record["restDaysPerWeek"] as? Int {
+            dict["restDaysPerWeek"] = restDaysPerWeek
+        }
+        if let streakPaused = record["streakPaused"] as? Int {
+            dict["streakPaused"] = streakPaused
+        }
+        if let lastWorkoutDate = record["lastWorkoutDate"] as? Date {
+            dict["lastWorkoutDate"] = lastWorkoutDate
         }
         if let weightUnit = record["weightUnit"] as? String {
             dict["weightUnit"] = weightUnit
@@ -192,6 +221,21 @@ extension UserProfile {
         }
         if let isHealthEnabled = dict["isHealthEnabled"] as? Int {
             self.isHealthEnabled = isHealthEnabled == 1
+        }
+        if let currentStreak = dict["currentStreak"] as? Int {
+            self.currentStreak = currentStreak
+        }
+        if let longestStreak = dict["longestStreak"] as? Int {
+            self.longestStreak = longestStreak
+        }
+        if let restDaysPerWeek = dict["restDaysPerWeek"] as? Int {
+            self.restDaysPerWeek = restDaysPerWeek
+        }
+        if let streakPaused = dict["streakPaused"] as? Int {
+            self.streakPaused = streakPaused == 1
+        }
+        if let lastWorkoutDate = dict["lastWorkoutDate"] as? Date {
+            self.lastWorkoutDate = lastWorkoutDate
         }
         if let weightUnit = dict["weightUnit"] as? String {
             self.weightUnit = weightUnit

@@ -77,6 +77,32 @@ struct EditUserView: View {
                         }
                     }
                     .listRowBackground(Color.black.opacity(0.1))
+                    Section("Workout Preferences") {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Rest days per week")
+                                    .foregroundStyle(.white)
+                                Text("Days you can skip without breaking streak")
+                                    .font(.caption)
+                                    .foregroundStyle(.white.opacity(0.6))
+                            }
+                            Spacer()
+                            Text("\(userProfileManager.currentProfile?.restDaysPerWeek ?? 2)")
+                                .foregroundStyle(.white)
+                                .bold()
+                                .font(.title3)
+                            Stepper(
+                                "",
+                                value: Binding(
+                                    get: { userProfileManager.currentProfile?.restDaysPerWeek ?? 2 },
+                                    set: { userProfileManager.updateRestDays($0) }
+                                ),
+                                in: 0...7
+                            )
+                            .labelsHidden()
+                        }
+                    }
+                    .listRowBackground(Color.black.opacity(0.1))
                     Section("") {
                         Button("Save changes") {
                             Task {
