@@ -28,128 +28,130 @@ struct ProfileImageCropView: View {
     }
 
     var body: some View {
-        ZStack {
-            // Layer 1: Black background
-            Color.black
-                .ignoresSafeArea(.all, edges: .all)
+        GeometryReader { geometry in
+            ZStack {
+                // Layer 1: Black background
+                Color.black
+                    .ignoresSafeArea(.all, edges: .all)
 
-            // Layer 2: The zoomable/draggable image (behind overlay)
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFit()
-                .scaleEffect(finalScale * currentScale)
-                .offset(x: finalOffset.width + currentOffset.width,
-                        y: finalOffset.height + currentOffset.height)
-                .gesture(
-                    SimultaneousGesture(
-                        MagnificationGesture()
-                            .onChanged { value in
-                                currentScale = value
-                            }
-                            .onEnded { value in
-                                finalScale *= currentScale
-                                // Limit zoom range 1x - 3x
-                                finalScale = min(max(finalScale, 1.0), 3.0)
-                                currentScale = 1.0
-                            },
-                        DragGesture()
-                            .onChanged { value in
-                                currentOffset = value.translation
-                            }
-                            .onEnded { value in
-                                // Calculate new offset with bounds
-                                let newOffsetWidth = finalOffset.width + currentOffset.width
-                                let newOffsetHeight = finalOffset.height + currentOffset.height
-
-                                // Calculate maximum allowed offset based on image size and scale
-                                let screenSize = UIScreen.main.bounds.size
-                                let imageAspect = image.size.width / image.size.height
-                                let screenAspect = screenSize.width / screenSize.height
-
-                                let displayWidth: CGFloat
-                                let displayHeight: CGFloat
-
-                                if imageAspect > screenAspect {
-                                    displayWidth = screenSize.width
-                                    displayHeight = screenSize.width / imageAspect
-                                } else {
-                                    displayHeight = screenSize.height
-                                    displayWidth = screenSize.height * imageAspect
+                // Layer 2: The zoomable/draggable image (behind overlay)
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .scaleEffect(finalScale * currentScale)
+                    .offset(x: finalOffset.width + currentOffset.width,
+                            y: finalOffset.height + currentOffset.height)
+                    .gesture(
+                        SimultaneousGesture(
+                            MagnificationGesture()
+                                .onChanged { value in
+                                    currentScale = value
                                 }
+                                .onEnded { value in
+                                    finalScale *= currentScale
+                                    // Limit zoom range 1x - 3x
+                                    finalScale = min(max(finalScale, 1.0), 3.0)
+                                    currentScale = 1.0
+                                },
+                            DragGesture()
+                                .onChanged { value in
+                                    currentOffset = value.translation
+                                }
+                                .onEnded { value in
+                                    // Calculate new offset with bounds
+                                    let newOffsetWidth = finalOffset.width + currentOffset.width
+                                    let newOffsetHeight = finalOffset.height + currentOffset.height
 
-                                // Current scale
-                                let scale = finalScale * currentScale
+                                    // Calculate maximum allowed offset based on image size and scale
+                                    let screenSize = geometry.size
+                                    let imageAspect = image.size.width / image.size.height
+                                    let screenAspect = screenSize.width / screenSize.height
 
-                                // Scaled dimensions
-                                let scaledWidth = displayWidth * scale
-                                let scaledHeight = displayHeight * scale
+                                    let displayWidth: CGFloat
+                                    let displayHeight: CGFloat
 
-                                // Maximum offset: half of scaled dimension minus half of circle
-                                let maxOffsetX = max(0, (scaledWidth / 2) - (circleSize / 2))
-                                let maxOffsetY = max(0, (scaledHeight / 2) - (circleSize / 2))
+                                    if imageAspect > screenAspect {
+                                        displayWidth = screenSize.width
+                                        displayHeight = screenSize.width / imageAspect
+                                    } else {
+                                        displayHeight = screenSize.height
+                                        displayWidth = screenSize.height * imageAspect
+                                    }
 
-                                // Constrain offset
-                                finalOffset.width = min(max(newOffsetWidth, -maxOffsetX), maxOffsetX)
-                                finalOffset.height = min(max(newOffsetHeight, -maxOffsetY), maxOffsetY)
-                                currentOffset = .zero
-                            }
+                                    // Current scale
+                                    let scale = finalScale * currentScale
+
+                                    // Scaled dimensions
+                                    let scaledWidth = displayWidth * scale
+                                    let scaledHeight = displayHeight * scale
+
+                                    // Maximum offset: half of scaled dimension minus half of circle
+                                    let maxOffsetX = max(0, (scaledWidth / 2) - (circleSize / 2))
+                                    let maxOffsetY = max(0, (scaledHeight / 2) - (circleSize / 2))
+
+                                    // Constrain offset
+                                    finalOffset.width = min(max(newOffsetWidth, -maxOffsetX), maxOffsetX)
+                                    finalOffset.height = min(max(newOffsetHeight, -maxOffsetY), maxOffsetY)
+                                    currentOffset = .zero
+                                }
+                        )
                     )
-                )
 
-            // Layer 3: Fixed circular crop overlay (doesn't move/scale with image)
-            CircularCropOverlay(circleSize: circleSize)
-                .allowsHitTesting(false)
+                // Layer 3: Fixed circular crop overlay (doesn't move/scale with image)
+                CircularCropOverlay(circleSize: circleSize)
+                    .allowsHitTesting(false)
 
-            // Layer 4: UI elements on top (buttons and text)
-            VStack {
-                // Top navigation bar
-                HStack {
-                    Button("Cancel") {
-                        onCancel()
+                // Layer 4: UI elements on top (buttons and text)
+                VStack {
+                    // Top navigation bar
+                    HStack {
+                        Button("Cancel") {
+                            onCancel()
+                        }
+                        .foregroundStyle(.white)
+                        .font(.body)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(35)
+                        .padding(.horizontal, 15)
+                        .padding(.vertical, 5)
+
+                        Spacer()
+
+                        Button("Done") {
+                            saveCroppedImage(screenSize: geometry.size)
+                        }
+                        .foregroundStyle(.white)
+                        .font(.body.bold())
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(35)
+                        .padding(.horizontal, 15)
+                        .padding(.vertical, 5)
+
                     }
-                    .foregroundStyle(.white)
-                    .font(.body)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(35)
-                    .padding(.horizontal, 15)
-                    .padding(.vertical, 5)
+                    .ignoresSafeArea()
 
                     Spacer()
 
-                    Button("Done") {
-                        saveCroppedImage()
-                    }
-                    .foregroundStyle(.white)
-                    .font(.body.bold())
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(35)
-                    .padding(.horizontal, 15)
-                    .padding(.vertical, 5)
-
+                    // Bottom instruction text
+                    Text("Pinch to zoom, drag to move")
+                        .foregroundStyle(.white.opacity(0.6))
+                        .font(.subheadline)
+                        .padding(.bottom, 40)
+                        .background(Color.clear)
                 }
-                .ignoresSafeArea()
-
-                Spacer()
-
-                // Bottom instruction text
-                Text("Pinch to zoom, drag to move")
-                    .foregroundStyle(.white.opacity(0.6))
-                    .font(.subheadline)
-                    .padding(.bottom, 40)
-                    .background(Color.clear)
             }
-        }
-        .onAppear {
-            print("🖼️ CROP VIEW: Image size: \(image.size)")
-            print("🖼️ CROP VIEW: View appeared")
+            .onAppear {
+                print("🖼️ CROP VIEW: Image size: \(image.size)")
+                print("🖼️ CROP VIEW: View appeared")
+            }
         }
     }
 
-    private func saveCroppedImage() {
+    private func saveCroppedImage(screenSize: CGSize) {
         // Calculate the crop area in image coordinates
         let scale = finalScale * currentScale
         let offset = CGSize(
@@ -167,7 +169,8 @@ struct ProfileImageCropView: View {
             image: image,
             scale: scale,
             offset: offset,
-            circleSize: circleSize
+            circleSize: circleSize,
+            screenSize: screenSize
         ) {
             print("✅ CROP: Generated cropped image: \(croppedImage.size)")
             onComplete(croppedImage)
@@ -176,9 +179,8 @@ struct ProfileImageCropView: View {
         }
     }
 
-    private func cropImageToCircle(image: UIImage, scale: CGFloat, offset: CGSize, circleSize: CGFloat) -> UIImage? {
+    private func cropImageToCircle(image: UIImage, scale: CGFloat, offset: CGSize, circleSize: CGFloat, screenSize: CGSize) -> UIImage? {
         let imageSize = image.size
-        let screenSize = UIScreen.main.bounds.size
 
         // Calculate how the image is displayed with scaledToFit
         let imageAspect = imageSize.width / imageSize.height

@@ -119,8 +119,10 @@ struct ShowSplitDayExerciseView: View {
             }
             /// Add set button
             Button {
-                Task {
-                    await viewModel.addSet(exercise: exercise)
+                let exerciseID = exercise.id
+                Task { @MainActor in
+                    let fetchedExercise = await viewModel.fetchExercise(id: exerciseID)
+                    _ = await viewModel.addSet(exercise: fetchedExercise)
                 }
             } label: {
                 Label("Add set", systemImage: "plus.circle")

@@ -79,7 +79,7 @@ struct ExerciseDetailView: View {
 
                             // Update muscle group chart data when exercise is completed
                             Task {
-                                await viewModel.updateMuscleGroupDataValues(
+                                    viewModel.updateMuscleGroupDataValues(
                                     from: [exercise],
                                     modelContext: context
                                 )
@@ -95,8 +95,10 @@ struct ExerciseDetailView: View {
                 .toolbar {
                     /// Add set button
                     Button {
-                        Task {
-                            await viewModel.addSet(exercise: exercise)
+                        let exerciseID = exercise.id
+                        Task { @MainActor in
+                            let fetchedExercise = await viewModel.fetchExercise(id: exerciseID)
+                            _ = await viewModel.addSet(exercise: fetchedExercise)
                         }
                     } label: {
                         Label("Add set", systemImage: "plus.circle")

@@ -10,6 +10,7 @@ import CloudKit
 import SwiftData
 import SwiftUI
 
+@MainActor
 class CloudKitManager: ObservableObject {
     static let shared = CloudKitManager()
 
@@ -48,51 +49,51 @@ class CloudKitManager: ObservableObject {
     }
 
     // MARK: - CloudKit Status
-    func checkCloudKitStatus() async {
+    nonisolated func checkCloudKitStatus() async {
         await withCheckedContinuation { continuation in
-            container.accountStatus { [weak self] status, error in
-                DispatchQueue.main.async {
+            container.accountStatus { status, error in
+                Task { @MainActor in
                     switch status {
                     case .available:
                         // CloudKit is available, check if user had it enabled before
-                        let hasExistingPreference = self?.userDefaults.object(forKey: self?.cloudKitEnabledKey ?? "isCloudKitEnabled") != nil
-                        let userPreference = self?.userDefaults.bool(forKey: self?.cloudKitEnabledKey ?? "isCloudKitEnabled") ?? false
+                        let hasExistingPreference = self.userDefaults.object(forKey: self.cloudKitEnabledKey) != nil
+                        let userPreference = self.userDefaults.bool(forKey: self.cloudKitEnabledKey)
 
                         if hasExistingPreference {
                             // User has a saved preference, respect it
-                            self?.isCloudKitEnabled = userPreference
+                            self.isCloudKitEnabled = userPreference
                             print("🔥 CLOUDKIT STATUS CHECK: AVAILABLE, EXISTING USER PREFERENCE: \(userPreference)")
                         } else {
                             // First time or fresh install - enable CloudKit by default when available
-                            self?.isCloudKitEnabled = true
-                            self?.userDefaults.set(true, forKey: self?.cloudKitEnabledKey ?? "isCloudKitEnabled")
+                            self.isCloudKitEnabled = true
+                            self.userDefaults.set(true, forKey: self.cloudKitEnabledKey)
                             print("🔥 CLOUDKIT STATUS CHECK: AVAILABLE, NO EXISTING PREFERENCE - ENABLING BY DEFAULT")
                         }
-                        self?.syncError = nil
+                        self.syncError = nil
                     case .noAccount:
-                        self?.isCloudKitEnabled = false
-                        self?.syncError = "iCloud account not available. Please sign in to iCloud in Settings."
-                        self?.userDefaults.set(false, forKey: self?.cloudKitEnabledKey ?? "isCloudKitEnabled")
+                        self.isCloudKitEnabled = false
+                        self.syncError = "iCloud account not available. Please sign in to iCloud in Settings."
+                        self.userDefaults.set(false, forKey: self.cloudKitEnabledKey)
                         print("🔥 CLOUDKIT STATUS CHECK: NO ACCOUNT")
                     case .restricted:
-                        self?.isCloudKitEnabled = false
-                        self?.syncError = "iCloud is restricted on this device."
-                        self?.userDefaults.set(false, forKey: self?.cloudKitEnabledKey ?? "isCloudKitEnabled")
+                        self.isCloudKitEnabled = false
+                        self.syncError = "iCloud is restricted on this device."
+                        self.userDefaults.set(false, forKey: self.cloudKitEnabledKey)
                         print("🔥 CLOUDKIT STATUS CHECK: RESTRICTED")
                     case .couldNotDetermine:
-                        self?.isCloudKitEnabled = false
-                        self?.syncError = "Could not determine iCloud status."
-                        self?.userDefaults.set(false, forKey: self?.cloudKitEnabledKey ?? "isCloudKitEnabled")
+                        self.isCloudKitEnabled = false
+                        self.syncError = "Could not determine iCloud status."
+                        self.userDefaults.set(false, forKey: self.cloudKitEnabledKey)
                         print("🔥 CLOUDKIT STATUS CHECK: COULD NOT DETERMINE")
                     case .temporarilyUnavailable:
-                        self?.isCloudKitEnabled = false
-                        self?.syncError = "iCloud is temporarily unavailable."
-                        self?.userDefaults.set(false, forKey: self?.cloudKitEnabledKey ?? "isCloudKitEnabled")
+                        self.isCloudKitEnabled = false
+                        self.syncError = "iCloud is temporarily unavailable."
+                        self.userDefaults.set(false, forKey: self.cloudKitEnabledKey)
                         print("🔥 CLOUDKIT STATUS CHECK: TEMPORARILY UNAVAILABLE")
                     @unknown default:
-                        self?.isCloudKitEnabled = false
-                        self?.syncError = "Unknown iCloud status."
-                        self?.userDefaults.set(false, forKey: self?.cloudKitEnabledKey ?? "isCloudKitEnabled")
+                        self.isCloudKitEnabled = false
+                        self.syncError = "Unknown iCloud status."
+                        self.userDefaults.set(false, forKey: self.cloudKitEnabledKey)
                         print("🔥 CLOUDKIT STATUS CHECK: UNKNOWN")
                     }
                     continuation.resume()

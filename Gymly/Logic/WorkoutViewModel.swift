@@ -370,19 +370,6 @@ final class WorkoutViewModel: ObservableObject {
         debugPrint("Added day: \(name)")
     }
 
-    /// Insert day into **DayStorage** and display it in calendar
-    @MainActor
-    func insertWorkout() async {
-        let today = await fetchDay(dayOfSplit: config.dayInSplit)
-
-        let newDay = Day(
-            name: today.name,
-            dayOfSplit: today.dayOfSplit,
-            exercises: (today.exercises ?? []).filter { $0.done }.map { $0.copy() },
-            date: formattedDateString(from: Date())
-        )
-    }
-
     // New method that accepts the day with completed exercises
     @MainActor
     func insertWorkout(from day: Day) async {
