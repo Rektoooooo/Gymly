@@ -173,16 +173,6 @@ class WorkoutDataFetcher {
     }
 
     func fetchHistoricalData(for exerciseName: String, weeks: Int = 4) -> [ExerciseHistory] {
-        let calendar = Calendar.current
-        let endDate = Date()
-        guard let startDate = calendar.date(byAdding: .weekOfYear, value: -weeks, to: endDate) else {
-            return []
-        }
-
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let startDateString = dateFormatter.string(from: startDate)
-
         let descriptor = FetchDescriptor<Exercise>(
             predicate: #Predicate<Exercise> { exercise in
                 exercise.name == exerciseName && exercise.done == true

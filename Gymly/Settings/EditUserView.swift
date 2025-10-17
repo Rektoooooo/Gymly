@@ -19,6 +19,8 @@ struct EditUserView: View {
     @State private var profileImage: UIImage?
     @StateObject var healthKitManager = HealthKitManager()
     @Environment(\.colorScheme) private var scheme
+    @State private var showCropEditor = false
+    @State private var selectedImageForCrop: UIImage?
     
     var body: some View {
         NavigationView {
@@ -26,7 +28,7 @@ struct EditUserView: View {
                 FloatingClouds(theme: CloudsTheme.graphite(scheme))
                     .ignoresSafeArea()
                 List {
-                    Section("Profile image") {
+                Section("Profile image") {
                         HStack {
                             Spacer()
                             if avatarImage == nil {
@@ -50,7 +52,13 @@ struct EditUserView: View {
                                     if let newItem = avatarItem,
                                        let data = try? await newItem.loadTransferable(type: Data.self),
                                        let uiImage = UIImage(data: data) {
-                                        avatarImage = uiImage
+                                        print("📸 EDITUSER: Loaded image: \(uiImage.size)")
+                                        // Set image first, then present on main thread
+                                        await MainActor.run {
+                                            selectedImageForCrop = uiImage
+                                            showCropEditor = true
+                                            print("📸 EDITUSER: Presenting crop editor")
+                                        }
                                     }
                                 }
                             }
@@ -66,6 +74,32 @@ struct EditUserView: View {
                             ))
                                 .cornerRadius(10)
                                 .padding(.horizontal)
+                        }
+                    }
+                    .listRowBackground(Color.black.opacity(0.1))
+                    Section("Workout Preferences") {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Rest days per week")
+                                    .foregroundStyle(.white)
+                                Text("Days you can skip without breaking streak")
+                                    .font(.caption)
+                                    .foregroundStyle(.white.opacity(0.6))
+                            }
+                            Spacer()
+                            Text("\(userProfileManager.currentProfile?.restDaysPerWeek ?? 2)")
+                                .foregroundStyle(.white)
+                                .bold()
+                                .font(.title3)
+                            Stepper(
+                                "",
+                                value: Binding(
+                                    get: { userProfileManager.currentProfile?.restDaysPerWeek ?? 2 },
+                                    set: { userProfileManager.updateRestDays($0) }
+                                ),
+                                in: 0...7
+                            )
+                            .labelsHidden()
                         }
                     }
                     .listRowBackground(Color.black.opacity(0.1))
@@ -107,6 +141,23 @@ struct EditUserView: View {
                         await loadProfileImage()
                     }
                 }
+            }
+        }
+        .sheet(isPresented: $showCropEditor) {
+            if let image = selectedImageForCrop {
+                ProfileImageCropView(
+                    image: image,
+                    onComplete: { croppedImage in
+                        avatarImage = croppedImage
+                        showCropEditor = false
+                        selectedImageForCrop = nil
+                    },
+                    onCancel: {
+                        showCropEditor = false
+                        selectedImageForCrop = nil
+                    }
+                )
+                .ignoresSafeArea()
             }
         }
     }

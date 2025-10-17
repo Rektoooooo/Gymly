@@ -67,34 +67,38 @@ struct SettingsView: View {
                             )
                             .cornerRadius(20)
                             HStack {
-                                HStack {
-                                    ProfileImageCell(profileImage: profileImage, frameSize: 80)
-                                        .padding()
-                                    VStack {
-                                        VStack {
-                                            Text("\(userProfileManager.currentProfile?.username ?? "User")")
-                                                .multilineTextAlignment(.leading)
-                                                .bold()
-                                                .padding(2)
+                                ProfileImageCell(profileImage: profileImage, frameSize: 80)
+                                    .padding()
+
+                                VStack(spacing: 8) {
+                                    Text("\(userProfileManager.currentProfile?.username ?? "User")")
+                                        .bold()
+                                        .font(.body)
+                                        .padding(.trailing)
+
+
+                                    HStack(spacing: 15) {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "flame")
+                                            Text("\(userProfileManager.currentProfile?.currentStreak ?? 0)")
                                         }
-                                        HStack {
-                                            HStack {
-                                                Image(systemName: "flame")
-                                                Text("100 streaks")
-                                            }
-                                            .font(.footnote)
-                                            .bold()
-                                            HStack {
-                                                Image(systemName: "clock")
-                                                Text("\(formattedWorkoutHours) h")
-                                            }
-                                            .font(.footnote)
-                                            .bold()
+                                        .font(.footnote)
+                                        .bold()
+
+
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "clock")
+                                            Text("\(formattedWorkoutHours) h")
                                         }
+                                        .font(.footnote)
+                                        .bold()
+                                        .padding(.trailing)
+
                                     }
-                                    .foregroundStyle(Color.black)
-                                    Spacer()
                                 }
+                                .foregroundStyle(Color.black)
+                                .frame(maxWidth: .infinity)
+                                .padding(.trailing)
                             }
                         }
                     }
@@ -140,7 +144,7 @@ struct SettingsView: View {
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                                 SettingUserInfoCell(
-                                    value: String(format: "%.2f", userProfileManager.currentProfile?.height ?? 0.0),
+                                    value: String(format: "%.2f", (userProfileManager.currentProfile?.height ?? 0.0) / 100.0),
                                     metric: "m",
                                     headerColor: .accent,
                                     additionalInfo: "Height",
@@ -323,16 +327,50 @@ struct SettingsView: View {
         }
     }
 
-    /// Full HealthKit data refresh (WITHOUT weight chart update to preserve manual entries)
+    /// Full HealthKit data refresh (fetches height and age, preserves manual weight)
     private func refreshHealthKitDataWithFullUpdate() {
-        // Don't fetch from HealthKit to preserve manually saved data
-        // Just update the UI with current profile data
-        DispatchQueue.main.async {
+        // Only fetch if HealthKit is enabled
+        guard UserDefaults.standard.bool(forKey: "healthKitEnabled") else {
+            // If HealthKit not enabled, just update UI with existing data
+            DispatchQueue.main.async {
+                let bmi = userProfileManager.currentProfile?.bmi ?? 0.0
+                let (color, status) = getBmiStyle(bmi: bmi)
+                bmiColor = color
+                bmiStatus = status
+                weightUpdatedTrigger.toggle()
+            }
+            return
+        }
+
+        // Fetch height from HealthKit
+        healthKitManager.fetchHeight { height in
+            DispatchQueue.main.async {
+                if let height = height {
+                    // HealthKit returns height in meters, UserProfile stores in centimeters
+                    let heightInCm = height * 100.0
+                    userProfileManager.updatePhysicalStats(height: heightInCm)
+                    print("✅ SETTINGS: Fetched height from HealthKit: \(height) m (\(heightInCm) cm)")
+                }
+            }
+        }
+
+        // Fetch age from HealthKit
+        healthKitManager.fetchAge { age in
+            DispatchQueue.main.async {
+                if let age = age {
+                    userProfileManager.updatePhysicalStats(age: age)
+                    print("✅ SETTINGS: Fetched age from HealthKit: \(age) years")
+                }
+            }
+        }
+
+        // Update BMI UI after fetching
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             let bmi = userProfileManager.currentProfile?.bmi ?? 0.0
             let (color, status) = getBmiStyle(bmi: bmi)
             bmiColor = color
             bmiStatus = status
-            weightUpdatedTrigger.toggle() // Trigger UI update
+            weightUpdatedTrigger.toggle()
         }
     }
 

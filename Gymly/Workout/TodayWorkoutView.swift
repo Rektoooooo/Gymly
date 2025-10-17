@@ -8,6 +8,7 @@
 import SwiftUI
 import Foundation
 import SwiftData
+import Combine
 
 struct WorkoutSummaryData {
     let completedExercises: [Exercise]
@@ -179,19 +180,26 @@ struct TodayWorkoutView: View {
                         await refreshMuscleGroups()
                     }
                 }
-                .onReceive(NotificationCenter.default.publisher(for: Notification.Name.importSplit)) { notification in
+                .onReceive(Publishers.Merge(
+                    NotificationCenter.default.publisher(for: Notification.Name.importSplit),
+                    NotificationCenter.default.publisher(for: Notification.Name.cloudKitDataSynced)
+                )) { notification in
                     Task { @MainActor in
+                        if notification.name == .cloudKitDataSynced {
+                            print("🔄 REFRESH: CloudKit sync completed, refreshing TodayWorkoutView")
+                        }
                         await refreshView()
                     }
                 }
             }
             /// Refresh on every appear
             .task {
-                userProfileManager.loadOrCreateProfile()
+                // Don't call loadOrCreateProfile here - it's already loaded during sign-in
+                // and calling it again will overwrite CloudKit data with default values
                 await refreshView()
-                if WhatsNewManager.shouldShowWhatsNew && config.isUserLoggedIn {
-                    showWhatsNew = true
-                }
+//                if WhatsNewManager.shouldShowWhatsNew && config.isUserLoggedIn {
+//                    showWhatsNew = true
+//                }
             }
             /// Refresh when user logs in
             .onChange(of: loginRefreshTrigger) {
@@ -275,16 +283,28 @@ struct TodayWorkoutView: View {
     /// Func for keeping up view up to date
     @MainActor
     func refreshView() async {
-        allSplitDays = viewModel.getActiveSplitDays()
+        print("🔄 TODAYWORKOUTVIEW: Starting refreshView")
+
+        let splitDays = viewModel.getActiveSplitDays()
+        print("🔄 TODAYWORKOUTVIEW: Found \(splitDays.count) split days")
+
         config.dayInSplit = viewModel.updateDayInSplit()
         config.lastUpdateDate = Date()  // Track last update time
+
         let updatedDay = await viewModel.fetchDay(dayOfSplit: config.dayInSplit)
-        await MainActor.run {
-            viewModel.day = updatedDay
+        print("🔄 TODAYWORKOUTVIEW: Updated day: '\(updatedDay.name)', exercises: \(updatedDay.exercises?.count ?? 0)")
+
+        // Update all state variables together with animation to ensure UI updates
+        withAnimation {
+            allSplitDays = splitDays
             selectedDay = updatedDay
+            viewModel.day = updatedDay
+            print("🔄 TODAYWORKOUTVIEW: Set selectedDay to '\(selectedDay.name)'")
         }
+
         await loadProfileImage()
         await refreshMuscleGroups()
+        print("🔄 TODAYWORKOUTVIEW: Refresh complete")
     }
 
     /// Calculates workout duration from first completed set to last completed set

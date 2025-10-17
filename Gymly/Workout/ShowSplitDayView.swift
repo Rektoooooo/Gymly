@@ -89,7 +89,7 @@ struct ShowSplitDayView: View {
                             if !exercises.isEmpty {
                                 Section(header: Text(name)) {
                                     ForEach(exercises, id: \.id) { exercise in
-                                        NavigationLink(destination: ExerciseDetailView(viewModel: viewModel, exercise: exercise)) {
+                                        NavigationLink(destination: ShowSplitDayExerciseView(viewModel: viewModel, exercise: exercise)) {
                                             HStack {
                                                 Text("\(globalOrderMap[exercise.id] ?? 0)")
                                                     .foregroundStyle(Color.white.opacity(0.4))
@@ -153,48 +153,64 @@ struct ShowSplitDayView: View {
                     .presentationDetents([.medium])
             }
             .toolbar {
-                /// Toolbar menu for editing options
-                Button(action: {
-                    createExercise.toggle()
-                }) {
-                    Label("Add exercise", systemImage: "plus.square")
-                }
-                Button(action: {
-                    popup.toggle()
-                }) {
-                    Label("Edit name", systemImage: "square.and.pencil")
-                }
-                Button(action: {
-                    copyWorkout.toggle()
-                }) {
-                    Label("Copy workout", systemImage: "doc.on.doc")
-                }
-                Button {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
                     if isReorderingExercises {
-                        // Commit: write buffer back to the day's exercises and persist once
-                        day.exercises = reorderingBufferExercises
-                        // Persist explicit order so it survives reloads/fetches
-                        for (idx, ex) in reorderingBufferExercises.enumerated() {
-                            ex.exerciseOrder = idx + 1
-                        }
-                        isReorderingExercises = false
-                        editModeExercises = .inactive
-                        do { try context.save() } catch { debugPrint(error) }
-                        // Refetch to ensure UI reflects persisted order
-                        Task {
-                            day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
+                        // Show prominent "Done" button when in reorder mode
+                        Button {
+                            // Commit: write buffer back to the day's exercises and persist once
+                            day.exercises = reorderingBufferExercises
+                            // Persist explicit order so it survives reloads/fetches
+                            for (idx, ex) in reorderingBufferExercises.enumerated() {
+                                ex.exerciseOrder = idx + 1
+                            }
+                            isReorderingExercises = false
+                            editModeExercises = .inactive
+                            do { try context.save() } catch { debugPrint(error) }
+                            // Refetch to ensure UI reflects persisted order
+                            Task {
+                                day = await viewModel.fetchDay(dayOfSplit: day.dayOfSplit)
+                            }
+                        } label: {
+                            Text("Done")
+                                .bold()
                         }
                     } else {
-                        // Enter: snapshot into buffer using persisted order
-                        reorderingBufferExercises = (day.exercises ?? []).sorted { ($0.exerciseOrder) < ($1.exerciseOrder) }
-                        isReorderingExercises = true
-                        editModeExercises = .active
-                    }
-                } label: {
-                    if isReorderingExercises {
-                        Text("Done")
-                    } else {
-                        Label("Reorder", systemImage: "arrow.up.arrow.down.circle")
+                        // Normal mode: Primary action + Menu
+
+                        // Primary action: Add Exercise (always visible with label)
+                        Button {
+                            createExercise.toggle()
+                        } label: {
+                            Label("Add", systemImage: "plus.circle.fill")
+                        }
+
+                        // Secondary actions in a menu
+                        Menu {
+                            Button {
+                                popup.toggle()
+                            } label: {
+                                Label("Edit Name", systemImage: "pencil")
+                            }
+
+                            Button {
+                                copyWorkout.toggle()
+                            } label: {
+                                Label("Copy Workout", systemImage: "doc.on.doc")
+                            }
+
+                            Divider()
+
+                            Button {
+                                // Enter: snapshot into buffer using persisted order
+                                reorderingBufferExercises = (day.exercises ?? []).sorted { ($0.exerciseOrder) < ($1.exerciseOrder) }
+                                isReorderingExercises = true
+                                editModeExercises = .active
+                            } label: {
+                                Label("Reorder Exercises", systemImage: "arrow.up.arrow.down")
+                            }
+                        } label: {
+                            Label("More", systemImage: "ellipsis.circle")
+                        }
                     }
                 }
             }

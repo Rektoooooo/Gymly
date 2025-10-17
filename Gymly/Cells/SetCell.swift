@@ -120,7 +120,7 @@ struct SetCell: View {
                 }
             }
         }
-        .onChange(of: showEditSheet) { newValue in
+        .onChange(of: showEditSheet) { oldValue, newValue in
             if onSetTap == nil {
                 print("📱 showEditSheet changed to: \(newValue) for set \(index + 1)")
             }

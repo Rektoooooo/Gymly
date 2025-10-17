@@ -65,7 +65,7 @@ struct CloudKitSyncStatus: View {
     private var statusText: String {
         if cloudKitManager.isSyncing {
             return "Syncing..."
-        } else if let error = cloudKitManager.syncError {
+        } else if cloudKitManager.syncError != nil {
             return "Sync unavailable"
         } else if cloudKitManager.isCloudKitEnabled && config.isCloudKitEnabled {
             return "Sync enabled"
